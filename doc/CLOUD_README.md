@@ -28,7 +28,7 @@ var cl = new cloud('<authorization token>');
 ## send_message
 
 ```javascript
-String send_message(String device_id, String message, Object ssl_config = null, function(String response))
+String send_message(String device_id, String message, function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -39,6 +39,10 @@ Send a message to ARTIK cloud from a specific device ID.
 
  - *String*: ID of the device sending the message.
  - *String*: message to send in JSON formatted string.
+ - *function(String)*: optional callback function that will be called after
+performing the request asynchronously. Response from the cloud is passed as a
+parameter to the callback in a JSON formatted string. If no function is provided
+the request will be performed synchronously.
 - *Object*: optional object containing the different parameters as CA certificate, client certificate,
 client key, enabling Secure Element and defining the level of verification of the server
 certificate. The object must be structured as the following example :
@@ -82,10 +86,6 @@ var ssl_config = {
 };
 
 ```
- - *function(String)*: optional callback function that will be called after
-performing the request asynchronously. Response from the cloud is passed as a
-parameter to the callback in a JSON formatted string. If no function is provided
-the request will be performed synchronously.
 
 **Return value**
 
@@ -104,7 +104,7 @@ send_message('<device ID>', msg, function(response){
 ## send_action
 
 ```javascript
-String send_action(String device_id, String action, Object ssl_config = null, function(String response))
+String send_action(String device_id, String action, function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -115,13 +115,13 @@ Send an action to ARTIK cloud targeted to a specific device ID.
 
  - *String*: ID of the destination device to send the action to.
  - *String*: action to send in JSON formatted string.
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -140,7 +140,7 @@ send_action('<device ID>', seton, function(response){
 ## get_current_user_profile
 
 ```javascript
-String get_current_user_profile(Object ssl_config = null, function(String response))
+String get_current_user_profile(function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -149,13 +149,13 @@ Get the current user profile, based on the authorization token.
 
 **Parameters**
 
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -173,7 +173,7 @@ get_current_user_profile(function(response){
 ## get_user_devices
 
 ```javascript
-String get_user_devices(Number count, Boolean properties, Number offset, String user_id, Object ssl_config = null, function(String response))
+String get_user_devices(Number count, Boolean properties, Number offset, String user_id, function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -186,13 +186,13 @@ Get the list of devices belonging to a specific user.
  - *Boolean*: if *true*, return device properties as well.
  - *Number*: offset in the devices list from which to start, used for pagination.
  - *String*: user ID corresponding to the owner of the devices to list.
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -210,7 +210,7 @@ get_user_devices(10, false, 0, '<user ID>', function(response){
 ## get_user_device_types
 
 ```javascript
-String get_user_device_types(Number count, Boolean shared, Number offset, String user_id, Object ssl_config = null, function(String response))
+String get_user_device_types(Number count, Boolean shared, Number offset, String user_id, function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -223,13 +223,13 @@ Get the list of device types available to a specific user.
  - *Boolean*: if *true*, return device types shared by all users as well.
  - *Number*: offset in the device types list from which to start, used for pagination.
  - *String*: user ID corresponding to the owner of the device types to list.
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -247,7 +247,7 @@ get_user_device_types(10, false, 0, '<user ID>', function(response){
 ## get_user_application_properties
 
 ```javascript
-String get_user_application_properties(String user_id, String app_id, Object ssl_config = null, function(String response))
+String get_user_application_properties(String user_id, String app_id, function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -258,13 +258,13 @@ Get properties stored by a user for a specific application.
 
  - *String*: user ID whose application properties are to be returned.
  - *String*: application ID whose properties are to be returned.
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -282,7 +282,7 @@ get_user_application_properties('<user ID>', '<app ID>', function(response){
 ## get_device
 
 ```javascript
-String get_device(String device_id, Boolean properties, Object ssl_config = null, function(String response))
+String get_device(String device_id, Boolean properties, function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -293,13 +293,13 @@ Get information related to a specific device.
 
  - *String*: device ID whose information is to be returned.
  - *Boolean*: if *true*, return the device properties as well.
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -317,7 +317,7 @@ get_device('<device ID>', true, function(response){
 ## get_device_token
 
 ```javascript
-String get_device_token(String device_id, Object ssl_config = null, function(String response))
+String get_device_token(String device_id, function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -327,13 +327,13 @@ Get authorization token associated to a specific device.
 **Parameters**
 
  - *String*: device ID whose token is to be returned.
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -351,7 +351,7 @@ get_device_token('<device ID>', function(response){
 ## add_device
 
 ```javascript
-String add_device(String user_id, String device_type_id, String name, Object ssl_config = null, function(String response))
+String add_device(String user_id, String device_type_id, String name, function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -363,13 +363,13 @@ Add a new device to a specific user.
  - *String*: user ID to associate the new device to.
  - *String*: device type ID of the new device to create.
  - *String*: friendly name to give to the new device.
-  - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -387,7 +387,7 @@ add_device('<user ID>', '<device type ID>', 'Heartrate sensor', function(respons
 ## delete_device
 
 ```javascript
-String delete_device(String user_id, String device_type_id, String name, Object ssl_config = null, function(String response))
+String delete_device(String user_id, String device_type_id, String name, function(String response) = undefined, , Object ssl_config = undefined)
 ```
 
 **Description**
@@ -397,13 +397,13 @@ Delete a specific device from the authorized user account.
 **Parameters**
 
  - *String*: device ID of the device to delete.
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -421,7 +421,7 @@ delete_device('<device ID>', function(response){
 ## update_device_token
 
 ```javascript
-String update_device_token(String device_id, Object ssl_config = null, function(String response))
+String update_device_token(String device_id, function(String response) = undefined, , Object ssl_config = undefined)
 ```
 
 **Description**
@@ -431,13 +431,13 @@ Update the authorization token of a specific device.
 **Parameters**
 
  - *String*: device ID whose token is to be refreshed.
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 
@@ -455,7 +455,7 @@ update_device_token('<device ID>', function(response){
 ## delete_device_token
 
 ```javascript
-String delete_device_token(String device_id, Object ssl_config = null, function(String response))
+String delete_device_token(String device_id, function(String response) = undefined, Object ssl_config = undefined)
 ```
 
 **Description**
@@ -465,13 +465,13 @@ Delete the authorization token of a specific device.
 **Parameters**
 
  - *String*: device ID whose token is to be deleted.
- - *Object*: optional object containing the different parameters as CA certificate, client certificate,
-client key, enabling Secure Element and defining the level of verification of the server
-certificate. See the method send_message for ssl_config structure.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
 parameter to the callback in a JSON formatted string. If no function is provided
 the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
 
 **Return value**
 

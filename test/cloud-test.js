@@ -56,11 +56,11 @@ testCase('Cloud', function() {
 			if (!auth_token || !auth_token.length)
 				this.skip();
 
-			cloud.get_current_user_profile(ssl_config, function(response) {
+			cloud.get_current_user_profile(function(response) {
 				console.log(response);
 				assert.notInclude( response, "error");
 				done();
-			});
+			}, ssl_config);
 		});
 	});
 
@@ -80,11 +80,11 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.get_device_token(device_id, ssl_config, function(response) {
+			cloud.get_device_token(device_id, function(response) {
 				console.log(response);
 				assert.notInclude(response, "error");
 				done();
-			});
+			}, ssl_config);
 		});
 
 	});
@@ -113,11 +113,11 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.get_device(device_id, false, ssl_config, function(response) {
+			cloud.get_device(device_id, false, function(response) {
 				console.log(response);
 				assert.notInclude(response, "error");
 				done();
-			});
+			}, ssl_config);
 		});
 
 		assertions('Get Device with properties - Calllback', function(done) {
@@ -125,11 +125,11 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.get_device(device_id, true, ssl_config, function(response) {
+			cloud.get_device(device_id, true, function(response) {
 				console.log(response);
 				assert.notInclude(response, "error");
 				done();
-			});
+			}, ssl_config);
 		});
 
 	});
@@ -150,11 +150,11 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.get_user_device_types(100, false, 0, user_id, ssl_config, function(response) {
+			cloud.get_user_device_types(100, false, 0, user_id, function(response) {
 				console.log(response);
 				assert.notInclude(response, "error");
 				done();
-			});
+			}, ssl_config);
 		});
 
 	});
@@ -203,11 +203,11 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.delete_device_token(device_id, ssl_config, function(response) {
+			cloud.delete_device_token(device_id, function(response) {
 				console.log(response);
 				assert.notInclude(response, "error");
 				done();
-			});
+			}, ssl_config);
 		});
 
 	});
@@ -229,11 +229,11 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.update_device_token(device_id, ssl_config, function(response) {
+			cloud.update_device_token(device_id, function(response) {
 				console.log(response);
 				assert.notInclude(response, "error");
 				done();
-			});
+			}, ssl_config);
 		});
 
 	});
