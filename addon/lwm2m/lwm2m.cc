@@ -1,0 +1,494 @@
+/*
+ *
+ * Copyright 2017 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ */
+
+#include "lwm2m/lwm2m.h"
+
+#include <unistd.h>
+#include <node_buffer.h>
+#include <nan.h>
+#include <artik_log.h>
+#include <utils.h>
+
+#include <string>
+#include <vector>
+
+#include "json.hpp"
+
+using json = nlohmann::json;
+
+namespace artik {
+
+using v8::Exception;
+using v8::Function;
+using v8::FunctionCallbackInfo;
+using v8::FunctionTemplate;
+using v8::Isolate;
+using v8::Local;
+using v8::Number;
+using v8::Object;
+using v8::Persistent;
+using v8::String;
+using v8::Value;
+using v8::Handle;
+using v8::Array;
+using v8::Context;
+
+#define CHECK_ARGUMENT_STRING(x)  (x->IsUndefined() || !x->IsString())
+#define CHECK_ARGUMENT_NUMBER(x)  (x->IsUndefined() || !x->IsNumber())
+#define CHECK_ARGUMENT_BOOLEAN(x) (x->IsUndefined() || !x->IsBoolean())
+#define CHECK_ARGUMENT_DEFINED(x) (x->IsUndefined())
+
+Persistent<Function> Lwm2mWrapper::constructor;
+
+static void on_error(void *data, void *user_data) {
+  artik_error err = (artik_error)data;
+  Isolate * isolate = Isolate::GetCurrent();
+  v8::HandleScope handleScope(isolate);
+  Lwm2mWrapper* wrap = reinterpret_cast<Lwm2mWrapper*>(user_data);
+
+  log_dbg("");
+
+  if (!wrap->getErrorCb())
+    return;
+
+  Handle<Value> argv[] = {
+    Handle<Value>(String::NewFromUtf8(isolate, error_msg(err))),
+  };
+
+  Local<Function>::New(isolate, *wrap->getErrorCb())->Call(
+      isolate->GetCurrentContext()->Global(), 1, argv);
+}
+
+static void on_execute_resource(void *data, void *user_data) {
+  Isolate * isolate = Isolate::GetCurrent();
+  v8::HandleScope handleScope(isolate);
+  Lwm2mWrapper* wrap = reinterpret_cast<Lwm2mWrapper*>(user_data);
+
+  log_dbg("");
+
+  if (!wrap->getExecuteCb())
+    return;
+
+  Handle<Value> argv[] = {
+    Handle<Value>(String::NewFromUtf8(isolate, reinterpret_cast<char *>(data)))
+  };
+
+  Local<Function>::New(isolate, *wrap->getExecuteCb())->Call(
+      isolate->GetCurrentContext()->Global(), 1, argv);
+}
+
+static void on_changed_resource(void *data, void *user_data) {
+  Isolate * isolate = Isolate::GetCurrent();
+  v8::HandleScope handleScope(isolate);
+  Lwm2mWrapper* wrap = reinterpret_cast<Lwm2mWrapper*>(user_data);
+
+  log_dbg("");
+
+  if (!wrap->getChangedCb())
+    return;
+
+  Handle<Value> argv[] = {
+    Handle<Value>(String::NewFromUtf8(isolate, reinterpret_cast<char *>(data)))
+  };
+
+  Local<Function>::New(isolate, *wrap->getChangedCb())->Call(
+      isolate->GetCurrentContext()->Global(), 1, argv);
+}
+
+Lwm2mWrapper::Lwm2mWrapper() {
+  m_lwm2m = new Lwm2m();
+  memset(&m_config, 0, sizeof(m_config));
+  m_error_cb = NULL;
+  m_execute_cb = NULL;
+  m_changed_cb = NULL;
+}
+
+Lwm2mWrapper::~Lwm2mWrapper() {
+  delete m_lwm2m;
+}
+
+void Lwm2mWrapper::Init(Local<Object> exports) {
+  Isolate* isolate = exports->GetIsolate();
+  Local<FunctionTemplate> modal = FunctionTemplate::New(isolate, New);
+
+  log_dbg("");
+
+  modal->SetClassName(String::NewFromUtf8(isolate, "lwm2m"));
+  modal->InstanceTemplate()->SetInternalFieldCount(1);
+
+  // Prototypes
+  NODE_SET_PROTOTYPE_METHOD(modal, "client_connect", client_connect);
+  NODE_SET_PROTOTYPE_METHOD(modal, "client_disconnect", client_disconnect);
+  NODE_SET_PROTOTYPE_METHOD(modal, "client_write_resource",
+                            client_write_resource);
+  NODE_SET_PROTOTYPE_METHOD(modal, "client_read_resource",
+                            client_read_resource);
+  NODE_SET_PROTOTYPE_METHOD(modal, "serialize_tlv_int", serialize_tlv_int);
+  NODE_SET_PROTOTYPE_METHOD(modal, "serialize_tlv_string",
+                            serialize_tlv_string);
+
+  constructor.Reset(isolate, modal->GetFunction());
+  exports->Set(v8::String::NewFromUtf8(isolate, "lwm2m"),
+     modal->GetFunction());
+}
+
+
+void Lwm2mWrapper::New(const FunctionCallbackInfo<Value>& args) {
+  Isolate *isolate = args.GetIsolate();
+  Lwm2mWrapper* obj = NULL;
+
+  log_dbg("");
+
+  if (args.IsConstructCall()) {
+    obj = new Lwm2mWrapper();
+    obj->Wrap(args.This());
+    args.GetReturnValue().Set(args.This());
+  } else {
+    Local<Context> context = isolate->GetCurrentContext();
+    Local<Function> cons = Local<Function>::New(isolate, constructor);
+    args.GetReturnValue().Set(
+        cons->NewInstance(context, 0, NULL).ToLocalChecked());
+  }
+}
+
+void Lwm2mWrapper::client_connect(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
+  Lwm2m* obj = wrap->getObj();
+  artik_error ret = S_OK;
+
+  log_dbg("");
+
+  // Check Arguments
+  if ((args.Length() < 5)          ||
+      CHECK_ARGUMENT_NUMBER(args[0]) ||  // Server ID
+      CHECK_ARGUMENT_STRING(args[1]) ||  // Server URI
+      CHECK_ARGUMENT_STRING(args[2]) ||  // Client Name
+      CHECK_ARGUMENT_NUMBER(args[3]) ||  // lifetime
+      !args[4]->IsObject()) {  // Objects device & conn_monitoring
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+  }
+  // Parse lwm2m object parameter and create appropriate object
+  auto deviceobj = js_object_attribute_to_cpp<Local<Value>>(args[4], "device");
+  auto connobj = js_object_attribute_to_cpp<Local<Value>>(
+      args[4], "conn_monitoring");
+
+  if (!deviceobj) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Missing entry in Objects: 'device' field must be provided")));
+    return;
+  }
+
+  std::vector<std::string> check_deviceobj = {
+      "", "manufacturer", "", "model",
+      "", "serial",
+      "", "fwVersion",
+      "", "hwVersion",
+      "", "swVersion",
+      "", "deviceType",
+      "", "powerSource",
+      "", "powerVoltage",
+      "", "powerCurrent",
+      "", "batteryLevel",
+      "", "memoryTotal",
+      "", "memoryFree",
+      "", "timeZone",
+      "", "utcOffset",
+      "", "bindingModes"
+  };
+  std::vector<std::string> check_connobj = {
+      "", "netbearer",
+      "", "avalnetbearer",
+      "", "signalstrength",
+      "", "linkquality",
+      "", "ipaddr",
+      "", "ipaddr2",
+      "", "routeaddr",
+      "", "routeaddr2",
+      "", "linkutilization",
+      "", "apn",
+      "", "cellid",
+      "", "smnc",
+      "", "smcc"};
+
+  for (unsigned int i = 0; i < check_deviceobj.size(); i += 2) {
+    auto tmpDevObjVal = js_object_attribute_to_cpp<std::string>(
+        deviceobj.value(), check_deviceobj[i+1]);
+    if (!tmpDevObjVal || tmpDevObjVal.value().empty()) {
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+            isolate, ("Missing entry in device object: '" +
+            check_deviceobj[i+1]+"'").c_str())));
+      return;
+    }
+    check_deviceobj[i] = tmpDevObjVal.value();
+    if (connobj && i < check_connobj.size()) {
+      auto tmpConnObjVal = js_object_attribute_to_cpp<std::string>(
+          connobj.value(), check_connobj[i+1]);
+      if (!tmpConnObjVal ||
+          (tmpConnObjVal.value().empty() && (i > 15 || i < 8))) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+            isolate, ("Missing entry in connectivity monitoring object: " +
+            check_connobj[i+1]).c_str())));
+        return;
+      }
+      check_connobj[i] = tmpConnObjVal.value();
+    }
+  }
+
+  // Fill the lwm2m config object
+  v8::String::Utf8Value server_uri(args[1]->ToString());
+  v8::String::Utf8Value client_name(args[2]->ToString());
+  const char *ips[2] = {check_connobj[8].c_str(), check_connobj[10].c_str()};
+  const char *routes[2] = {check_connobj[12].c_str(),
+      check_connobj[14].c_str()};
+  memset(&wrap->m_config, 0, sizeof(artik_lwm2m_config));
+  wrap->m_config.server_id = args[0]->NumberValue();;
+  wrap->m_config.server_uri = strndup(*server_uri, strlen(*server_uri));
+  wrap->m_config.name = strndup(*client_name, strlen(*client_name));
+  wrap->m_config.lifetime = args[3]->NumberValue();
+
+  // If TLS PSK parameters are passed
+  if ((args.Length() > 6) &&
+       args[5]->IsString() &&
+       args[6]->IsString()) {
+    v8::String::Utf8Value identity(args[5]->ToString());
+    v8::String::Utf8Value secret_key(args[6]->ToString());
+
+    wrap->m_config.tls_psk_identity = strndup(*identity, strlen(*identity));
+    wrap->m_config.tls_psk_key = strndup(*secret_key, strlen(*secret_key));
+  }
+
+  wrap->m_config.objects[ARTIK_LWM2M_OBJECT_DEVICE] = obj->create_device_object(
+    check_deviceobj[0].c_str(), check_deviceobj[2].c_str(),
+    check_deviceobj[4].c_str(), check_deviceobj[6].c_str(),
+    check_deviceobj[8].c_str(), check_deviceobj[10].c_str(),
+    check_deviceobj[12].c_str(), atoi(check_deviceobj[14].c_str()),
+    atoi(check_deviceobj[16].c_str()), atoi(check_deviceobj[18].c_str()),
+    atoi(check_deviceobj[20].c_str()), atoi(check_deviceobj[22].c_str()),
+    atoi(check_deviceobj[24].c_str()), check_deviceobj[26].c_str(),
+    check_deviceobj[28].c_str(), check_deviceobj[30].c_str());
+  if (connobj) {
+    wrap->m_config.objects[ARTIK_LWM2M_OBJECT_CONNECTIVITY_MONITORING] =
+        obj->create_connectivity_monitoring_object(
+            atoi(check_connobj[0].c_str()), atoi(check_connobj[2].c_str()),
+            atoi(check_connobj[4].c_str()), atoi(check_connobj[6].c_str()),
+            2, ips, 2, routes, atoi(check_connobj[16].c_str()),
+            check_connobj[18].c_str(), atoi(check_connobj[20].c_str()),
+            atoi(check_connobj[22].c_str()), atoi(check_connobj[24].c_str()));
+  }
+
+  ret = obj->client_connect(&wrap->m_config);
+
+  /* Set callbacks if passed as parameters */
+  if (args.Length() > 7) {
+    wrap->m_error_cb = new v8::Persistent<v8::Function>();
+    wrap->m_error_cb->Reset(isolate, Local<Function>::Cast(args[7]));
+    obj->set_callback(ARTIK_LWM2M_EVENT_ERROR, on_error,
+        reinterpret_cast<void*>(wrap));
+  }
+  if (args.Length() > 8) {
+    wrap->m_execute_cb = new v8::Persistent<v8::Function>();
+    wrap->m_execute_cb->Reset(isolate, Local<Function>::Cast(args[8]));
+    obj->set_callback(ARTIK_LWM2M_EVENT_RESOURCE_EXECUTE, on_execute_resource,
+        reinterpret_cast<void*>(wrap));
+  }
+  if (args.Length() > 9) {
+    wrap->m_changed_cb = new v8::Persistent<v8::Function>();
+    wrap->m_changed_cb->Reset(isolate, Local<Function>::Cast(args[9]));
+    obj->set_callback(ARTIK_LWM2M_EVENT_RESOURCE_CHANGED, on_changed_resource,
+        reinterpret_cast<void*>(wrap));
+  }
+
+  args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+}
+
+void Lwm2mWrapper::client_disconnect(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
+  Lwm2m* obj = wrap->getObj();
+  artik_error ret = S_OK;
+
+  log_dbg("");
+
+  // Unset all registered callbacks
+  if (wrap->m_error_cb) {
+    obj->unset_callback(ARTIK_LWM2M_EVENT_ERROR);
+    wrap->m_error_cb = NULL;
+  }
+  if (wrap->m_execute_cb) {
+    obj->unset_callback(ARTIK_LWM2M_EVENT_RESOURCE_EXECUTE);
+    wrap->m_execute_cb = NULL;
+  }
+  if (wrap->m_changed_cb) {
+    obj->unset_callback(ARTIK_LWM2M_EVENT_RESOURCE_CHANGED);
+    wrap->m_changed_cb = NULL;
+  }
+
+  // Disconnect the clien
+  ret = obj->client_disconnect();
+
+  // Free allocated resources
+  obj->free_object(wrap->m_config.objects[ARTIK_LWM2M_OBJECT_DEVICE]);
+  if (wrap->m_config.server_uri)
+    free(wrap->m_config.server_uri);
+  if (wrap->m_config.name)
+    free(wrap->m_config.name);
+  if (wrap->m_config.tls_psk_identity)
+    free(wrap->m_config.tls_psk_identity);
+  if (wrap->m_config.tls_psk_key)
+    free(wrap->m_config.tls_psk_key);
+
+  args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+}
+
+void Lwm2mWrapper::client_write_resource(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
+  Lwm2m* obj = wrap->getObj();
+  artik_error ret = S_OK;
+
+  log_dbg("");
+
+  // Check Arguments
+  if ((args.Length() < 2)              ||
+      CHECK_ARGUMENT_STRING(args[0])   ||  // Resource URI
+      CHECK_ARGUMENT_DEFINED(args[1])) {   // Data buffer
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+  }
+
+  if (!node::Buffer::HasInstance(args[1]))
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Argument 2 should be a Buffer.")));
+
+  v8::String::Utf8Value uri(args[0]->ToString());
+  unsigned char *buffer = (unsigned char *)node::Buffer::Data(args[1]);
+  size_t length = node::Buffer::Length(args[1]);
+  ret = obj->client_write_resource(*uri, buffer, length);
+  args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+}
+
+void Lwm2mWrapper::client_read_resource(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
+  Lwm2m* obj = wrap->getObj();
+  artik_error ret = S_OK;
+  char buffer[256]; int len = 256;
+
+  log_dbg("");
+
+  // Check Arguments
+  if ((args.Length() < 1) ||
+      CHECK_ARGUMENT_STRING(args[0])) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+  }
+
+  v8::String::Utf8Value uri(args[0]->ToString());
+
+  memset(buffer, 0, len);
+  ret = obj->client_read_resource(*uri, (unsigned char*)buffer, &len);
+  if (ret != S_OK) {
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+    return;
+  }
+
+  args.GetReturnValue().Set(Nan::CopyBuffer(buffer, len).ToLocalChecked());
+}
+
+void Lwm2mWrapper::serialize_tlv_int(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
+  Lwm2m* obj = wrap->getObj();
+  artik_error ret = S_OK;
+  unsigned char *buffer = NULL; int len = 0;
+
+  log_dbg("");
+
+  // Check Arguments
+  if (args.Length() != 1) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+  }
+
+  v8::Array *data = v8::Array::Cast(*args[0]);
+  int size = data->Length();
+  int *rdata = new int(size);
+
+  for (int i = 0; i < size; ++i)
+    rdata[i] = data->Get(i)->NumberValue();
+
+  ret = obj->serialize_tlv_int(rdata, size, &buffer, &len);
+  if ((ret != S_OK) || !buffer) {
+    delete rdata;
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+    return;
+  }
+
+  args.GetReturnValue().Set(Nan::CopyBuffer(
+      (const char *)buffer, len).ToLocalChecked());
+
+  delete buffer;
+  delete rdata;
+}
+
+void Lwm2mWrapper::serialize_tlv_string(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
+  Lwm2m* obj = wrap->getObj();
+  artik_error ret = S_OK;
+  unsigned char *buffer = NULL;
+  int len = 0;
+
+  log_dbg("");
+
+  // Check Arguments
+  if (args.Length() != 1) {
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+  }
+
+  v8::Array *data = v8::Array::Cast(*args[0]);
+  int size = data->Length();
+  char *rdata[size];
+
+  for (int i = 0; i < size; ++i) {
+    String::Utf8Value val(data->Get(i)->ToString());
+    rdata[i] = reinterpret_cast<char*>(*val);
+  }
+
+  ret = obj->serialize_tlv_string(rdata, size, &buffer, &len);
+  if ((ret != S_OK) || !buffer) {
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+    return;
+  }
+
+  args.GetReturnValue().Set(Nan::CopyBuffer(
+      (const char *)buffer, len).ToLocalChecked());
+
+  delete buffer;
+}
+
+}  // namespace artik
