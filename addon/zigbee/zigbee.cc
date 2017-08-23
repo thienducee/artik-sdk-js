@@ -665,7 +665,7 @@ static char* convert_device(ZigbeeDevice *dev) {
       " }";
 
   return g_strdup_printf(tpl, dev->get_device_id(), dev->get_profile_id(),
-      reinterpret_cast<int>(dev->get_handle()));
+      (intptr_t)(dev->get_handle()));
 }
 
 /**

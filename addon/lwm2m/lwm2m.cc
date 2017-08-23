@@ -56,7 +56,7 @@ using v8::Context;
 Persistent<Function> Lwm2mWrapper::constructor;
 
 static void on_error(void *data, void *user_data) {
-  artik_error err = (artik_error)data;
+  artik_error err = (artik_error)(intptr_t)data;
   Isolate * isolate = Isolate::GetCurrent();
   v8::HandleScope handleScope(isolate);
   Lwm2mWrapper* wrap = reinterpret_cast<Lwm2mWrapper*>(user_data);

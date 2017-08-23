@@ -113,7 +113,7 @@ void OnOffLightWrapper::New(const FunctionCallbackInfo<Value>& args) {
     This->Set(String::NewFromUtf8(isolate, "device_id"),
         Number::New(isolate, obj->m_zbd->get_device_id()));
     This->Set(String::NewFromUtf8(isolate, "handle"),
-        Number::New(isolate, reinterpret_cast<int>(obj->m_zbd->get_handle())));
+        Number::New(isolate, (intptr_t)(obj->m_zbd->get_handle())));
     This->Set(String::NewFromUtf8(isolate, "endpoint_id"),
         Number::New(isolate, args[1]->Int32Value()));
 
@@ -322,7 +322,7 @@ void OnOffSwitchWrapper::New(const FunctionCallbackInfo<Value>& args) {
     This->Set(String::NewFromUtf8(isolate, "device_id"),
         Number::New(isolate, obj->m_zbd->get_device_id()));
     This->Set(String::NewFromUtf8(isolate, "handle"),
-        Number::New(isolate, reinterpret_cast<int>(obj->m_zbd->get_handle())));
+        Number::New(isolate, (intptr_t)(obj->m_zbd->get_handle())));
     This->Set(String::NewFromUtf8(isolate, "endpoint_id"),
         Number::New(isolate, args[1]->Int32Value()));
 
@@ -568,7 +568,7 @@ void LevelControlSwitchWrapper::New(const FunctionCallbackInfo<Value>& args) {
     This->Set(String::NewFromUtf8(isolate, "device_id"),
         Number::New(isolate, obj->m_zbd->get_device_id()));
     This->Set(String::NewFromUtf8(isolate, "handle"),
-        Number::New(isolate, reinterpret_cast<int>(obj->m_zbd->get_handle())));
+        Number::New(isolate, (intptr_t)(obj->m_zbd->get_handle())));
     This->Set(String::NewFromUtf8(isolate, "endpoint_id"),
         Number::New(isolate, args[1]->Int32Value()));
 
@@ -862,7 +862,7 @@ void DimmableLightWrapper::New(const FunctionCallbackInfo<Value>& args) {
     This->Set(String::NewFromUtf8(isolate, "device_id"),
         Number::New(isolate, obj->m_zbd->get_device_id()));
     This->Set(String::NewFromUtf8(isolate, "handle"),
-        Number::New(isolate, reinterpret_cast<int>(obj->m_zbd->get_handle())));
+        Number::New(isolate, (intptr_t)(obj->m_zbd->get_handle())));
     This->Set(String::NewFromUtf8(isolate, "endpoint_id"),
         Number::New(isolate, args[1]->Int32Value()));
 
@@ -1100,7 +1100,7 @@ void LightSensorWrapper::New(const FunctionCallbackInfo<Value>& args) {
     This->Set(String::NewFromUtf8(isolate, "device_id"),
         Number::New(isolate, obj->m_zbd->get_device_id()));
     This->Set(String::NewFromUtf8(isolate, "handle"),
-        Number::New(isolate, reinterpret_cast<int>(obj->m_zbd->get_handle())));
+        Number::New(isolate, (intptr_t)(obj->m_zbd->get_handle())));
     This->Set(String::NewFromUtf8(isolate, "endpoint_id"),
         Number::New(isolate, args[1]->Int32Value()));
 
@@ -1377,7 +1377,7 @@ void RemoteControlWrapper::New(const FunctionCallbackInfo<Value>& args) {
     This->Set(String::NewFromUtf8(isolate, "device_id"),
         Number::New(isolate, obj->m_zbd->get_device_id()));
     This->Set(String::NewFromUtf8(isolate, "handle"),
-        Number::New(isolate, reinterpret_cast<int>(obj->m_zbd->get_handle())));
+        Number::New(isolate, (intptr_t)(obj->m_zbd->get_handle())));
     This->Set(String::NewFromUtf8(isolate, "endpoint_id"),
         Number::New(isolate, args[1]->Int32Value()));
 
