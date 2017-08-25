@@ -127,7 +127,7 @@ static void websocket_connection_callback(void* user_data, void* result) {
   Isolate * isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   WebsocketWrapper* wrap = reinterpret_cast<WebsocketWrapper*>(user_data);
-  uint32_t ret = reinterpret_cast<uint32_t>(result);
+  uint32_t ret = reinterpret_cast<uintptr_t>(result);
 
   log_dbg("");
 

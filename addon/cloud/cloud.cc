@@ -418,7 +418,7 @@ static void on_connection_callback(void *user_data, void *result) {
   Isolate * isolate = Isolate::GetCurrent();
   v8::HandleScope handleScope(isolate);
   CloudWrapper *obj = reinterpret_cast<CloudWrapper *>(user_data);
-  uint32_t ret = reinterpret_cast<uint32_t>(result);
+  uint32_t ret = reinterpret_cast<uintptr_t>(result);
 
   log_dbg("");
 
