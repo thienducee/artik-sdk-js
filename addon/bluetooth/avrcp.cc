@@ -317,6 +317,7 @@ void AvrcpWrapper::avrcp_controller_set_repeat_mode(
     std::string err = "Repeat mode " + std::string(*val) + " is not supported";
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, err.c_str())));
+    return;
   }
 
   artik_error err = obj->avrcp_controller_set_repeat_mode(mode.value());
