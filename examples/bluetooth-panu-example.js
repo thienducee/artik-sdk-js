@@ -70,7 +70,6 @@ bt.on('bond', function(err, paired) {
 		});
 
 		r1.on('line', function(line) {
-			r1.close();
 			var cli = 'ping -c 10 ' + line;
 			child_process.exec(cli,{encoding:'utf8'},function (err,stdout,stderr){
 			    if (err){
@@ -90,5 +89,6 @@ process.on('SIGINT', function() {
 	if (pan.get_connected())
 		pan.disconnect();
 
+	r1.close();
 	process.exit(0);
 });
