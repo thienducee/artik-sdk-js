@@ -357,7 +357,7 @@ void FtpWrapper::get_file(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (!args[0]->IsString() || !args[0]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments type")));
     return;
@@ -386,7 +386,7 @@ void FtpWrapper::put_file(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (!args[0]->IsString() || !args[0]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments type")));
     return;
