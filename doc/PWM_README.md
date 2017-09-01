@@ -123,7 +123,7 @@ See [full example](#full-example)
 ## set_pin_num
 
 ```javascript
-Number set_pin_num(Number pin)
+set_pin_num(Number pin)
 ```
 
 **Description**
@@ -136,7 +136,7 @@ Change the pin number of the PWM signal
 
 **Return value**
 
-*Number*: Error code
+None
 
 **Example**
 
@@ -145,7 +145,7 @@ See [full example](#full-example)
 ## set_name
 
 ```javascript
-Number set_name(String name)
+set_name(String name)
 ```
 
 **Description**
@@ -158,7 +158,7 @@ Change the friendly name of the PWM signal.
 
 **Return value**
 
-*Number*: Error code
+None
 
 **Example**
 
