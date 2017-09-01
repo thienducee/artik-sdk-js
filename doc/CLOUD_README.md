@@ -387,7 +387,7 @@ add_device('<user ID>', '<device type ID>', 'Heartrate sensor', function(respons
 ## delete_device
 
 ```javascript
-String delete_device(String user_id, String device_type_id, String name, function(String response) = undefined, , Object ssl_config = undefined)
+String delete_device(String device_id, function(String response) = undefined, , Object ssl_config = undefined)
 ```
 
 **Description**

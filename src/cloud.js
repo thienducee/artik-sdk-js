@@ -121,14 +121,14 @@ Cloud.prototype.delete_device_token = function delete_device_token(device_id, re
     return this.cloud.delete_device_token(device_id, ssl_config, response_cb);
 };
 
-Cloud.prototype.delete_device = function delete_device(user_id, device_type_id, name, response_cb, ssl_config) {
-    if (arguments.length == 4) {
+Cloud.prototype.delete_device = function delete_device(device_id, response_cb, ssl_config) {
+    if (arguments.length == 2) {
         if (typeof(response_cb) == "object") {
             ssl_config = response_cb;
             response_cb = undefined;
         }
     }
-    return this.cloud.delete_device(user_id, device_type_id, name, ssl_config, response_cb);
+    return this.cloud.delete_device(device_id, ssl_config, response_cb);
 };
 
 Cloud.prototype.websocket_open_stream = function websocket_open_stream(access_token, device_id, ssl_config) {

@@ -983,7 +983,7 @@ void CloudWrapper::add_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
     updateSSLConfig(isolate, args[3], &ssl_config);
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[2]->IsUndefined()) {
+  if (!args[4]->IsUndefined()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -992,7 +992,7 @@ void CloudWrapper::add_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
     obj->m_work->name = strndup(*param2, strlen(*param2));
     obj->m_work->ssl_config = ssl_config;
 
-    Local<Function> callback = Local<Function>::Cast(args[2]);
+    Local<Function> callback = Local<Function>::Cast(args[4]);
     obj->m_work->callback.Reset(isolate, callback);
 
     uv_queue_work(uv_default_loop(), &(obj->m_work->request),
