@@ -60,7 +60,8 @@ std::array<const char*, 2> AgentRequestWrapper::error_types = {
   "canceled"
 };
 
-static void agent_release(void *user_data) {
+static void agent_release(artik_bt_event event,
+    void *data, void *user_data) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   AgentWrapper* wrap = reinterpret_cast<AgentWrapper*>(user_data);
@@ -69,116 +70,143 @@ static void agent_release(void *user_data) {
       isolate->GetCurrentContext()->Global(), 0, NULL);
 }
 
-static void agent_request_pincode(artik_bt_agent_request_handle handle,
-    char *device, void *user_data) {
+static void agent_request_pincode(artik_bt_event event,
+    void *data, void *user_data) {
+  artik_bt_agent_request_property *request_property =
+    reinterpret_cast<artik_bt_agent_request_property *>(data);
+
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   AgentWrapper* wrap = reinterpret_cast<AgentWrapper*>(user_data);
 
-  Local<Value> agentRequest = AgentRequestWrapper::newInstance(handle);
+  Local<Value> agentRequest = AgentRequestWrapper::newInstance(
+      request_property->handle);
   Handle<Value> argv[] = {
     agentRequest,
-    String::NewFromUtf8(isolate, device)
+    String::NewFromUtf8(isolate, request_property->device)
   };
 
   Local<Function>::New(isolate, *wrap->getRequestPincodeCb())->Call(
       isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
-static void agent_display_pincode(char *device, char *pincode,
-    void *user_data) {
+static void agent_display_pincode(artik_bt_event event,
+    void *data, void *user_data) {
+  artik_bt_agent_pincode_property *pincode_property =
+    reinterpret_cast<artik_bt_agent_pincode_property *>(data);
+
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   AgentWrapper* wrap = reinterpret_cast<AgentWrapper*>(user_data);
 
   Handle<Value> argv[] = {
-    String::NewFromUtf8(isolate, device),
-    String::NewFromUtf8(isolate, pincode)
+    String::NewFromUtf8(isolate, pincode_property->device),
+    String::NewFromUtf8(isolate, pincode_property->pincode)
   };
   Local<Function>::New(isolate, *wrap->getDisplayPincodeCb())->Call(
       isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
-static void agent_request_passkey(artik_bt_agent_request_handle handle,
-    char *device, void *user_data) {
+static void agent_request_passkey(artik_bt_event event,
+    void *data, void *user_data) {
+  artik_bt_agent_request_property *request_property =
+    reinterpret_cast<artik_bt_agent_request_property *>(data);
+
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   AgentWrapper* wrap = reinterpret_cast<AgentWrapper*>(user_data);
 
-  Local<Object> agentRequest = AgentRequestWrapper::newInstance(handle);
+  Local<Object> agentRequest = AgentRequestWrapper::newInstance(
+      request_property->handle);
 
   Local<Value> argv[] = {
     agentRequest,
-    String::NewFromUtf8(isolate, device)
+    String::NewFromUtf8(isolate, request_property->device)
   };
 
   Local<Function>::New(isolate, *wrap->getRequestPasskeyCb())->Call(
       isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
-static void agent_display_passkey(char *device, uint32_t passkey,
-    unsigned int entered, void *user_data) {
+static void agent_display_passkey(artik_bt_event event,
+    void *data, void *user_data) {
+  artik_bt_agent_passkey_property *passkey_property =
+    reinterpret_cast<artik_bt_agent_passkey_property *>(data);
+
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   AgentWrapper* wrap = reinterpret_cast<AgentWrapper*>(user_data);
 
   Handle<Value> argv[] = {
-    String::NewFromUtf8(isolate, device),
-    Uint32::New(isolate, passkey),
-    Uint32::New(isolate, entered)
+    String::NewFromUtf8(isolate, passkey_property->device),
+    Uint32::New(isolate, passkey_property->passkey),
+    Uint32::New(isolate, passkey_property->entered)
   };
   Local<Function>::New(isolate, *wrap->getDisplayPasskeyCb())->Call(
       isolate->GetCurrentContext()->Global(), 3, argv);
 }
 
-static void agent_request_confirmation(artik_bt_agent_request_handle handle,
-    char *device, uint32_t passkey, void *user_data) {
+static void agent_request_confirmation(artik_bt_event event,
+    void *data, void *user_data) {
+  artik_bt_agent_confirmation_property *confirmation_property =
+    reinterpret_cast<artik_bt_agent_confirmation_property *>(data);
+
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   AgentWrapper *wrap = reinterpret_cast<AgentWrapper*>(user_data);
 
-  Local<Value> agentRequest = AgentRequestWrapper::newInstance(handle);
+  Local<Value> agentRequest = AgentRequestWrapper::newInstance(
+      confirmation_property->handle);
   Handle<Value> argv[] = {
     agentRequest,
-    String::NewFromUtf8(isolate, device),
-    Uint32::New(isolate, passkey)
+    String::NewFromUtf8(isolate, confirmation_property->device),
+    Uint32::New(isolate, confirmation_property->passkey)
   };
   Local<Function>::New(isolate, *wrap->getRequestConfirmationCb())->Call(
       isolate->GetCurrentContext()->Global(), 3, argv);
 }
 
-static void agent_request_authorization(artik_bt_agent_request_handle handle,
-    char *device, void *user_data) {
+static void agent_request_authorization(artik_bt_event event,
+    void *data, void *user_data) {
+  artik_bt_agent_request_property *request_property =
+    reinterpret_cast<artik_bt_agent_request_property *>(data);
+
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   AgentWrapper *wrap = reinterpret_cast<AgentWrapper*>(user_data);
 
-  Local<Value> agentRequest = AgentRequestWrapper::newInstance(handle);
+  Local<Value> agentRequest = AgentRequestWrapper::newInstance(
+      request_property->handle);
   Handle<Value> argv[] = {
     agentRequest,
-    String::NewFromUtf8(isolate, device)
+    String::NewFromUtf8(isolate, request_property->device)
   };
   Local<Function>::New(isolate, *wrap->getRequestAuthorizationCb())->Call(
       isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
-static void agent_authorize_service(artik_bt_agent_request_handle handle,
-    char *device, char *uuid, void *user_data) {
+static void agent_authorize_service(artik_bt_event event,
+    void *data, void *user_data) {
+  artik_bt_agent_authorize_property *authorize_property =
+    reinterpret_cast<artik_bt_agent_authorize_property *>(data);
+
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   AgentWrapper *wrap = reinterpret_cast<AgentWrapper*>(user_data);
 
-  Local<Value> agentRequest = AgentRequestWrapper::newInstance(handle);
+  Local<Value> agentRequest = AgentRequestWrapper::newInstance(
+      authorize_property->handle);
   Handle<Value> argv[] = {
     agentRequest,
-    String::NewFromUtf8(isolate, device),
-    String::NewFromUtf8(isolate, uuid)
+    String::NewFromUtf8(isolate, authorize_property->device),
+    String::NewFromUtf8(isolate, authorize_property->uuid)
   };
   Local<Function>::New(isolate, *wrap->getAuthorizeServiceCb())->Call(
       isolate->GetCurrentContext()->Global(), 3, argv);
 }
 
-static void agent_cancel(void *user_data) {
+static void agent_cancel(artik_bt_event event,
+    void *data, void *user_data) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope handleScope(isolate);
   AgentWrapper *wrap = reinterpret_cast<AgentWrapper*>(user_data);
@@ -465,20 +493,28 @@ void AgentWrapper::New(const FunctionCallbackInfo<Value>& args) {
         new Persistent<Function>(isolate, Local<Function>::Cast(args[8])));
     obj->Wrap(args.This());
 
-    artik_bt_agent_callbacks callbacks {
-      agent_release,
-      agent_request_pincode,
-      agent_display_pincode,
-      agent_request_passkey,
-      agent_display_passkey,
-      agent_request_confirmation,
-      agent_request_authorization,
-      agent_authorize_service,
-      agent_cancel,
-      obj
+    artik_bt_callback_property agent_callbacks[] = {
+        {BT_EVENT_AGENT_RELEASE, agent_release, reinterpret_cast<void *>(obj)},
+        {BT_EVENT_AGENT_REQUEST_PINCODE, agent_request_pincode,
+            reinterpret_cast<void *>(obj)},
+        {BT_EVENT_AGENT_DISPLAY_PINCODE, agent_display_pincode,
+            reinterpret_cast<void *>(obj)},
+        {BT_EVENT_AGENT_REQUEST_PASSKEY, agent_request_passkey,
+            reinterpret_cast<void *>(obj)},
+        {BT_EVENT_AGENT_DISPLAY_PASSKEY, agent_display_passkey,
+            reinterpret_cast<void *>(obj)},
+        {BT_EVENT_AGENT_CONFIRM, agent_request_confirmation,
+            reinterpret_cast<void *>(obj)},
+        {BT_EVENT_AGENT_AUTHOREZE, agent_request_authorization,
+            reinterpret_cast<void *>(obj)},
+        {BT_EVENT_AGENT_AUTHOREZE_SERVICE, agent_authorize_service,
+            reinterpret_cast<void *>(obj)},
+        {BT_EVENT_AGENT_CANCEL, agent_cancel,
+            reinterpret_cast<void *>(obj)}
     };
 
-    obj->getObj()->agent_set_callback(&callbacks);
+    obj->getObj()->set_callbacks(agent_callbacks, 9);
+
     args.GetReturnValue().Set(args.This());
   } else {
     int argc = 9;

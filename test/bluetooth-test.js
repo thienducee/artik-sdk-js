@@ -272,18 +272,6 @@ testCase('Bluetooth', function() {
 		});
 	});
 
-	testCase('#get_device_property', function(){
-		assertions('Get all properties of a remote device', function() {
-			if (!remote_addr || !remote_addr.length)
-				this.skip();
-			properties = [ "Address", "Name", "Icon", "Alias", "Modalias" ];
-			for (var i =0; i < properties.length; i++) {
-				var property = bt.get_device_property(remote_addr, properties[i]);
-				assert.isString(property);
-			}
-		});
-	});
-
 	testCase('#connect_profile', function(){
 		assertions('Connect to a specific profile', function(done) {
 			if (!remote_addr || !remote_addr.length)

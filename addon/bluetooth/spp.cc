@@ -257,7 +257,8 @@ void SppSocketWrapper::write(const FunctionCallbackInfo<Value>& args) {
   }
 }
 
-static void _spp_release(void *user_data) {
+static void _spp_release(artik_bt_event event,
+    void *data, void *user_data) {
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   SppWrapper *wrap = reinterpret_cast<SppWrapper*>(user_data);
@@ -269,24 +270,33 @@ static void _spp_release(void *user_data) {
   wrap->emit(isolate, wrap, 1, argv);
 }
 
-static void _spp_new_connection(char *device_path, int fd, int version,
-    int features, void *user_data) {
+static void _spp_new_connection(artik_bt_event event,
+    void *data, void *user_data) {
+  artik_bt_spp_connect_property *spp_property =
+      reinterpret_cast<artik_bt_spp_connect_property *>(data);
+
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   SppWrapper *wrap = reinterpret_cast<SppWrapper*>(user_data);
 
   Persistent<Object>* spp_socket = SppSocketWrapper::newInstance(isolate,
-      device_path, fd, version, features);
+      spp_property->device_addr,
+      spp_property->fd,
+      spp_property->version,
+      spp_property->features);
   Handle<Value> argv[] = {
     String::NewFromUtf8(isolate, "new_connection"),
     Local<Object>::New(isolate, *spp_socket)
   };
 
-  wrap->addSocket(std::string(device_path), spp_socket);
+  wrap->addSocket(std::string(spp_property->device_addr), spp_socket);
   wrap->emit(isolate, wrap, 2, argv);
 }
 
-static void _spp_request_disconnect(char* device_path, void *user_data) {
+static void _spp_request_disconnect(artik_bt_event event,
+    void *data, void *user_data) {
+  char *device_path = reinterpret_cast<char *>(data);
+
   Isolate *isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
   SppWrapper *wrap = reinterpret_cast<SppWrapper*>(user_data);
@@ -508,10 +518,16 @@ void SppWrapper::spp_register_profile(
     return;
   }
 
-  err = bt->spp_set_callback(_spp_release,
-            _spp_new_connection,
-            _spp_request_disconnect,
-            obj);
+  artik_bt_callback_property spp_callbacks[] = {
+      {BT_EVENT_SPP_CONNECT, _spp_new_connection,
+          reinterpret_cast<void *>(obj)},
+      {BT_EVENT_SPP_RELEASE, _spp_release, reinterpret_cast<void *>(obj)},
+      {BT_EVENT_SPP_DISCONNECT, _spp_request_disconnect,
+          reinterpret_cast<void *>(obj)}
+  };
+
+  err = bt->set_callbacks(spp_callbacks, 3);
+
   if (err != S_OK) {
     bt->spp_unregister_profile();
     std::string msg = "Error: " + std::string(error_msg(err));

@@ -24,16 +24,8 @@ Bluetooth.prototype.stop_scan = function() {
 	return this.bt.stop_scan();
 };
 
-Bluetooth.prototype.get_devices = function() {
-	return this.bt.get_devices();
-};
-
-Bluetooth.prototype.get_paired_devices = function() {
-	return this.bt.get_paired_devices();
-};
-
-Bluetooth.prototype.get_connected_devices = function() {
-	return this.bt.get_connected_devices();
+Bluetooth.prototype.get_devices = function(type) {
+	return this.bt.get_devices(type);
 };
 
 Bluetooth.prototype.start_bond = function(addr) {
@@ -92,10 +84,6 @@ Bluetooth.prototype.set_pairable = function(val) {
 
 Bluetooth.prototype.set_pairableTimeout = function(val) {
 	return this.bt.set_pairableTimeout(val);
-}
-
-Bluetooth.prototype.get_device_property = function(addr, property) {
-	return this.bt.get_device_property(addr, property);
 }
 
 Bluetooth.prototype.connect_profile = function(addr, uuid) {

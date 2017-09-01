@@ -69,6 +69,12 @@ std::array<const char*, 3> BluetoothWrapper::bt_scan_types = {
   "le"
 };
 
+std::array<const char*, 3> BluetoothWrapper::bt_device_types = {
+  "paired",
+  "connected",
+  "all"
+};
+
 std::array<const char*, 6> BluetoothWrapper::bt_device_properties = {
   "Address",
   "Name",
@@ -339,9 +345,6 @@ void BluetoothWrapper::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "start_scan", start_scan);
   NODE_SET_PROTOTYPE_METHOD(tpl, "stop_scan", stop_scan);
   NODE_SET_PROTOTYPE_METHOD(tpl, "get_devices", get_devices);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "get_connected_devices",
-      get_connected_devices);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "get_paired_devices", get_paired_devices);
   NODE_SET_PROTOTYPE_METHOD(tpl, "start_bond", start_bond);
   NODE_SET_PROTOTYPE_METHOD(tpl, "stop_bond", stop_bond);
   NODE_SET_PROTOTYPE_METHOD(tpl, "connect", connect);
@@ -357,7 +360,6 @@ void BluetoothWrapper::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "set_discoverableTimeout",
       set_discoverableTimeout);
   NODE_SET_PROTOTYPE_METHOD(tpl, "is_scanning", is_scanning);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "get_device_property", get_device_property);
   NODE_SET_PROTOTYPE_METHOD(tpl, "get_adapter_info", get_adapter_info);
   NODE_SET_PROTOTYPE_METHOD(tpl, "remove_devices", remove_devices);
   NODE_SET_PROTOTYPE_METHOD(tpl, "connect_profile", connect_profile);
@@ -550,7 +552,25 @@ void BluetoothWrapper::get_devices(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  err = bt->get_devices(&devices, &num_devs);
+  if (args[0]->IsUndefined()
+    || !args[0]->IsString()
+    || args[1]->IsUndefined()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+  }
+
+  String::Utf8Value utf8Type(args[0]->ToString());
+  auto type = to_artik_parameter<artik_bt_device_type>(bt_device_types,
+    *utf8Type);
+  if (!type) {
+    std::string error = "Device type " + std::string(*utf8Type) +
+        " is not supported";
+    isolate->ThrowException(Exception::TypeError(
+            String::NewFromUtf8(isolate, error.c_str())));
+    return;
+  }
+
+  err = bt->get_devices(type.value(), &devices, &num_devs);
   if (err != S_OK) {
     std::string msg = "Error: " + std::string(error_msg(err));
     isolate->ThrowException(Exception::Error(
@@ -563,61 +583,7 @@ void BluetoothWrapper::get_devices(const FunctionCallbackInfo<Value>& args) {
       json_res ? json_res : "null data"));
   if (json_res)
     free(json_res);
-  bt->free_devices(devices, num_devs);
-}
-
-void BluetoothWrapper::get_paired_devices(
-    const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  BluetoothWrapper* obj = ObjectWrap::Unwrap<BluetoothWrapper>(args.Holder());
-  Bluetooth* bt = obj->getObj();
-  int num_devs = 0;
-  artik_bt_device *devices = NULL;
-  artik_error err = S_OK;
-
-  log_dbg("");
-
-  err = bt->get_paired_devices(&devices, &num_devs);
-  if (err != S_OK) {
-    std::string msg = "Error: " + std::string(error_msg(err));
-    isolate->ThrowException(Exception::Error(
-        String::NewFromUtf8(isolate, msg.c_str())));
-    return;
-  }
-
-  char* json_res = convert_devices_to_json(devices, num_devs);
-  args.GetReturnValue().Set(String::NewFromUtf8(isolate,
-      json_res ? json_res : "null data"));
-  if (json_res)
-    free(json_res);
-  bt->free_devices(devices, num_devs);
-}
-
-void BluetoothWrapper::get_connected_devices(
-    const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  BluetoothWrapper* obj = ObjectWrap::Unwrap<BluetoothWrapper>(args.Holder());
-  Bluetooth* bt = obj->getObj();
-  int num_devs = 0;
-  artik_bt_device *devices = NULL;
-  artik_error err = S_OK;
-
-  log_dbg("");
-
-  err = bt->get_connected_devices(&devices, &num_devs);
-  if (err != S_OK) {
-    std::string msg = "Error: " + std::string(error_msg(err));
-    isolate->ThrowException(Exception::Error(
-        String::NewFromUtf8(isolate, msg.c_str())));
-    return;
-  }
-
-  char* json_res = convert_devices_to_json(devices, num_devs);
-  args.GetReturnValue().Set(String::NewFromUtf8(isolate,
-      json_res ? json_res : "null data"));
-  if (json_res)
-    free(json_res);
-  bt->free_devices(devices, num_devs);
+  bt->free_devices(&devices, num_devs);
 }
 
 void BluetoothWrapper::start_bond(const FunctionCallbackInfo<Value>& args) {
@@ -1046,60 +1012,6 @@ void BluetoothWrapper::is_scanning(const FunctionCallbackInfo<Value>& args) {
   bool is_scanning = bt->is_scanning();
 
   args.GetReturnValue().Set(Boolean::New(isolate, is_scanning));
-}
-
-void BluetoothWrapper::get_device_property(
-    const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  Bluetooth* bt = ObjectWrap::Unwrap<BluetoothWrapper>(args.Holder())->getObj();
-
-  log_dbg("");
-
-  if (args.Length() != 2) {
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-        isolate, "Two arguments are expected")));
-    return;
-  }
-
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-        isolate, "First argument must be a String")));
-  }
-
-  if (args[1]->IsUndefined() || !args[1]->IsString()) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-        isolate, "Second argument must be a String")));
-  }
-
-  String::Utf8Value param0(args[0]->ToString());
-  char* addr = *param0;
-  String::Utf8Value param1(args[1]->ToString());
-  char* property = *param1;
-
-  auto it = std::find_if(
-      bt_device_properties.begin(),
-      bt_device_properties.end(),
-      [property](const char *str) { return !strcmp(property, str); });
-  if (it == bt_device_properties.end()) {
-    std::string err = "The property " + std::string(property) +
-        " is not supported.";
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-        isolate, err.c_str())));
-    return;
-  }
-
-  char *value = NULL;
-  artik_error err = bt->get_device_property(addr, property, &value);
-
-  if (err != S_OK) {
-    std::string msg = "Error: " + std::string(error_msg(err));
-    isolate->ThrowException(Exception::Error(
-        String::NewFromUtf8(isolate, msg.c_str())));
-    return;
-  }
-
-  args.GetReturnValue().Set(String::NewFromUtf8(isolate, value));
-  free(value);
 }
 
 void BluetoothWrapper::get_adapter_info(

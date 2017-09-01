@@ -50,6 +50,7 @@ class BluetoothWrapper : public node::ObjectWrap {
   static v8::Persistent<v8::Function> constructor;
 
   static std::array<const char*, 3> bt_scan_types;
+  static std::array<const char*, 3> bt_device_types;
   static std::array<const char*, 6> bt_device_properties;
   static std::unordered_map<int, const char*> bt_major_device_class;
   static std::unordered_map<int, const char*> bt_minor_device_class;
@@ -58,10 +59,6 @@ class BluetoothWrapper : public node::ObjectWrap {
   static void start_scan(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void stop_scan(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void get_devices(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void get_paired_devices(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void get_connected_devices(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
   static void start_bond(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void stop_bond(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void connect(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -78,8 +75,6 @@ class BluetoothWrapper : public node::ObjectWrap {
   static void set_discoverableTimeout(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void is_scanning(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void get_device_property(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
   static void get_adapter_info(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void remove_devices(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void connect_profile(const v8::FunctionCallbackInfo<v8::Value>& args);

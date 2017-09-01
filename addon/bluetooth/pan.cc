@@ -218,14 +218,7 @@ void PanWrapper::pan_get_connected(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  bool connected;
-  artik_error err = obj->pan_get_connected(&connected);
-  if (err != S_OK) {
-    std::string msg = "Error: " + std::string(error_msg(err));
-    isolate->ThrowException(Exception::Error(
-        String::NewFromUtf8(isolate, msg.c_str())));
-    return;
-  }
+  bool connected = obj->pan_is_connected();
 
   args.GetReturnValue().Set(Boolean::New(isolate, connected));
 }

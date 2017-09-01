@@ -235,56 +235,6 @@ properties.
 console.log('Discovered devices: ' + bt.get_devices());
 ```
 
-### get_connected_devices
-
-```javascript
-String get_connected_devices()
-```
-
-**Description**
-
-Return the list of Bluetooth devices to which the device is currently connected to.
-
-**Parameters**
-
-None
-
-**Return value**
-
-*String*: JSON formatted string containing the list of connected devices and their
-properties.
-
-**Example**
-
-```javascript
-console.log('Connected devices: ' + bt.get_connected_devices());
-```
-
-### get_paired_devices
-
-```javascript
-String get_paired_devices()
-```
-
-**Description**
-
-Return the list of Bluetooth devices with which the device is currently paired.
-
-**Parameters**
-
-None
-
-**Return value**
-
-*String*: JSON formatted string containing the list of paired devices and their
-properties.
-
-**Example**
-
-```javascript
-console.log('Paired devices: ' + bt.get_paired_devices());
-```
-
 ### start_bond
 
 ```javascript
@@ -591,30 +541,6 @@ None
 **Example**
 ```javascript
 bt.set_pairableTimeout(0);
-```
-
-### get_device_property
-```javascript
-String get_device_property(String addr, String property);
-```
-
-**Description**
-
-Get a property of a remote device.
-
-**Parameters**
-
-*String*: Bluetooth address of the remote device.
-*String*: The property type among the ones defined under [Property type](#remote-device-property)
-
-**Return value**
-
-*String*: The value of the property.
-
-**Example**
-```javascript
-var name = bt.get_device_property("01:02:03:04:05:06", "Name");
-console.log("Name of 01:02:03:04:05:06 is " + name);
 ```
 
 ### connect_profile

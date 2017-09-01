@@ -588,9 +588,9 @@ var type = avrcp.controller_get_type();
 console.log("Player type is " + type);
 ```
 
-### controller_get_browsable
+### controller_is_browsable
 ```javascript
-Boolean controller_get_browsable()
+Boolean controller_is_browsable()
 ```
 
 **Description**
@@ -607,7 +607,7 @@ None
 
 **Example**
 ```javascript
-var browsable = avrcp.controller_get_browsable();
+var browsable = avrcp.controller_is_browsable();
 console.log("Browsable: " + browsable);
 ```
 

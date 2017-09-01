@@ -699,8 +699,8 @@ static void on_services_discover(artik_bt_event event, void *data,
 
 GattClientWrapper::GattClientWrapper()
   : m_bt(new Bluetooth()) {
-  m_bt->set_callback(BT_EVENT_PF_CUSTOM, on_received, NULL);
-  m_bt->set_callback(BT_EVENT_GATT_PROPERTY, on_services_discover, this);
+  m_bt->set_callback(BT_EVENT_GATT_CHARACTERISTIC, on_received, NULL);
+  m_bt->set_callback(BT_EVENT_SERVICE_RESOLVED, on_services_discover, this);
 }
 
 GattClientWrapper::~GattClientWrapper() {

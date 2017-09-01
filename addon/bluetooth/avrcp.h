@@ -81,7 +81,7 @@ class AvrcpWrapper : public node::ObjectWrap {
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void avrcp_controller_get_type(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void avrcp_controller_get_browsable(
+  static void avrcp_controller_is_browsable(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void avrcp_controller_get_position(
       const v8::FunctionCallbackInfo<v8::Value>& args);
