@@ -264,7 +264,7 @@ void Lwm2mWrapper::client_connect(
   wrap->m_config.name = strndup(*client_name, strlen(*client_name));
   wrap->m_config.lifetime = args[3]->NumberValue();
 
-  // If TLS PSK parameters are passed
+  // If TLS PSK or TLS CERT parameters are passed
   if ((args.Length() > 6) &&
        args[5]->IsString() &&
        args[6]->IsString()) {
@@ -273,6 +273,60 @@ void Lwm2mWrapper::client_connect(
 
     wrap->m_config.tls_psk_identity = strndup(*identity, strlen(*identity));
     wrap->m_config.tls_psk_key = strndup(*secret_key, strlen(*secret_key));
+
+    if (args.Length() > 7 && args[7]->IsObject()) {
+      wrap->m_config.ssl_config = new artik_ssl_config;
+      auto use_se = js_object_attribute_to_cpp<bool>(args[7], "use_se");
+      auto client_cert =
+        js_object_attribute_to_cpp<std::string>(args[7], "client_cert");
+      auto client_private_key =
+        js_object_attribute_to_cpp<std::string>(args[7],
+                                                "client_private_key");
+
+      if (use_se && use_se.value()) {
+        wrap->m_config.ssl_config = new artik_ssl_config;
+        wrap->m_config.ssl_config->use_se = true;
+      } else if (client_cert && client_private_key) {
+        wrap->m_config.ssl_config->client_cert.data =
+          strdup(client_cert.value().c_str());
+        wrap->m_config.ssl_config->client_cert.len =
+          client_cert.value().size();
+        wrap->m_config.ssl_config->client_key.data =
+          strdup(client_private_key.value().c_str());
+        wrap->m_config.ssl_config->client_key.len =
+          client_private_key.value().size();
+      }
+
+      auto server_cert =
+        js_object_attribute_to_cpp<std::string>(args[7],
+            "server_or_root_cert");
+      if (server_cert) {
+        wrap->m_config.ssl_config->ca_cert.data =
+          strdup(server_cert.value().c_str());
+        wrap->m_config.ssl_config->ca_cert.len = server_cert.value().size();
+      }
+
+      auto verify_cert =
+        js_object_attribute_to_cpp<std::string>(args[7], "verify_cert");
+      if (verify_cert) {
+        if (verify_cert.value() == "none") {
+          wrap->m_config.ssl_config->verify_cert = ARTIK_SSL_VERIFY_NONE;
+        } else if (verify_cert.value() == "optional") {
+          wrap->m_config.ssl_config->verify_cert = ARTIK_SSL_VERIFY_OPTIONAL;
+        } else if (verify_cert.value() == "required") {
+          wrap->m_config.ssl_config->verify_cert = ARTIK_SSL_VERIFY_REQUIRED;
+        } else {
+          isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+            isolate,
+            "Wrong definition of verify_cert : expect 'none', 'optional' "
+            "or 'required'.")));
+          delete wrap->m_config.ssl_config;
+          return;
+        }
+      } else {
+        wrap->m_config.ssl_config->verify_cert = ARTIK_SSL_VERIFY_REQUIRED;
+      }
+    }
   }
 
   wrap->m_config.objects[ARTIK_LWM2M_OBJECT_DEVICE] = obj->create_device_object(
@@ -402,6 +456,7 @@ void Lwm2mWrapper::client_read_resource(
       CHECK_ARGUMENT_STRING(args[0])) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
   v8::String::Utf8Value uri(args[0]->ToString());

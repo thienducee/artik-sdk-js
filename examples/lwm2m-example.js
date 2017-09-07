@@ -1,11 +1,27 @@
 var readline = require('readline');
 var lwm2m = new(require('../src/lwm2m.js'))();
+var fs = require('fs');
 
 var server_id = 123;
 var server_uri = 'coaps://coaps-api.artik.cloud:5686';
 var lifetime = 30;
 var dtls_psk_id = '< DM enabled ARTIK Cloud Device ID >';
 var dtls_psk_key = '< DM enabled ARTIK Cloud Device Token >';
+var certificate_mode_config = null; // Certificate mode: disable
+
+/*
+var certificate_mode_config = { // Certificate mode: external client certificate
+    'use_se': true,
+    'client_cert': fs.readFileSync('path client cert.pem'),
+    'client_private_key': fs.readFileSync('path private key.pem'),
+    'server_cert': fs.readFileSync('path server cert.cert')
+};
+
+var certificate_mode_config = { // Certificate mode: client certificate stored in the SE
+    'use_se': true,
+    'server_cert': fs.readFileSync('path server cert.cert')
+};
+*/
 
 var objects = {
     device: {
@@ -67,8 +83,9 @@ rl.on('line', function(line) {
 
 
 lwm2m.on('started', function() {
+    console.log("start lwm2m connection");
     lwm2m.client_connect(server_id, server_uri, dtls_psk_id, lifetime, objects,
-        dtls_psk_id, dtls_psk_key);
+        dtls_psk_id, dtls_psk_key, certificate_mode_config);
 });
 
 lwm2m.on('error', function(err) {
@@ -90,5 +107,3 @@ process.on('SIGINT', function () {
     lwm2m.client_disconnect();
     process.exit(0);
 });
-
-

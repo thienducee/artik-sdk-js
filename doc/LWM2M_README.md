@@ -23,11 +23,10 @@ New instance.
 See [full example](#full-example)
 
 ## client_connect
-
 ```javascript
 String client_connect(Integer id, String uri, String name,
 				      Number lifetime, String json_objects,
-				      String psk_id, String psk_key)
+				      String psk_id, String psk_key, certificate_mode_config)
 ```
 
 **Description**
@@ -43,6 +42,56 @@ Create an LWM2M client and connect it to the server.
  - *String*: json_objects LWM2M objects to expose.
  - *String*: psk_id is the public identity for PSK based DTLS/TLS connection.
  - *String*: psk_key is the secret for PSK based DTLS/TLS connection.
+ - *Object*: Parameters for Certificate base DTLS/TLS connection.
+This object is structured as the following:
+```javascript
+{
+	/*
+	 * Use the certificate stored in the SE as the client certificate
+	 * When this field is true the field *client_cert* and *client_private_key* are ignored and optional.
+	 * When this field does not exist the *client_cert* and *client_private_key* must be filled.
+	 */
+	'use_se': Boolean,
+
+	/*
+	 * The client certificate use for DTLS/TLS connection.
+	 * This X509 certificate must be in PEM format.
+	 */
+	'client_cert': String,
+
+	/*
+	 * The client private key associated with the certificate in *client_cert*.
+	 * This private key must be in PEM format.
+	 */
+	'client_private_key': String,
+
+	/*
+	 * The server certificate or root CA.
+	 * For certificate based DTLS:
+	 *      This attribute is the server certificate and must be present.
+	 *
+	 * For PSK base DTLS:
+	 *      This attribute is not used.
+	 *
+	 *
+	 * For PSK/Certificate based TLS connection:
+	 *      This attribute is a root CA and is an optional attribute.
+	 *
+	 */
+	'server_or_root_cert': String,
+
+	/*
+	 * Verify the server certificate (only in TLS).
+	 *
+	 * "none" if no verification,
+	 * "optional" if optional verification,
+	 * "required" if the verification must be done.
+	 *
+	 * default value: "required"
+	 */
+	'verify_cert': String,
+}
+```
 
 **Return value**
 
