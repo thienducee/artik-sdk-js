@@ -113,7 +113,7 @@ try {
 # get
 
 ```javascript
-String get(String uri, String[] headers, Object ssl_config, function(String response))
+String get(String uri, String[] headers, Object ssl_config, function(String response, Number status))
 ```
 
 **Description**
@@ -176,10 +176,10 @@ var ssl_config = {
 
 ```
 
- - *function(String)*: optional callback function that will be called after
-performing the request asynchronously. Response from the host is passed as a
-parameter to the callback in a string. If no function is provided
-the request will be performed synchronously.
+ - *function(String, Number)*: optional callback function that will be
+called after performing the request asynchronously. The status and the response
+from the host are passed as parameters to the callback.
+If no function is provided, the request will be performed synchronously.
 
 **Return value**
 
@@ -193,7 +193,7 @@ See [Full example](#full-example)
 # post
 
 ```javascript
-String post(String uri, String[] headers, String body, Object ssl_config, function(String response))
+String post(String uri, String[] headers, String body, Object ssl_config, function(String response, Number status))
 ```
 
 **Description**
@@ -257,10 +257,10 @@ var ssl_config = {
 
 ```
 
- - *function(String)*: optional callback function that will be called after
-performing the request asynchronously. Response from the host is passed as a
-parameter to the callback in a string. If no function is provided
-the request will be performed synchronously.
+ - *function(String, Number)*: optional callback function that will be
+called after performing the request asynchronously. The status and the response
+from the host are passed as parameters to the callback.
+If no function is provided, the request will be performed synchronously.
 
 **Return value**
 
@@ -274,7 +274,7 @@ See [Full example](#full-example)
 # put
 
 ```javascript
-String put(String uri, String[] headers, String body, Object ssl_config, function(String response))
+String put(String uri, String[] headers, String body, Object ssl_config, function(String response, Number status))
 ```
 
 **Description**
@@ -338,10 +338,10 @@ var ssl_config = {
 
 ```
 
- - *function(String)*: optional callback function that will be called after
-performing the request asynchronously. Response from the host is passed as a
-parameter to the callback in a string. If no function is provided
-the request will be performed synchronously.
+ - *function(String, Number)*: optional callback function that will be
+called after performing the request asynchronously. The status and the response
+from the host are passed as parameters to the callback.
+If no function is provided, the request will be performed synchronously.
 
 **Return value**
 
@@ -355,7 +355,7 @@ See [Full example](#full-example)
 # delete
 
 ```javascript
-String delete(String uri, String[] headers, Object ssl_config, function(String response))
+String delete(String uri, String[] headers, Object ssl_config, function(String response, Number status))
 ```
 
 **Description**
@@ -418,10 +418,10 @@ var ssl_config = {
 
 ```
 
- - *function(String)*: optional callback function that will be called after
-performing the request asynchronously. Response from the host is passed as a
-parameter to the callback in a string. If no function is provided
-the request will be performed synchronously.
+ - *function(String, Number)*: optional callback function that will be
+called after performing the request asynchronously. The status and the response
+from the host are passed as parameters to the callback.
+If no function is provided, the request will be performed synchronously.
 
 **Return value**
 

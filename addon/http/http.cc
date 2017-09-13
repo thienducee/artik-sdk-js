@@ -135,39 +135,6 @@ static void updateSSLConfig(Isolate *isolate, Local<Value> val,
   *ssl_config = config;
 }
 
-static void cleanup_work(HttpAsyncWork* work) {
-  artik_http_headers* headers = work->headers;
-
-  log_dbg("");
-
-  /*
-    * properly release any memory allocation performed
-    * during headers construction
-    */
-  if (headers && headers->fields) {
-    for (int i=0; i < headers->num_fields; i++) {
-      if (headers->fields[i].name)
-        free(headers->fields[i].name);
-      if (headers->fields[i].data)
-        free(headers->fields[i].data);
-    }
-
-    free(headers->fields);
-    free(headers);
-    headers = NULL;
-  }
-
-  if (work->body)
-    free(work->body);
-  if (work->response)
-    free(work->response);
-  if (work->url)
-    free(work->url);
-
-  delete work;
-  work = NULL;
-}
-
 static int on_http_data(char *data, unsigned int len, void *user_data) {
   Isolate * isolate = Isolate::GetCurrent();
   v8::HandleScope handleScope(isolate);
@@ -206,88 +173,88 @@ static void on_http_error(artik_error result, void *user_data) {
     isolate->GetCurrentContext()->Global(), 1, argv);
 }
 
-static void HttpWorkAsyncGet(uv_work_t *req) {
-  HttpAsyncWork* work = static_cast<HttpAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->http->get(work->url, work->headers, &work->response,
-      &work->status, work->ssl);
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void HttpWorkAsyncPost(uv_work_t *req) {
-  HttpAsyncWork* work = static_cast<HttpAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->http->post(work->url, work->headers, work->body,
-      &work->response, &work->status, work->ssl);
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void HttpWorkAsyncPut(uv_work_t *req) {
-  HttpAsyncWork* work = static_cast<HttpAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->http->put(work->url, work->headers, work->body,
-      &work->response, &work->status, work->ssl);
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void HttpWorkAsyncDel(uv_work_t *req) {
-  HttpAsyncWork* work = static_cast<HttpAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->http->del(work->url, work->headers, &work->response,
-      &work->status, work->ssl);
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void HttpWorkAsyncComplete(uv_work_t *req, int status) {
+static void http_response_get_callback(artik_error result, int status,
+  char *response, void *user_data) {
   Isolate * isolate = Isolate::GetCurrent();
   v8::HandleScope handleScope(isolate);
-  HttpAsyncWork* work = static_cast<HttpAsyncWork*>(req->data);
+  HttpWrapper* wrap = reinterpret_cast<HttpWrapper*>(user_data);
 
   log_dbg("");
 
-  if (!work)
+  if (!wrap->getResponseGetCb())
     return;
 
-  /* If an error occurred, return error message as the response */
-  if (work->ret != S_OK)
-    work->response = strndup(error_msg(work->ret), MAX_ERRR_MSG_LEN);
-
-  /* Prepare the return values */
   Handle<Value> argv[] = {
-    Handle<Value>(String::NewFromUtf8(isolate, work->response)),
-    Handle<Value>(Int32::New(isolate, work->status))
+    Handle<Value>(String::NewFromUtf8(isolate, result != S_OK ?
+                                                error_msg(result) : response)),
+    Handle<Value>(v8::Integer::New(isolate, status)),
   };
 
-  /* Call the callback function */
-  Local<Function>::New(isolate, work->callback)->Call(
-      isolate->GetCurrentContext()->Global(), 2, argv);
+  Local<Function>::New(isolate, *wrap->getResponseGetCb())->Call(
+    isolate->GetCurrentContext()->Global(), 3, argv);
+}
 
-  /* Clean up */
-  cleanup_work(work);
+static void http_response_post_callback(artik_error result, int status,
+  char *response, void *user_data) {
+  Isolate * isolate = Isolate::GetCurrent();
+  v8::HandleScope handleScope(isolate);
+  HttpWrapper* wrap = reinterpret_cast<HttpWrapper*>(user_data);
+
+  log_dbg("");
+
+  if (!wrap->getResponsePostCb())
+    return;
+
+  Handle<Value> argv[] = {
+    Handle<Value>(String::NewFromUtf8(isolate, result != S_OK ?
+                                                error_msg(result) : response)),
+    Handle<Value>(v8::Integer::New(isolate, status)),
+  };
+
+  Local<Function>::New(isolate, *wrap->getResponsePostCb())->Call(
+    isolate->GetCurrentContext()->Global(), 3, argv);
+}
+
+static void http_response_put_callback(artik_error result, int status,
+  char *response, void *user_data) {
+  Isolate * isolate = Isolate::GetCurrent();
+  v8::HandleScope handleScope(isolate);
+  HttpWrapper* wrap = reinterpret_cast<HttpWrapper*>(user_data);
+
+  log_dbg("");
+
+  if (!wrap->getResponsePutCb())
+    return;
+
+  Handle<Value> argv[] = {
+    Handle<Value>(String::NewFromUtf8(isolate, result != S_OK ?
+                                                error_msg(result) : response)),
+    Handle<Value>(v8::Integer::New(isolate, status)),
+  };
+
+  Local<Function>::New(isolate, *wrap->getResponsePutCb())->Call(
+    isolate->GetCurrentContext()->Global(), 3, argv);
+}
+
+static void http_response_del_callback(artik_error result, int status,
+  char *response, void *user_data) {
+  Isolate * isolate = Isolate::GetCurrent();
+  v8::HandleScope handleScope(isolate);
+  HttpWrapper* wrap = reinterpret_cast<HttpWrapper*>(user_data);
+
+  log_dbg("");
+
+  if (!wrap->getResponseDelCb())
+    return;
+
+  Handle<Value> argv[] = {
+    Handle<Value>(String::NewFromUtf8(isolate, result != S_OK ?
+                                                error_msg(result) : response)),
+    Handle<Value>(v8::Integer::New(isolate, status)),
+  };
+
+  Local<Function>::New(isolate, *wrap->getResponseDelCb())->Call(
+    isolate->GetCurrentContext()->Global(), 3, argv);
 }
 
 HttpWrapper::HttpWrapper() {
@@ -467,23 +434,15 @@ void HttpWrapper::get(const FunctionCallbackInfo<Value>& args) {
 
   /* If callback is provided, make the call asynchronous */
   if (!args[3]->IsUndefined()) {
+    obj->m_response_get_cb = new v8::Persistent<v8::Function>();
+    obj->m_response_get_cb->Reset(isolate, Local<Function>::Cast(args[3]));
+
     v8::String::Utf8Value param0(args[0]->ToString());
+    const char *url = *param0;
+    artik_error ret = http->get_async(url, headers, http_response_get_callback,
+                                      reinterpret_cast<void*>(obj), ssl_config);
 
-    obj->m_work = new HttpAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->http = http;
-    obj->m_work->headers = headers;
-    obj->m_work->url = strndup(*param0, strlen(*param0));
-    obj->m_work->body = NULL;
-    obj->m_work->ssl = ssl_config;
-
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request), HttpWorkAsyncGet,
-        HttpWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 
   } else { /* Otherwise make the call directly */
     v8::String::Utf8Value param0(args[0]->ToString());
@@ -557,30 +516,24 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
 
   /* If callback is provided, make the call asynchronous */
   if (!args[4]->IsUndefined()) {
-    v8::String::Utf8Value param0(args[0]->ToString());
+    obj->m_response_post_cb = new v8::Persistent<v8::Function>();
+    obj->m_response_post_cb->Reset(isolate, Local<Function>::Cast(args[4]));
 
-    obj->m_work = new HttpAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->http = http;
-    obj->m_work->headers = headers;
-    obj->m_work->url = strndup(*param0, strlen(*param0));
-    obj->m_work->ssl = ssl_config;
+    v8::String::Utf8Value param0(args[0]->ToString());
+    const char *url = *param0;
+    const char *body = NULL;
 
     /* copy body data if provided */
     if (!args[2]->IsUndefined() && args[2]->IsString()) {
       v8::String::Utf8Value param2(args[2]->ToString());
-      obj->m_work->body = strndup(*param2, strlen(*param2));
-    } else {
-      obj->m_work->body = NULL;
+      body = strndup(*param2, strlen(*param2));
     }
 
-    Local<Function> callback = Local<Function>::Cast(args[4]);
-    obj->m_work->callback.Reset(isolate, callback);
+    artik_error ret = http->post_async(url, headers, body,
+                                      http_response_post_callback,
+                                      reinterpret_cast<void*>(obj), ssl_config);
 
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        HttpWorkAsyncPost, HttpWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 
   } else { /* Otherwise make the call directly */
     v8::String::Utf8Value param0(args[0]->ToString());
@@ -663,30 +616,24 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
 
   /* If callback is provided, make the call asynchronous */
   if (!args[4]->IsUndefined()) {
-    v8::String::Utf8Value param0(args[0]->ToString());
+    obj->m_response_put_cb = new v8::Persistent<v8::Function>();
+    obj->m_response_put_cb->Reset(isolate, Local<Function>::Cast(args[4]));
 
-    obj->m_work = new HttpAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->http = http;
-    obj->m_work->headers = headers;
-    obj->m_work->url = strndup(*param0, strlen(*param0));
-    obj->m_work->ssl = ssl_config;
+    v8::String::Utf8Value param0(args[0]->ToString());
+    const char *url = *param0;
+    const char *body = NULL;
 
     /* copy body data if provided */
     if (!args[2]->IsUndefined() && args[2]->IsString()) {
       v8::String::Utf8Value param2(args[2]->ToString());
-      obj->m_work->body = strndup(*param2, strlen(*param2));
-    } else {
-      obj->m_work->body = NULL;
+      body = strndup(*param2, strlen(*param2));
     }
 
-    Local<Function> callback = Local<Function>::Cast(args[4]);
-    obj->m_work->callback.Reset(isolate, callback);
+    artik_error ret = http->put_async(url, headers, body,
+                                      http_response_put_callback,
+                                      reinterpret_cast<void*>(obj), ssl_config);
 
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        HttpWorkAsyncPut, HttpWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 
   } else { /* Otherwise make the call directly */
     v8::String::Utf8Value param0(args[0]->ToString());
@@ -769,23 +716,15 @@ void HttpWrapper::del(const FunctionCallbackInfo<Value>& args) {
 
   /* If callback is provided, make the call asynchronous */
   if (!args[3]->IsUndefined()) {
+    obj->m_response_del_cb = new v8::Persistent<v8::Function>();
+    obj->m_response_del_cb->Reset(isolate, Local<Function>::Cast(args[3]));
+
     v8::String::Utf8Value param0(args[0]->ToString());
+    const char *url = *param0;
+    artik_error ret = http->del_async(url, headers, http_response_del_callback,
+                                      reinterpret_cast<void*>(obj), ssl_config);
 
-    obj->m_work = new HttpAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->http = http;
-    obj->m_work->headers = headers;
-    obj->m_work->url = strndup(*param0, strlen(*param0));
-    obj->m_work->body = NULL;
-    obj->m_work->ssl = ssl_config;
-
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        HttpWorkAsyncDel, HttpWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 
   } else { /* Otherwise make the call directly */
     v8::String::Utf8Value param0(args[0]->ToString());

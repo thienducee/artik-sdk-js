@@ -29,19 +29,6 @@
 
 namespace artik {
 
-struct HttpAsyncWork {
-  uv_work_t                     request;
-  v8::Persistent<v8::Function>  callback;
-  artik_error                   ret;
-  Http*                         http;
-  artik_http_headers*           headers;
-  char*                         url;
-  char*                         response;
-  char*                         body;
-  int                           status;
-  artik_ssl_config*             ssl;
-};
-
 class HttpWrapper : public node::ObjectWrap {
  public:
   static void Init(v8::Local<v8::Object> exports);
@@ -49,6 +36,14 @@ class HttpWrapper : public node::ObjectWrap {
   Http* getObj() { return m_http; }
   v8::Persistent<v8::Function>* getDataCb() { return m_data_cb; }
   v8::Persistent<v8::Function>* getErrorCb() { return m_error_cb; }
+  v8::Persistent<v8::Function>* getResponseGetCb()
+                                                { return m_response_get_cb; }
+  v8::Persistent<v8::Function>* getResponsePostCb()
+                                                { return m_response_post_cb; }
+  v8::Persistent<v8::Function>* getResponsePutCb()
+                                                { return m_response_put_cb; }
+  v8::Persistent<v8::Function>* getResponseDelCb()
+                                                { return m_response_del_cb; }
 
  private:
   HttpWrapper();
@@ -64,9 +59,12 @@ class HttpWrapper : public node::ObjectWrap {
   static void del(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   Http* m_http;
-  HttpAsyncWork* m_work;
   v8::Persistent<v8::Function>* m_data_cb;
   v8::Persistent<v8::Function>* m_error_cb;
+  v8::Persistent<v8::Function>* m_response_get_cb;
+  v8::Persistent<v8::Function>* m_response_post_cb;
+  v8::Persistent<v8::Function>* m_response_put_cb;
+  v8::Persistent<v8::Function>* m_response_del_cb;
 };
 
 }  // namespace artik

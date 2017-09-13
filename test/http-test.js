@@ -327,7 +327,7 @@ testCase('HTTP', function() {
 
 			http.get("https://httpbin.org/get", headers, null, function(response, status) {
 				console.log("GET - status " + status + " - response: " + response);
-				assert.equal(status, 0);
+				assert.equal(response, "HTTP error");
 				done();
 			});
 
