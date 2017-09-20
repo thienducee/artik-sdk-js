@@ -505,9 +505,9 @@ void AgentWrapper::New(const FunctionCallbackInfo<Value>& args) {
             reinterpret_cast<void *>(obj)},
         {BT_EVENT_AGENT_CONFIRM, agent_request_confirmation,
             reinterpret_cast<void *>(obj)},
-        {BT_EVENT_AGENT_AUTHOREZE, agent_request_authorization,
+        {BT_EVENT_AGENT_AUTHORIZE, agent_request_authorization,
             reinterpret_cast<void *>(obj)},
-        {BT_EVENT_AGENT_AUTHOREZE_SERVICE, agent_authorize_service,
+        {BT_EVENT_AGENT_AUTHORIZE_SERVICE, agent_authorize_service,
             reinterpret_cast<void *>(obj)},
         {BT_EVENT_AGENT_CANCEL, agent_cancel,
             reinterpret_cast<void *>(obj)}
