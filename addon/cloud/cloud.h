@@ -45,8 +45,10 @@ struct CloudAsyncWork {
   char* action;
   char* message;
   char* name;
+  char* data;
   bool properties;
   bool shared;
+  bool timestamp;
   int count;
   int offset;
   char* response;
@@ -85,6 +87,10 @@ class CloudWrapper : public node::ObjectWrap {
   static void delete_device_token(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void delete_device(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_device_properties(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void set_device_server_properties(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
   static void sdr_start_registration(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void sdr_registration_status(

@@ -486,6 +486,76 @@ delete_device_token('<device ID>', function(response){
 });
 ```
 
+## get_device_properties
+
+```javascript
+String get_device_properties(String device_id, Boolean timestamp, function(String response) = undefined, Object ssl_config = undefined)
+```
+
+**Description**
+
+Get a device's properties (server/system/device properties)
+
+**Parameters**
+
+ - *String*: device ID whose properties will be read.
+ - *Boolean*: include timestamp.
+ - *function(String)*: optional callback function that will be called after
+performing the request asynchronously. Response from the cloud is passed as a
+parameter to the callback in a JSON formatted string. If no function is provided
+the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
+
+**Return value**
+
+*Undefined* if the callback function is provided, a JSON formatted *String*
+containing the response from the cloud otherwise (synchronous call).
+
+**Example**
+
+```javascript
+get_device_properties('<device ID>', true, function(response){
+	console.log('Response: ' + response);
+});
+```
+
+## set_device_server_properties
+
+```javascript
+String set_device_server_properties(String device_id, String data, function(String response) = undefined, Object ssl_config = undefined)
+```
+
+**Description**
+
+Set a device's server properties
+
+**Parameters**
+
+ - *String*: device ID whose properties will be read.
+ - *String*: JSON data for setting a device's server properties.
+ - *function(String)*: optional callback function that will be called after
+performing the request asynchronously. Response from the cloud is passed as a
+parameter to the callback in a JSON formatted string. If no function is provided
+the request will be performed synchronously.
+ - *Object*: optional object containing the different parameters as CA certificate, client certificate,
+client key, enabling Secure Element and defining the level of verification of the server
+certificate. See the method send_message for ssl_config structure.
+
+**Return value**
+
+*Undefined* if the callback function is provided, a JSON formatted *String*
+containing the response from the cloud otherwise (synchronous call).
+
+**Example**
+
+```javascript
+set_device_server_properties('<device ID>', <data>, function(response){
+	console.log('Response: ' + response);
+});
+```
+
 ## sdr_start_registration
 
 ```javascript

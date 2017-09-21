@@ -19,6 +19,8 @@ var device_id		= process.env.CLOUD_DEVICE_ID;
 var message		= process.env.CLOUD_MESSAGE;
 var action		= process.env.CLOUD_ACTION;
 var device_type_id	= process.env.CLOUD_DEVICE_TYPE_ID;
+var server_props	= process.env.CLOUD_SERVER_PROPS;
+var timestamp		= process.env.CLOUD_ENABLE_TIMESTAMP == 1 ? true : false;
 var cloud		= new artik.cloud(auth_token);
 var user_id;
 var device_id_1;
@@ -112,7 +114,7 @@ testCase('Cloud', function() {
 			done();
 		});
 
-		assertions('Get Device without properties - Calllback', function(done) {
+		assertions('Get Device without properties - Callback', function(done) {
 
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
@@ -124,7 +126,7 @@ testCase('Cloud', function() {
 			}, ssl_config);
 		});
 
-		assertions('Get Device with properties - Calllback', function(done) {
+		assertions('Get Device with properties - Callback', function(done) {
 
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
@@ -149,7 +151,7 @@ testCase('Cloud', function() {
 			done();
 		});
 
-		assertions('Get User Device Types - Calllback', function(done) {
+		assertions('Get User Device Types - Callback', function(done) {
 
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
@@ -202,7 +204,7 @@ testCase('Cloud', function() {
 
 		});
 
-		assertions('Delete Device Token - Calllback', function(done) {
+		assertions('Delete Device Token - Callback', function(done) {
 
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
@@ -230,7 +232,7 @@ testCase('Cloud', function() {
 
 		});
 
-		assertions('Update Device Token - Calllback', function(done) {
+		assertions('Update Device Token - Callback', function(done) {
 
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
@@ -246,55 +248,105 @@ testCase('Cloud', function() {
 
 	testCase('#add_device()', function() {
 
-	    assertions('add device', function(done) {
+		assertions('add device', function(done) {
 
-	        if (!user_id || !device_type_id || !user_id.length || !device_type_id.length)
-	            this.skip();
+			if (!user_id || !device_type_id || !user_id.length || !device_type_id.length)
+				this.skip();
 
-	        var response = cloud.add_device(user_id, device_type_id, "ARTIK_UT_TEST1", ssl_config);
-	        assert.notInclude(response, "error");
-	        device_id_1 = JSON.parse(response).data.id;
-	        done();
+			var response = cloud.add_device(user_id, device_type_id, "ARTIK_UT_TEST1", ssl_config);
+			assert.notInclude(response, "error");
+			device_id_1 = JSON.parse(response).data.id;
+			done();
 
-	    });
+		});
 
-	    assertions('add device - Calllback', function(done) {
+		assertions('add device - Callback', function(done) {
 
-	        if (!user_id || !device_type_id || !user_id.length || !device_type_id.length)
-	            this.skip();
+			if (!user_id || !device_type_id || !user_id.length || !device_type_id.length)
+				this.skip();
 
-	        cloud.add_device(user_id, device_type_id, "ARTIK_UT_TEST2", function(response) {
-	            console.log(response);
-	            assert.notInclude(response, "error");
-	            device_id_2 = JSON.parse(response).data.id;
-	            done();
-	        }, ssl_config);
-	    });
+			cloud.add_device(user_id, device_type_id, "ARTIK_UT_TEST2", function(response) {
+				console.log(response);
+				assert.notInclude(response, "error");
+				device_id_2 = JSON.parse(response).data.id;
+				done();
+			}, ssl_config);
+		});
 	});
 
 	testCase('#delete_device()', function() {
 
-	    assertions('delete device', function(done) {
+		assertions('delete device', function(done) {
 
-	        if (!device_id_1 || !device_id_1.length)
-	            this.skip();
+			if (!device_id_1 || !device_id_1.length)
+				this.skip();
 
-	        var response = cloud.delete_device(device_id_1, ssl_config);
-	        assert.notInclude(response, "error");
-	        done();
+			var response = cloud.delete_device(device_id_1, ssl_config);
+			assert.notInclude(response, "error");
+			done();
 
-	    });
+		});
 
-	    assertions('delete device - Calllback', function(done) {
+		assertions('delete device - Callback', function(done) {
 
-	        if (!device_id_2 || !device_id_2.length)
-	            this.skip();
+			if (!device_id_2 || !device_id_2.length)
+				this.skip();
 
-	        cloud.delete_device(device_id_2, function(response) {
-	            console.log(response);
-	            assert.notInclude(response, "error");
-	            done();
-	        }, ssl_config);
-	    });
+			cloud.delete_device(device_id_2, function(response) {
+				console.log(response);
+				assert.notInclude(response, "error");
+				done();
+			}, ssl_config);
+		});
+	});
+
+	testCase('#set_device_server_properties()', function () {
+
+		assertions('set device server properties', function(done) {
+
+			if (!device_id | !server_props | !device_id.length | !server_props.length)
+				this.skip();
+
+			var response = cloud.set_device_server_properties(device_id, server_props, ssl_config);
+			assert.notInclude(response, "error");
+			done();
+		});
+
+		assertions('set device server properties - Callback', function(done) {
+
+			if (!device_id | !server_props | !device_id.length | !server_props.length)
+				this.skip();
+
+			cloud.set_device_server_properties(device_id, server_props, function(response) {
+				console.log(response);
+				assert.notInclude(response, "error");
+				done();
+			}, ssl_config);
+		})
+	});
+
+	testCase('#get_device_properties()', function () {
+
+		assertions('get device properties', function(done) {
+
+			if (!device_id | !device_id.length)
+				this.skip();
+
+			var response = cloud.get_device_properties(device_id, timestamp, ssl_config);
+			assert.notInclude(response, "error");
+			done();
+		});
+
+		assertions('get device properties - Callback', function(done) {
+
+			if (!device_id | !device_id.length)
+				this.skip();
+
+			cloud.get_device_properties(device_id, timestamp, function(response) {
+				console.log(response);
+				assert.notInclude(response, "error");
+				done();
+			}, ssl_config);
+		})
 	});
 });

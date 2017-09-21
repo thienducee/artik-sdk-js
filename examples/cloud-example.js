@@ -7,15 +7,17 @@ var device_id = '';
 var user_id = '';
 var message = '';
 var action = '';
+var server_props = '';
+var timestamp = false;
 
 try{
-    opt.setopt("t:d:u:m:a:r:sv");
+    opt.setopt("t:d:u:m:a:b:pr:sv");
 } catch (e){
    switch (e.type) {
         case "unknown":
             console.log("Unknown option: -%s", e.opt);
-            console.log("Usage: node cloud-example.js [-t <access token>] [-d <device id>] [-u <user id>] " + 
-            			"[-m <JSON type test message>] [-a <JSON type action>] " + 
+            console.log("Usage: node cloud-example.js [-t <access token>] [-d <device id>] [-u <user id>] " +
+            			"[-m <JSON type test message>] [-a <JSON type action>] " +
             			"[-s for enabling SDR (Secure Device Registered) test] " +
             			"[-v for verifying root certificate] [-r <root CA file>]");
             break;
@@ -51,6 +53,12 @@ opt.getopt(function (o, p){
     case 'a':
     	action = String(p);
     	break;
+    case 'b':
+        server_props = String(p);
+        break;
+    case 'p':
+        timestamp = true;
+        break;
     case 'r':
     	var data = fs.readFileSync(String(p));
     	ssl_config.ca_cert = Buffer.from(data);
@@ -63,9 +71,10 @@ opt.getopt(function (o, p){
     	break;
     default:
         console.log("Usage: node cloud-example.js [-t <access token>] [-d <device id>] [-u <user id>] " + 
-        			"[-m <JSON type test message>] [-a <JSON type action>] " + 
-        			"[-s for enabling SDR (Secure Device Registered) test] " +
-        			"[-v for verifying root certificate] [-r <root CA file>]");
+                    "[-m <JSON type test message>] [-a <JSON type action>] " +
+                    "[-b <data JSON>] [-p enables timestamp] " +
+                    "[-s for enabling SDR (Secure Device Registered) test] " +
+                    "[-v for verifying root certificate] [-r <root CA file>]");
         process.exit(0);
     }
 });
@@ -114,4 +123,12 @@ artik_cloud.update_device_token(device_id, function(response) {
 
 artik_cloud.delete_device_token(device_id, function(response) {
 	console.log("Delete Device Token - response: " + response);
+}, ssl_config);
+
+artik_cloud.set_device_server_properties(device_id, server_props, function(response) {
+    console.log("Set Device Server Properties - response: " + response);
+}, ssl_config);
+
+artik_cloud.get_device_properties(device_id, timestamp, function(response) {
+    console.log("Get Device Properties - response: " + response);
 }, ssl_config);

@@ -151,6 +151,8 @@ static void cleanup_work(CloudAsyncWork* work) {
     free(work->response);
   if (work->name)
     free(work->name);
+  if (work->data)
+    free(work->data);
   if (work->ssl_config)
     free(work->ssl_config);
 
@@ -368,6 +370,34 @@ static void CloudWorkAsyncDeleteDevice(uv_work_t *req) {
   }
 }
 
+static void CloudWorkAsyncGetDeviceProps(uv_work_t *req) {
+  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
+
+  log_dbg("");
+
+  work->response = NULL;
+  work->ret = work->cloud->get_device_properties(work->device_id,
+      work->timestamp, &work->response, work->ssl_config);
+  if (work->ret == E_INTERRUPTED) {
+    cleanup_work(work);
+    return;
+  }
+}
+
+static void CloudWorkAsyncSetDeviceServerProps(uv_work_t *req) {
+  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
+
+  log_dbg("");
+
+  work->response = NULL;
+  work->ret = work->cloud->set_device_server_properties(work->device_id,
+      work->data, &work->response, work->ssl_config);
+  if (work->ret == E_INTERRUPTED) {
+    cleanup_work(work);
+    return;
+  }
+}
+
 static void CloudWorkAsyncComplete(uv_work_t *req, int status) {
   Isolate * isolate = Isolate::GetCurrent();
   v8::HandleScope handleScope(isolate);
@@ -483,6 +513,10 @@ void CloudWrapper::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "update_device_token", update_device_token);
   NODE_SET_PROTOTYPE_METHOD(tpl, "delete_device_token", delete_device_token);
   NODE_SET_PROTOTYPE_METHOD(tpl, "delete_device", delete_device);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "get_device_properties",
+                            get_device_properties);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "set_device_server_properties",
+                            set_device_server_properties);
   NODE_SET_PROTOTYPE_METHOD(tpl, "sdr_start_registration",
                             sdr_start_registration);
   NODE_SET_PROTOTYPE_METHOD(tpl, "sdr_registration_status",
@@ -1158,6 +1192,127 @@ void CloudWrapper::delete_device(
     const char *device_id = *param0;
     char *response = NULL;
     artik_error ret = cloud->delete_device(device_id, &response, ssl_config);
+
+    if (ret != S_OK && !response)
+      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
+
+    free(response);
+  }
+}
+
+void CloudWrapper::get_device_properties(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
+  Cloud *cloud = obj->getObj();
+  artik_ssl_config *ssl_config = NULL;
+
+  log_dbg("");
+
+  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments")));
+    return;
+  }
+
+  v8::String::Utf8Value param0(args[0]->ToString());
+
+  if (args[1]->IsUndefined() || !args[1]->IsBoolean()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments")));
+    return;
+  }
+
+  bool timestamp = args[1]->BooleanValue();
+
+  /* SSL Configuration */
+  if (!args[2]->IsUndefined() && args[2]->IsObject())
+    updateSSLConfig(isolate, args[2], &ssl_config);
+
+  /* If callback is provided, make the call asynchronous */
+  if (!args[3]->IsUndefined()) {
+    obj->m_work = new CloudAsyncWork();
+    obj->m_work->request.data = obj->m_work;
+    obj->m_work->cloud = cloud;
+    obj->m_work->device_id = strndup(*param0, strlen(*param0));
+    obj->m_work->timestamp = timestamp;
+    obj->m_work->ssl_config = ssl_config;
+
+    Local<Function> callback = Local<Function>::Cast(args[3]);
+    obj->m_work->callback.Reset(isolate, callback);
+
+    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
+        CloudWorkAsyncGetDeviceProps, CloudWorkAsyncComplete);
+
+    args.GetReturnValue().Set(Undefined(isolate));
+  } else { /* Otherwise make the call directly */
+    const char *device_id = *param0;
+    char *response = NULL;
+    artik_error ret = cloud->get_device_properties(device_id, timestamp,
+                                                  &response, ssl_config);
+
+    if (ret != S_OK && !response)
+      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
+
+    free(response);
+  }
+}
+
+void CloudWrapper::set_device_server_properties(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
+  Cloud *cloud = obj->getObj();
+  artik_ssl_config *ssl_config = NULL;
+
+  log_dbg("");
+
+  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments")));
+    return;
+  }
+
+  v8::String::Utf8Value param0(args[0]->ToString());
+
+  if (args[1]->IsUndefined() || !args[1]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments")));
+    return;
+  }
+
+  v8::String::Utf8Value param1(args[1]->ToString());
+
+  /* SSL Configuration */
+  if (!args[2]->IsUndefined() && args[2]->IsObject())
+    updateSSLConfig(isolate, args[2], &ssl_config);
+
+  /* If callback is provided, make the call asynchronous */
+  if (!args[3]->IsUndefined()) {
+    obj->m_work = new CloudAsyncWork();
+    obj->m_work->request.data = obj->m_work;
+    obj->m_work->cloud = cloud;
+    obj->m_work->device_id = strndup(*param0, strlen(*param0));
+    obj->m_work->data = strndup(*param1, strlen(*param1));
+    obj->m_work->ssl_config = ssl_config;
+
+    Local<Function> callback = Local<Function>::Cast(args[3]);
+    obj->m_work->callback.Reset(isolate, callback);
+
+    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
+        CloudWorkAsyncSetDeviceServerProps, CloudWorkAsyncComplete);
+
+    args.GetReturnValue().Set(Undefined(isolate));
+  } else { /* Otherwise make the call directly */
+    const char *device_id = *param0;
+    const char *data = *param1;
+    char *response = NULL;
+    artik_error ret = cloud->set_device_server_properties(device_id, data,
+                                                  &response, ssl_config);
 
     if (ret != S_OK && !response)
       response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
