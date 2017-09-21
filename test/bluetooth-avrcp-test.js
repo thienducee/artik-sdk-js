@@ -376,13 +376,13 @@ testCase('Avrcp', function() {
 		});
 	});
 
-	testCase('#controller_get_browsable', function() {
+	testCase('#controller_is_browsable', function() {
 		assertions('Is browsable', function() {
 			if (is_skipped || !is_browsable)
 				this.skip();
 
-			assert.isBoolean(avrcp.controller_get_browsable());
-			console.log("Browsable : " + avrcp.controller_get_browsable());
+			assert.isBoolean(avrcp.controller_is_browsable());
+			console.log("Browsable : " + avrcp.controller_is_browsable());
 		});
 	});
 

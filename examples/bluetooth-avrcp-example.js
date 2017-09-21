@@ -6,7 +6,7 @@ var avrcp = new bluetooth.Avrcp();
 var remote_addr = null;
 
 function list_item(args, help) {
-	var is_browsable = avrcp.controller_get_browsable();
+	var is_browsable = avrcp.controller_is_browsable();
 	if (!is_browsable) {
 		console.log("list-item is not supported by " + remote_addr);
 		return;
@@ -37,7 +37,7 @@ function list_item(args, help) {
 }
 
 function change_folder(args, help) {
-	var is_browsable = avrcp.controller_get_browsable();
+	var is_browsable = avrcp.controller_is_browsable();
 	if (!is_browsable)
 	{
 		console.log("change-folder is not supported by " + remote_addr);
@@ -70,7 +70,7 @@ function set_repeat(args, help) {
 }
 
 function play_item(args, help) {
-	var is_browsable = avrcp.controller_get_browsable();
+	var is_browsable = avrcp.controller_is_browsable();
 	if (!is_browsable)
 	{
 		console.log("play-item is not supported by " + remote_addr);
@@ -87,7 +87,7 @@ function play_item(args, help) {
 }
 
 function addtoplay(args, help) {
-	var is_browsable = avrcp.controller_get_browsable();
+	var is_browsable = avrcp.controller_is_browsable();
 	if (!is_browsable)
 	{
 		console.log("addtoplay is not supported by " + remote_addr);
