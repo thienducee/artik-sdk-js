@@ -108,6 +108,31 @@ testCase('Time', function() {
 
 	});
 
+	var timestamp = 1500472980;
+	testCase('#convert_timestamp_to_time()', function() {
+
+		assertions('Convert timestamp to time', function(done) {
+			console.log("Timestamp is: " + timestamp + " s");
+			var date = module.convert_timestamp_to_time(timestamp);
+			console.log("Date from timestamp is: " + date.toUTCString());
+			assert.equal(date.toUTCString(), "Wed, 19 Jul 2017 14:03:00 GMT");
+			done();
+		});
+
+	});
+
+	testCase('#convert_time_to_timestamp()', function() {
+
+		assertions('Convert time to timestamp', function(done) {
+			console.log("Date is: " + test_date.toUTCString());
+			var ts = module.convert_time_to_timestamp(test_date);
+			console.log("Timestamp from date is: " + ts + " s");
+			assert.equal(ts, 1500472980);
+			done();
+		});
+
+	});
+
 	testCase('#sync_ntp()', function() {
 
 

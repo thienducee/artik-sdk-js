@@ -86,9 +86,11 @@ void AlarmWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   int lenArg = 0;
 
-  if (args.Length() > lenArg)
+  if (args.Length() > lenArg) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
 
   if (args.IsConstructCall()) {
     AlarmWrapper* obj = new AlarmWrapper();
@@ -112,9 +114,11 @@ Local<Object> AlarmWrapper::NewInstance() {
 
 void AlarmWrapper::get_delay(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
   Alarm* obj = ObjectWrap::Unwrap<AlarmWrapper>(args.Holder())->getObj();
   artik_msecond msecond;
   artik_error ret = obj->get_delay(&msecond);
@@ -158,6 +162,10 @@ void TimeWrapper::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(modal, "create_alarm_second", create_alarm_second);
   NODE_SET_PROTOTYPE_METHOD(modal, "create_alarm_date", create_alarm_date);
   NODE_SET_PROTOTYPE_METHOD(modal, "sync_ntp", sync_ntp);
+  NODE_SET_PROTOTYPE_METHOD(modal, "convert_timestamp_to_time",
+                                    convert_timestamp_to_time);
+  NODE_SET_PROTOTYPE_METHOD(modal, "convert_time_to_timestamp",
+                                    convert_time_to_timestamp);
 
   constructor.Reset(isolate, modal->GetFunction());
   exports->Set(String::NewFromUtf8(isolate, "time"), modal->GetFunction());
@@ -168,9 +176,11 @@ void TimeWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   int lenArg = 0;
 
-  if (args.Length() != lenArg)
+  if (args.Length() != lenArg) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
   if (args.IsConstructCall()) {
     TimeWrapper* obj = NULL;
     obj = new TimeWrapper();
@@ -233,9 +243,11 @@ void TimeWrapper::set_time(const FunctionCallbackInfo<Value>& args) {
 
 void TimeWrapper::get_time(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
 
   Time* obj = ObjectWrap::Unwrap<TimeWrapper>(args.Holder())->getObj();
   artik_time date;
@@ -260,9 +272,11 @@ void TimeWrapper::get_time(const FunctionCallbackInfo<Value>& args) {
 
 void TimeWrapper::get_time_str(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 2)
+  if (args.Length() != 2) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
   Time* obj = ObjectWrap::Unwrap<TimeWrapper>(args.Holder())->getObj();
   char date[128] = "";
   obj->get_time_str(date, 128, *String::Utf8Value(args[0]->ToString()),
@@ -272,9 +286,11 @@ void TimeWrapper::get_time_str(const FunctionCallbackInfo<Value>& args) {
 
 void TimeWrapper::get_tick(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
   Time* obj = ObjectWrap::Unwrap<TimeWrapper>(args.Holder())->getObj();
 
   args.GetReturnValue().Set(Number::New(isolate, obj->get_tick()));
@@ -282,9 +298,11 @@ void TimeWrapper::get_tick(const FunctionCallbackInfo<Value>& args) {
 
 void TimeWrapper::sync_ntp(const FunctionCallbackInfo<v8::Value>& args) {
     Isolate* isolate = args.GetIsolate();
-    if (args.Length() != 1)
+    if (args.Length() != 1) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong number of arguments")));
+      return;
+    }
 
     String::Utf8Value param0(args[0]->ToString());
     char* hostname = *param0;
@@ -292,13 +310,104 @@ void TimeWrapper::sync_ntp(const FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(Number::New(isolate, obj->sync_ntp(hostname)));
 }
 
+void TimeWrapper::convert_timestamp_to_time(
+                                  const FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+
+  if (args.Length() != 1) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (!args[0]->IsNumber()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Invalid argument")));
+    return;
+  }
+
+  int64_t timestamp = args[0]->IntegerValue();
+  artik_time date;
+  Time* obj = ObjectWrap::Unwrap<TimeWrapper>(args.Holder())->getObj();
+
+  artik_error ret = obj->convert_timestamp_to_time(timestamp, &date);
+  if (ret != S_OK) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, error_msg(ret))));
+    return;
+  }
+
+  char str[128];
+  snprintf(str, sizeof(str),
+      "new Date(Date.UTC(%d, %.2d, %.2d, %.2d, %.2d, %.2d))",
+      date.year, date.month-1, date.day, date.hour, date.minute, date.second);
+
+  Handle<String> src = String::NewFromUtf8(isolate,
+      reinterpret_cast<char*>(str));
+  Handle<Script> script = Script::Compile(src);
+  Handle<Value> res = script->Run();
+  args.GetReturnValue().Set(res);
+}
+
+void TimeWrapper::convert_time_to_timestamp(
+                                  const FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+
+  if (args.Length() != 1) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (!args[0]->IsDate()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Invalid argument")));
+    return;
+  }
+
+  Local<Value> tab_args[0] = NULL;
+  Time* obj = ObjectWrap::Unwrap<TimeWrapper>(args.Holder())->getObj();
+  Local<Object> object = Local<Object>::Cast(args[0]->ToObject());
+  artik_time date;
+  int64_t timestamp;
+
+  memset(&date, 0, sizeof(date));
+  date.second = Local<Function>::Cast(object->Get(String::NewFromUtf8(
+      isolate, "getUTCSeconds")))->Call(object, 0, tab_args)->Int32Value();
+  date.minute = Local<Function>::Cast(object->Get(String::NewFromUtf8(
+      isolate, "getUTCMinutes")))->Call(object, 0, tab_args)->Int32Value();
+  date.hour = Local<Function>::Cast(object->Get(String::NewFromUtf8(
+      isolate, "getUTCHours")))->Call(object, 0, tab_args)->Int32Value();
+  date.day = Local<Function>::Cast(object->Get(String::NewFromUtf8(
+      isolate, "getUTCDate")))->Call(object, 0, tab_args)->Int32Value();
+  date.month = Local<Function>::Cast(object->Get(String::NewFromUtf8(
+      isolate, "getUTCMonth")))->Call(object, 0, tab_args)->Int32Value() + 1;
+  date.year = Local<Function>::Cast(object->Get(String::NewFromUtf8(
+      isolate, "getUTCFullYear")))->Call(object, 0, tab_args)->Int32Value();
+  date.day_of_week = Local<Function>::Cast(object->Get(String::NewFromUtf8(
+      isolate, "getUTCDay")))->Call(object, 0, tab_args)->Int32Value();
+  date.msecond = Local<Function>::Cast(object->Get(String::NewFromUtf8(
+      isolate, "getUTCMilliseconds")))->Call(object, 0, tab_args)->Int32Value();
+
+  artik_error ret = obj->convert_time_to_timestamp(&date, &timestamp);
+  if (ret != S_OK) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, error_msg(ret))));
+    return;
+  }
+
+  args.GetReturnValue().Set(Number::New(isolate, timestamp));
+}
+
 void TimeWrapper::create_alarm_second(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   TimeWrapper *wrap = ObjectWrap::Unwrap<TimeWrapper>(args.Holder());
 
-  if (args.Length() != 3)
+  if (args.Length() != 3) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
 
   Time* obj = wrap->getObj();
   Local<Object> js_alarm = AlarmWrapper::NewInstance();
@@ -318,9 +427,11 @@ void TimeWrapper::create_alarm_date(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   TimeWrapper *wrap = ObjectWrap::Unwrap<TimeWrapper>(args.Holder());
 
-  if (args.Length() != 3)
+  if (args.Length() != 3) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
 
   Time* obj = wrap->getObj();
   Local<Object> js_alarm = AlarmWrapper::NewInstance();

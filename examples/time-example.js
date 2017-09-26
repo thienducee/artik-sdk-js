@@ -18,12 +18,16 @@ var date = module.get_time_str('%I:%M:%S-%w-%d/%m/%Y', 2)
 var curr_date = module.get_time();
 var alarm1_date = module.get_time();
 var alarm2_date = module.get_time();
+var timestamp = Math.floor(Date.now()/1000); // Get timestamp in seconds
 
 alarm1_date.setUTCSeconds(alarm1_date.getUTCSeconds() + 5);
 alarm2_date.setUTCSeconds(alarm2_date.getUTCSeconds() + 20);
 
 console.log("Date in format: " + date)
 console.log("Current time is " + curr_date.toUTCString());
+console.log("Timestamp of current date is " + module.convert_time_to_timestamp(curr_date) + " s");
+console.log("Current timestamp is " + timestamp + " s");
+console.log("Date of current timestamps is " + module.convert_timestamp_to_time(timestamp).toUTCString());
 console.log("Set alarm 1 to trigger at " + alarm1_date.toUTCString());
 console.log("Set alarm 2 to trigger at " + alarm2_date.toUTCString());
 

@@ -35,6 +35,14 @@ Time.prototype.sync_ntp = function sync_ntp(hostname) {
     return this.time.sync_ntp(hostname);
 }
 
+Time.prototype.convert_timestamp_to_time = function convert_timestamp_to_time(timestamp) {
+    return this.time.convert_timestamp_to_time(timestamp);
+}
+
+Time.prototype.convert_time_to_timestamp = function convert_time_to_timestamp(date) {
+    return this.time.convert_time_to_timestamp(date);
+}
+
 module.exports.ARTIK_TIME = {
     'DFORMAT_DATE' : "h:m:s:S-d-D/M/Y\0",
     'ZONE' : {

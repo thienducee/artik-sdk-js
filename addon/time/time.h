@@ -71,6 +71,10 @@ class TimeWrapper : public node::ObjectWrap {
   static void get_time_str(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void get_tick(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void sync_ntp(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void convert_timestamp_to_time(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void convert_time_to_timestamp(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
   static void create_alarm_second(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void create_alarm_date(

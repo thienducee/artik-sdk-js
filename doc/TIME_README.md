@@ -273,6 +273,56 @@ Synchronize current system time with NTP server.
 ```javascript
 	time.sync_ntp('0.pool.ntp.org');
 ```
+## convert_timestamp_to_time
+
+```javascript
+	Date convert_timestamp_to_time(Number timestamp)
+```
+
+**Description**
+
+Convert UNIX timestamp (seconds elapsed since Jan 01 1970 UTC) into time.
+
+**Parameters**
+
+ - *Number*: Timestamp to convert from.
+
+**Return value**
+
+*Date*: Result of the conversion into date.
+
+**Example**
+
+```javascript
+	var timestamp = 1500472980;
+	var date = time.convert_timestamp_to_time(timestamp);
+	console.log("date: " + date); // "date: Wed, 19 Jul 2017 14:03:00 GMT"
+```
+## convert_time_to_timestamp
+
+```javascript
+	Number convert_time_to_timestamp(Date date)
+```
+
+**Description**
+
+Convert time into UNIX timestamp (seconds elapsed since Jan 01 1970 UTC).
+
+**Parameters**
+
+ - *Date*: Date to convert from.
+
+**Return value**
+
+*Number*: Result of the conversion into timestamp.
+
+**Example**
+
+```javascript
+	var date = new Date(Date.UTC(2017, 6, 19, 14, 03, 00))
+	var timestamp = time.convert_time_to_timestamp(date);
+	console.log("timestamp: " + timestamp + " s"); // "timestamp: 1500472980 s"
+```
 
 # Full example
 
