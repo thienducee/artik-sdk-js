@@ -46,6 +46,8 @@ class Lwm2mWrapper : public node::ObjectWrap {
   static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
   static v8::Persistent<v8::Function> constructor;
 
+  static void client_request(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void client_release(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void client_connect(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void client_disconnect(
       const v8::FunctionCallbackInfo<v8::Value>& args);

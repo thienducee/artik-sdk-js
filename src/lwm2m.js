@@ -14,10 +14,9 @@ util.inherits(Lwm2m, events.EventEmitter);
 
 module.exports = Lwm2m;
 
-Lwm2m.prototype.client_connect = function(id, uri, name, lifetime,
-        objects, psk_id, psk_key, certificate_mode_config) {
+Lwm2m.prototype.client_request = function(id, uri, name, lifetime, objects, psk_id, psk_key, certificate_mode_config) {
     var _ = this;
-    return this.lwm2m.client_connect(id, uri, name, lifetime,
+    return this.lwm2m.client_request(id, uri, name, lifetime,
             objects, psk_id, psk_key, certificate_mode_config,
             function(err) {
                 _.emit('error', err);
@@ -28,6 +27,14 @@ Lwm2m.prototype.client_connect = function(id, uri, name, lifetime,
             function(uri) {
                 _.emit('changed', uri);
             });
+}
+
+Lwm2m.prototype.client_release = function() {
+    return this.lwm2m.client_release();
+}
+
+Lwm2m.prototype.client_connect = function() {
+    return this.lwm2m.client_connect();
 }
 
 Lwm2m.prototype.client_disconnect = function() {
@@ -49,4 +56,3 @@ Lwm2m.prototype.serialize_tlv_int = function(array_data) {
 Lwm2m.prototype.serialize_tlv_string = function(array_data) {
     return this.lwm2m.serialize_tlv_string(array_data);
 }
-

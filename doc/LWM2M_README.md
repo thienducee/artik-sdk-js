@@ -22,16 +22,16 @@ New instance.
 
 See [full example](#full-example)
 
-## client_connect
+## client_request
 ```javascript
-String client_connect(Integer id, String uri, String name,
+String client_request(Integer id, String uri, String name,
 				      Number lifetime, String json_objects,
 				      String psk_id, String psk_key, certificate_mode_config)
 ```
 
 **Description**
 
-Create an LWM2M client and connect it to the server.
+Create an LWM2M client.
 
 **Parameters**
 
@@ -101,15 +101,37 @@ This object is structured as the following:
 
 See [full example](#full-example)
 
-## client_disconnect
+## client_release
 
 ```javascript
-String client_disconnect()
+String client_release()
 ```
 
 **Description**
 
-Disconnect from the LWM2M server
+Clean up the client object.
+
+**Parameters**
+
+None
+
+**Return value**
+
+*String*: Error message
+
+**Example**
+
+See [full example](#full-example)
+
+## client_connect
+
+```javascript
+String client_connect()
+```
+
+**Description**
+
+Connect to the LWM2M server.
 
 **Parameters**
 
@@ -124,6 +146,28 @@ None
 See [full example](#full-example)
 
 ## client_disconnect
+
+```javascript
+String client_disconnect()
+```
+
+**Description**
+
+Disconnect from the LWM2M server.
+
+**Parameters**
+
+None
+
+**Return value**
+
+*String*: Error message
+
+**Example**
+
+See [full example](#full-example)
+
+## client_write_resource
 
 ```javascript
 String client_write_resource(String uri, Buffer message)

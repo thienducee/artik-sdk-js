@@ -132,6 +132,8 @@ void Lwm2mWrapper::Init(Local<Object> exports) {
   modal->InstanceTemplate()->SetInternalFieldCount(1);
 
   // Prototypes
+  NODE_SET_PROTOTYPE_METHOD(modal, "client_request", client_request);
+  NODE_SET_PROTOTYPE_METHOD(modal, "client_release", client_release);
   NODE_SET_PROTOTYPE_METHOD(modal, "client_connect", client_connect);
   NODE_SET_PROTOTYPE_METHOD(modal, "client_disconnect", client_disconnect);
   NODE_SET_PROTOTYPE_METHOD(modal, "client_write_resource",
@@ -166,7 +168,7 @@ void Lwm2mWrapper::New(const FunctionCallbackInfo<Value>& args) {
   }
 }
 
-void Lwm2mWrapper::client_connect(
+void Lwm2mWrapper::client_request(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = args.GetIsolate();
   Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
@@ -284,9 +286,9 @@ void Lwm2mWrapper::client_connect(
                                                 "client_private_key");
 
       if (use_se && use_se.value()) {
-        wrap->m_config.ssl_config = new artik_ssl_config;
         wrap->m_config.ssl_config->use_se = true;
       } else if (client_cert && client_private_key) {
+        wrap->m_config.ssl_config->use_se = false;
         wrap->m_config.ssl_config->client_cert.data =
           strdup(client_cert.value().c_str());
         wrap->m_config.ssl_config->client_cert.len =
@@ -348,7 +350,13 @@ void Lwm2mWrapper::client_connect(
             atoi(check_connobj[22].c_str()), atoi(check_connobj[24].c_str()));
   }
 
-  ret = obj->client_connect(&wrap->m_config);
+  ret = obj->client_request(&wrap->m_config);
+  if (ret != S_OK) {
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, msg.c_str())));
+    return;
+  }
 
   /* Set callbacks if passed as parameters */
   if (args.Length() > 7) {
@@ -369,11 +377,9 @@ void Lwm2mWrapper::client_connect(
     obj->set_callback(ARTIK_LWM2M_EVENT_RESOURCE_CHANGED, on_changed_resource,
         reinterpret_cast<void*>(wrap));
   }
-
-  args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 }
 
-void Lwm2mWrapper::client_disconnect(
+void Lwm2mWrapper::client_connect(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = args.GetIsolate();
   Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
@@ -381,6 +387,29 @@ void Lwm2mWrapper::client_disconnect(
   artik_error ret = S_OK;
 
   log_dbg("");
+
+  if (args.Length() != 0) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+    return;
+  }
+
+  ret = obj->client_connect();
+
+  if (ret != S_OK) {
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, msg.c_str())));
+    return;
+  }
+}
+
+void Lwm2mWrapper::client_release(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
+  Lwm2m* obj = wrap->getObj();
+  artik_error ret = S_OK;
 
   // Unset all registered callbacks
   if (wrap->m_error_cb) {
@@ -396,8 +425,13 @@ void Lwm2mWrapper::client_disconnect(
     wrap->m_changed_cb = NULL;
   }
 
-  // Disconnect the clien
-  ret = obj->client_disconnect();
+  ret = obj->client_release();
+  if (ret != S_OK) {
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, msg.c_str())));
+    return;
+  }
 
   // Free allocated resources
   obj->free_object(wrap->m_config.objects[ARTIK_LWM2M_OBJECT_DEVICE]);
@@ -409,8 +443,26 @@ void Lwm2mWrapper::client_disconnect(
     free(wrap->m_config.tls_psk_identity);
   if (wrap->m_config.tls_psk_key)
     free(wrap->m_config.tls_psk_key);
+}
 
-  args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+void Lwm2mWrapper::client_disconnect(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
+  Lwm2m* obj = wrap->getObj();
+  artik_error ret = S_OK;
+
+  log_dbg("");
+
+  // Disconnect the client
+  ret = obj->client_disconnect();
+
+  if (ret != S_OK) {
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, msg.c_str())));
+    return;
+  }
 }
 
 void Lwm2mWrapper::client_write_resource(
@@ -438,7 +490,13 @@ void Lwm2mWrapper::client_write_resource(
   unsigned char *buffer = (unsigned char *)node::Buffer::Data(args[1]);
   size_t length = node::Buffer::Length(args[1]);
   ret = obj->client_write_resource(*uri, buffer, length);
-  args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+
+  if (ret != S_OK) {
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, msg.c_str())));
+    return;
+  }
 }
 
 void Lwm2mWrapper::client_read_resource(
@@ -464,7 +522,9 @@ void Lwm2mWrapper::client_read_resource(
   memset(buffer, 0, len);
   ret = obj->client_read_resource(*uri, (unsigned char*)buffer, &len);
   if (ret != S_OK) {
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, msg.c_str())));
     return;
   }
 
@@ -495,9 +555,11 @@ void Lwm2mWrapper::serialize_tlv_int(
     rdata[i] = data->Get(i)->NumberValue();
 
   ret = obj->serialize_tlv_int(rdata, size, &buffer, &len);
-  if ((ret != S_OK) || !buffer) {
+  if (ret != S_OK) {
     delete rdata;
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, msg.c_str())));
     return;
   }
 
@@ -535,8 +597,10 @@ void Lwm2mWrapper::serialize_tlv_string(
   }
 
   ret = obj->serialize_tlv_string(rdata, size, &buffer, &len);
-  if ((ret != S_OK) || !buffer) {
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
+  if (ret != S_OK || !buffer) {
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, msg.c_str())));
     return;
   }
 

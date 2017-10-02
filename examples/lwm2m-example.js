@@ -11,15 +11,15 @@ var certificate_mode_config = null; // Certificate mode: disable
 
 /*
 var certificate_mode_config = { // Certificate mode: external client certificate
-    'use_se': true,
+    'use_se': false,
     'client_cert': fs.readFileSync('path client cert.pem'),
     'client_private_key': fs.readFileSync('path private key.pem'),
-    'server_cert': fs.readFileSync('path server cert.cert')
+    'server_or_root_cert': fs.readFileSync('path server cert.cert')
 };
 
 var certificate_mode_config = { // Certificate mode: client certificate stored in the SE
     'use_se': true,
-    'server_cert': fs.readFileSync('path server cert.cert')
+    'server_cert_or_root_cert': fs.readFileSync('path server cert.cert')
 };
 */
 
@@ -74,6 +74,7 @@ rl.on('line', function(line) {
         }
     } else if (line.trim().startsWith('quit')) {
         lwm2m.client_disconnect();
+        lwm2m.client_release();
         process.exit(0);
     } else {
         usage();
@@ -84,8 +85,9 @@ rl.on('line', function(line) {
 
 lwm2m.on('started', function() {
     console.log("start lwm2m connection");
-    lwm2m.client_connect(server_id, server_uri, dtls_psk_id, lifetime, objects,
+    lwm2m.client_request(server_id, server_uri, dtls_psk_id, lifetime, objects,
         dtls_psk_id, dtls_psk_key, certificate_mode_config);
+    lwm2m.client_connect();
 });
 
 lwm2m.on('error', function(err) {
@@ -105,5 +107,6 @@ lwm2m.on('changed', function(uri) {
 
 process.on('SIGINT', function () {
     lwm2m.client_disconnect();
+    lwm2m.client_release();
     process.exit(0);
 });
