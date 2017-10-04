@@ -2,47 +2,60 @@ var events = require('events');
 var util = require('util');
 var wifi = require('../build/Release/artik-sdk.node').wifi;
 
-var Wifi = function(){
+var Wifi_AP = function(){
 	events.EventEmitter.call(this);
-	this.wifi = new wifi();
+	this.wifi = new wifi("ap");
 	setImmediate(function(self) {
 		self.emit('started');
 	}, this);
 }
 
-util.inherits(Wifi, events.EventEmitter);
+var Wifi_Station = function(){
+	events.EventEmitter.call(this);
+	this.wifi = new wifi("station");
+	setImmediate(function(self) {
+		self.emit('started');
+	}, this);
+}
 
-module.exports = Wifi;
+util.inherits(Wifi_AP, events.EventEmitter);
+util.inherits(Wifi_Station, events.EventEmitter);
 
-Wifi.prototype.WIFI_ENCRYPTION_OPEN = 0x00000000;
-Wifi.prototype.WIFI_ENCRYPTION_WEP = 0x00000001;
-Wifi.prototype.WIFI_ENCRYPTION_WPA = 0x00000002;
-Wifi.prototype.WIFI_ENCRYPTION_WPA2 = 0x00000004;
-Wifi.prototype.WIFI_ENCRYPTION_WPA2_PERSONAL = 0x00010000;
-Wifi.prototype.WIFI_ENCRYPTION_WPA2_ENTERPRISE = 0x00020000;
+module.exports = {
+	wifi_ap : Wifi_AP,
+	wifi_station : Wifi_Station
+}
 
-Wifi.prototype.scan_request = function() {
+Wifi_AP.prototype.WIFI_ENCRYPTION_OPEN = 0x00000000;
+Wifi_AP.prototype.WIFI_ENCRYPTION_WEP = 0x00000001;
+Wifi_AP.prototype.WIFI_ENCRYPTION_WPA = 0x00000002;
+Wifi_AP.prototype.WIFI_ENCRYPTION_WPA2 = 0x00000004;
+Wifi_AP.prototype.WIFI_ENCRYPTION_WPA2_PERSONAL = 0x00010000;
+Wifi_AP.prototype.WIFI_ENCRYPTION_WPA2_ENTERPRISE = 0x00020000;
+
+Wifi_Station.prototype.scan_request = function() {
 	var _ = this;
 	return this.wifi.scan_request(function(list) {
 		_.emit('scan', list);
 	});
 };
 
-Wifi.prototype.connect = function(ssid, password, is_persistent) {
+Wifi_Station.prototype.connect = function(ssid, password, is_persistent) {
 	var _ = this;
-	return this.wifi.connect(ssid, password, is_persistent, function() {
-		_.emit('connected');
+	return this.wifi.connect(ssid, password, is_persistent, function(result) {
+		if (result)
+			_.emit('connected');
 	});
 };
 
-Wifi.prototype.disconnect = function() {
+Wifi_Station.prototype.disconnect = function() {
 	return this.wifi.disconnect();
 };
 
-Wifi.prototype.get_scan_result = function() {
+Wifi_Station.prototype.get_scan_result = function() {
 	return this.wifi.get_scan_result();
 };
 
-Wifi.prototype.start_ap = function(ssid, password, channel, encryption) {
+Wifi_AP.prototype.start_ap = function(ssid, password, channel, encryption) {
 	return this.wifi.start_ap(ssid, password, channel, encryption);
 };

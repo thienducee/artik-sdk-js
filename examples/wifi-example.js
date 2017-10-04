@@ -1,18 +1,20 @@
-var wifi = new (require('../src/wifi'))();
+var wifi = require('../src/wifi');
 
 var ssid = '<enter a SSID here>';
 var pwd = '<passphrase of the SSID>';
 
-wifi.on('started', function() {
-	wifi.scan_request();
+var wifi_station = new wifi.wifi_station();
+
+wifi_station.on('started', function() {
+	wifi_station.scan_request();
 });
 
-wifi.on('connected', function() {
+wifi_station.on('connected', function() {
 	console.log('connected');
 	process.exit(0);
 });
 
-wifi.on('scan', function(list) {
+wifi_station.on('scan', function(list) {
 	var results = JSON.parse(list);
 	console.log(results);
 	var ap = results.filter(function(item) {
@@ -21,8 +23,8 @@ wifi.on('scan', function(list) {
 
 	if (ap.length > 0) {
 		console.log('Found SSID ' + ssid + ', connecting...');
-		wifi.disconnect();
-		wifi.connect(ssid, pwd, false);
+		wifi_station.disconnect();
+		wifi_station.connect(ssid, pwd, false);
 	}
 });
 

@@ -24,6 +24,8 @@
 #include <artik_log.h>
 #include <artik_types.h>
 
+#include <string>
+
 namespace artik {
 
 using v8::Exception;
@@ -130,8 +132,8 @@ static char* convert_aps_to_json(artik_wifi_ap* aps, int num_aps) {
 }
 
 WifiWrapper::WifiWrapper() {
+  setMode(ARTIK_WIFI_MODE_NONE);
   m_wifi = new Wifi();
-  m_wifi->init(ARTIK_WIFI_MODE_STATION);
 }
 
 WifiWrapper::~WifiWrapper() {
@@ -163,10 +165,35 @@ void WifiWrapper::Init(Local<Object> exports) {
 
 void WifiWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
+  artik_wifi_mode_t wifi_mode = ARTIK_WIFI_MODE_NONE;
+
+  if (args.Length() != 1) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (!args[0]->IsUndefined() && args[0]->IsString()) {
+    auto wifi_type = js_type_to_cpp<std::string>(args[0]);
+
+    if (wifi_type.value() == "ap") {
+      wifi_mode = ARTIK_WIFI_MODE_AP;
+    } else if (wifi_type.value() == "station") {
+      wifi_mode = ARTIK_WIFI_MODE_STATION;
+    } else {
+      isolate->ThrowException(Exception::TypeError(
+          String::NewFromUtf8(isolate, "Wrong definition of wifi_mode :"
+                                       " expect 'ap' or 'station'.")));
+      return;
+    }
+  }
 
   if (args.IsConstructCall()) {
     WifiWrapper* obj = new WifiWrapper();
     obj->Wrap(args.This());
+    Wifi* wifi = obj->getObj();
+    wifi->init(wifi_mode);
+    obj->setMode(wifi_mode);
     args.GetReturnValue().Set(args.This());
   } else {
     Local<Context> context = isolate->GetCurrentContext();
@@ -181,6 +208,13 @@ void WifiWrapper::disconnect(const FunctionCallbackInfo<Value>& args) {
   WifiWrapper* wrap = ObjectWrap::Unwrap<WifiWrapper>(args.Holder());
   Wifi* obj = wrap->getObj();
   artik_error ret = S_OK;
+
+  if (wrap->getMode() != ARTIK_WIFI_MODE_STATION) {
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "disconnect() works only in"
+                                     " station mode")));
+    return;
+  }
 
   ret = obj->disconnect();
 
@@ -231,6 +265,13 @@ void WifiWrapper::scan_request(
   Wifi* obj = wrap->getObj();
   artik_error ret = S_OK;
 
+  if (wrap->getMode() != ARTIK_WIFI_MODE_STATION) {
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "scan_request() works only in"
+                                     " station mode")));
+    return;
+  }
+
   log_dbg("");
 
   if (args[0]->IsUndefined()) {
@@ -278,6 +319,13 @@ void WifiWrapper::connect(const FunctionCallbackInfo<Value>& args) {
   Wifi* obj = wrap->getObj();
   artik_error ret = S_OK;
 
+  if (wrap->getMode() != ARTIK_WIFI_MODE_STATION) {
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "connect() works only in"
+                                     " station mode")));
+    return;
+  }
+
   log_dbg("");
 
   if (args[0]->IsUndefined() || !args[0]->IsString()
@@ -311,6 +359,13 @@ void WifiWrapper::get_scan_result(const FunctionCallbackInfo<v8::Value>& args) {
   int num_aps = 0;
   char* json_res = NULL;
 
+  if (wrap->getMode() != ARTIK_WIFI_MODE_STATION) {
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "get_scan_result() works only in"
+                                     " station mode")));
+    return;
+  }
+
   log_dbg("");
 
   obj->get_scan_result(&wifi_aps, &num_aps);
@@ -330,6 +385,15 @@ void WifiWrapper::get_scan_result(const FunctionCallbackInfo<v8::Value>& args) {
 
 void WifiWrapper::start_ap(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
+  WifiWrapper* wrap = ObjectWrap::Unwrap<WifiWrapper>(args.Holder());
+  Wifi* obj = wrap->getObj();
+
+  if (wrap->getMode() != ARTIK_WIFI_MODE_AP) {
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "start_ap() works only in"
+                                     " access point mode")));
+    return;
+  }
 
   if (args.Length() != 4 ||
       args[0]->IsUndefined() || !args[0]->IsString() ||
@@ -341,8 +405,6 @@ void WifiWrapper::start_ap(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  WifiWrapper* wrap = ObjectWrap::Unwrap<WifiWrapper>(args.Holder());
-  Wifi* obj = wrap->getObj();
   String::Utf8Value param0(args[0]->ToString());
   String::Utf8Value param1(args[1]->ToString());
   char *ssid = *param0;

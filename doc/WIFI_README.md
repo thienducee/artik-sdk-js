@@ -1,6 +1,24 @@
 # Wi-Fi API
 
-## scan_request
+## Prerequisites
+
+In order to use wifi in Station mode, one must instantiate the **wifi_station** object:
+
+```javascript
+var wifi = require('../src/wifi');
+var wifi_station = new wifi.wifi_station();
+```
+
+In order to use wifi in Access Point mode, one must instantiate the **wifi_ap** object:
+
+```javascript
+var wifi = require('../src/wifi');
+var wifi_ap = new wifi.wifi_ap();
+```
+
+According to the selected mode, some functions cannot be used by the object.
+
+## scan_request (Station mode)
 
 ```javascript
 String scan_request()
@@ -23,7 +41,7 @@ None.
 
 See [full example](#full-example)
 
-## get_scan_result
+## get_scan_result (Station mode)
 
 ```javascript
 String get_scan_result()
@@ -46,7 +64,7 @@ None.
 
 See [full example](#full-example)
 
-## connect
+## connect (Station mode)
 
 ```javascript
 String connect(String ssid, String passphrase, Boolean persistent)
@@ -54,7 +72,7 @@ String connect(String ssid, String passphrase, Boolean persistent)
 
 **Description**
 
-Connect to a specific access point. Calling application should catch the 
+Connect to a specific access point. Calling application should catch the
 **connected** event to be notified of the success of the connection.
 
 **Parameters**
@@ -73,7 +91,7 @@ across reboot.
 
 See [full example](#full-example)
 
-## disconnect
+## disconnect (Station mode)
 
 ```javascript
 String disconnect()
@@ -95,7 +113,7 @@ None.
 
 See [full example](#full-example)
 
-## start_ap
+## start_ap (Access Point mode)
 
 ```javascript
 Number start_ap(String SSID, String passphrase, Number channel, Number encryption)
@@ -184,22 +202,23 @@ See [full example](#full-example)
 # Full example
 
 ```javascript
-var artik = require('artik-sdk');
-var wifi = new artik.wifi();
+var wifi = require('../src/wifi');
 
 var ssid = '<enter a SSID here>';
 var pwd = '<passphrase of the SSID>';
 
-wifi.on('started', function() {
-	wifi.scan_request();
+var wifi_station = new wifi.wifi_station();
+
+wifi_station.on('started', function() {
+	wifi_station.scan_request();
 });
 
-wifi.on('connected', function() {
+wifi_station.on('connected', function() {
 	console.log('connected');
 	process.exit(0);
 });
 
-wifi.on('scan', function(list) {
+wifi_station.on('scan', function(list) {
 	var results = JSON.parse(list);
 	console.log(results);
 	var ap = results.filter(function(item) {
@@ -208,8 +227,8 @@ wifi.on('scan', function(list) {
 
 	if (ap.length > 0) {
 		console.log('Found SSID ' + ssid + ', connecting...');
-		wifi.disconnect();
-		wifi.connect(ssid, pwd, false);
+		wifi_station.disconnect();
+		wifi_station.connect(ssid, pwd, false);
 	}
 });
 

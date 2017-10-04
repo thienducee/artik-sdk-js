@@ -24,6 +24,7 @@
 
 #include <uv.h>
 #include <artik_wifi.hh>
+#include <utils.h>
 
 namespace artik {
 
@@ -32,6 +33,8 @@ class WifiWrapper : public node::ObjectWrap {
   static void Init(v8::Local<v8::Object> exports);
 
   Wifi* getObj() { return m_wifi; }
+  artik_wifi_mode_t getMode() { return m_wifi_mode; }
+  void setMode(artik_wifi_mode_t wifi_mode) { m_wifi_mode = wifi_mode; }
   v8::Persistent<v8::Function>* getScanCb() { return m_scan_cb; }
   v8::Persistent<v8::Function>* getConnectCb() { return m_connect_cb; }
 
@@ -50,6 +53,8 @@ class WifiWrapper : public node::ObjectWrap {
   static void start_ap(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   Wifi* m_wifi;
+  artik_wifi_mode_t m_wifi_mode;
+
   v8::Persistent<v8::Function>* m_scan_cb;
   v8::Persistent<v8::Function>* m_connect_cb;
 };
