@@ -53,6 +53,7 @@ void SecurityWrapper::Init(Local<Object> exports) {
 
   // Prototypes
   NODE_SET_PROTOTYPE_METHOD(modal, "get_certificate", get_certificate);
+  NODE_SET_PROTOTYPE_METHOD(modal, "get_ca_chain", get_ca_chain);
   NODE_SET_PROTOTYPE_METHOD(modal, "get_key_from_cert", get_key_from_cert);
   NODE_SET_PROTOTYPE_METHOD(modal, "get_random_bytes", get_random_bytes);
   NODE_SET_PROTOTYPE_METHOD(modal, "get_certificate_sn", get_certificate_sn);
@@ -106,6 +107,31 @@ void SecurityWrapper::get_certificate(const FunctionCallbackInfo<Value>& args) {
           String::NewFromUtf8(isolate, error_msg(res))));
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, cert));
     free(cert);
+  } catch (artik::ArtikException &e) {
+    isolate->ThrowException(Exception::TypeError(
+          String::NewFromUtf8(isolate, e.what())));
+  }
+}
+
+void SecurityWrapper::get_ca_chain(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+
+  if (args.Length() != 0)
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong number of arguments")));
+
+  Security *obj = ObjectWrap::Unwrap<SecurityWrapper>(args.Holder())->getObj();
+
+  char *chain = NULL;
+  artik_error res = S_OK;
+
+  try {
+    res = obj->get_ca_chain(&chain);
+    if (res != S_OK)
+      isolate->ThrowException(Exception::TypeError(
+          String::NewFromUtf8(isolate, error_msg(res))));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, chain));
+    free(chain);
   } catch (artik::ArtikException &e) {
     isolate->ThrowException(Exception::TypeError(
           String::NewFromUtf8(isolate, e.what())));

@@ -53,6 +53,21 @@ testCase('Security', function() {
 	    }
 	});
     });
+
+    testCase('#get_ca_chain()', function() {
+
+	assertions('Get root and intermediate certificates from the Secure Element.', function() {
+	    try {
+		certificates = security.get_ca_chain();
+		assert.isString(certificate, "Invalid return type of the variable : 'certificates'.\n");
+		console.log("Certificates : ");
+		console.log(certificates);
+	    } catch (err) {
+		console.log("[Exception] : " + err.message);
+	    }
+	});
+    });
+
     testCase('#get_key_from_cert()', function() {
 
 	assertions('Get "key" of the certificate.', function() {

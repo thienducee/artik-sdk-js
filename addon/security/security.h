@@ -41,6 +41,7 @@ class SecurityWrapper : public node::ObjectWrap {
   static v8::Persistent<v8::Function> constructor;
 
   static void get_certificate(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_ca_chain(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void get_key_from_cert(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void get_random_bytes(
