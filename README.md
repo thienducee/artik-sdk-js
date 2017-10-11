@@ -33,9 +33,10 @@ Before Installing with npm, you must install these packages on the ARTIK board.
    * [HTTP API](/doc/HTTP_README.md)
    * [Network API](/doc/NETWORK_README.md)
    * [Websocket API](/doc/WEBSOCKET_README.md)
+   * [Security API](/doc/SECURITY_README.md)
 
 ### 4. Media
-  * [Media API](/doc/MEDIA_README.md)
+   * [Media API](/doc/MEDIA_README.md)
 
 ### 5. Sensors
    * [Sensors API](/doc/SENSOR_README.md)
