@@ -558,7 +558,7 @@ void CloudWrapper::New(const FunctionCallbackInfo<Value>& args) {
     Local<Context> context = isolate->GetCurrentContext();
     Local<Function> cons = Local<Function>::New(isolate, constructor);
     args.GetReturnValue().Set(
-        cons->NewInstance(context, args.Length(), argv).ToLocalChecked());
+        cons->NewInstance(context, argc, argv).ToLocalChecked());
   }
 }
 

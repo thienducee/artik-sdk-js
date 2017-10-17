@@ -191,7 +191,7 @@ static void http_response_get_callback(artik_error result, int status,
   };
 
   Local<Function>::New(isolate, *wrap->getResponseGetCb())->Call(
-    isolate->GetCurrentContext()->Global(), 3, argv);
+    isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
 static void http_response_post_callback(artik_error result, int status,
@@ -212,7 +212,7 @@ static void http_response_post_callback(artik_error result, int status,
   };
 
   Local<Function>::New(isolate, *wrap->getResponsePostCb())->Call(
-    isolate->GetCurrentContext()->Global(), 3, argv);
+    isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
 static void http_response_put_callback(artik_error result, int status,
@@ -233,7 +233,7 @@ static void http_response_put_callback(artik_error result, int status,
   };
 
   Local<Function>::New(isolate, *wrap->getResponsePutCb())->Call(
-    isolate->GetCurrentContext()->Global(), 3, argv);
+    isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
 static void http_response_del_callback(artik_error result, int status,
@@ -254,7 +254,7 @@ static void http_response_del_callback(artik_error result, int status,
   };
 
   Local<Function>::New(isolate, *wrap->getResponseDelCb())->Call(
-    isolate->GetCurrentContext()->Global(), 3, argv);
+    isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
 HttpWrapper::HttpWrapper() {
