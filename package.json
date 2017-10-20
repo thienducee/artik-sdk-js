@@ -32,7 +32,7 @@
   "homepage": "http://www.artik.io",
   "repository": {
     "type": "git",
-    "url": "git://github.com/SamsungARTIK/artik-sdk.git"
+    "url": "git://github.com/SamsungARTIK/artik-sdk-js.git"
   },
   "files": [
     "LICENSE",
