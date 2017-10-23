@@ -4,7 +4,8 @@
   "description": "SDK for developing applications for Samsung's ARTIK platform",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "prebuild-install || node-gyp rebuild"
   },
   "keywords": [
     "Samsung",
@@ -163,7 +164,8 @@
     "colors": "^1.1.2",
     "getopt": "^0.1.0",
     "os": "^0.1.1",
-    "nan": "^2.6.2"
+    "nan": "^2.6.2",
+    "prebuild-install": "^2.3.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
