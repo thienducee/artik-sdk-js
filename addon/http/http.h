@@ -27,6 +27,8 @@
 
 #include <utils.h>
 
+#include <loop.h>
+
 namespace artik {
 
 class HttpWrapper : public node::ObjectWrap {
@@ -65,6 +67,7 @@ class HttpWrapper : public node::ObjectWrap {
   v8::Persistent<v8::Function>* m_response_post_cb;
   v8::Persistent<v8::Function>* m_response_put_cb;
   v8::Persistent<v8::Function>* m_response_del_cb;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik

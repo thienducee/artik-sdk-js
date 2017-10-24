@@ -268,10 +268,14 @@ MqttWrapper::MqttWrapper(artik_mqtt_config const &config) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, e.what())));
   }
+
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 MqttWrapper::~MqttWrapper() {
   delete m_mqtt;
+  m_loop->detach();
 }
 
 void MqttWrapper::Init(Local<Object> exports) {

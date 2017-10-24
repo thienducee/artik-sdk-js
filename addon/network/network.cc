@@ -266,6 +266,8 @@ NetworkWrapper::NetworkWrapper(v8::Persistent<v8::Function> *callback,
     bool enable_watch_online_status) {
   m_handle = NULL;
   m_network = new Network();
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 
   if (enable_watch_online_status) {
     m_watch_online_status_cb = callback;
@@ -282,6 +284,8 @@ NetworkWrapper::~NetworkWrapper() {
   delete m_network;
   if (m_watch_online_status_cb != NULL)
     delete m_watch_online_status_cb;
+
+  m_loop->detach();
 }
 
 void NetworkWrapper::Init(Local<Object> exports) {

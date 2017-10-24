@@ -25,6 +25,8 @@
 #include <uv.h>
 #include <artik_gpio.hh>
 
+#include <loop.h>
+
 namespace artik {
 
 class GpioWrapper : public node::ObjectWrap {
@@ -52,6 +54,7 @@ class GpioWrapper : public node::ObjectWrap {
 
   Gpio* m_gpio;
   v8::Persistent<v8::Function>* m_change_cb;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik

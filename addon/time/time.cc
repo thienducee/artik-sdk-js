@@ -142,10 +142,13 @@ void AlarmWrapper::set_alarm_cb(Local<Function> callback) {
 
 TimeWrapper::TimeWrapper() {
   m_time = new Time();
+  this->m_loop = GlibLoop::Instance();
+  this->m_loop->attach();
 }
 
 TimeWrapper::~TimeWrapper() {
   delete m_time;
+  this->m_loop->detach();
 }
 
 void TimeWrapper::Init(Local<Object> exports) {

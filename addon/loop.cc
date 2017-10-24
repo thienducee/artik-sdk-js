@@ -16,15 +16,16 @@
  *
  */
 
-#include "loop/loop.h"
-
-#include <glib.h>
-#include <uv.h>
 #include <unistd.h>
 
-static uv_prepare_t prepare_h;
-static uv_idle_t idle_h;
-static int _ref_count = 0;
+#include "loop.h"
+
+namespace artik {
+
+GlibLoop* GlibLoop::m_instance = nullptr;
+int GlibLoop::m_refcount = 0;
+uv_prepare_t GlibLoop::m_prepare_h;
+uv_idle_t GlibLoop::m_idle_h;
 
 static void prepare_cb(uv_prepare_t *handle) {
   /*
@@ -38,9 +39,21 @@ static void _idle_cb(uv_idle_t *handle) {
   usleep(1);
 }
 
-void register_loop_integration() {
-  _ref_count++;
-  if (_ref_count > 1)
+GlibLoop::GlibLoop() {
+}
+
+GlibLoop::~GlibLoop() {
+}
+
+GlibLoop* GlibLoop::Instance() {
+  if (!m_instance)
+    m_instance = new GlibLoop();
+
+  return m_instance;
+}
+
+void GlibLoop::attach() {
+  if (++m_refcount > 1)
     return;
 
   /*
@@ -49,8 +62,8 @@ void register_loop_integration() {
    * and assert. (becasue regular file not support epoll)
    * so, use glib's own poll function in uv_prepare time.
    */
-  uv_prepare_init(uv_default_loop(), &prepare_h);
-  uv_prepare_start(&prepare_h, prepare_cb);
+  uv_prepare_init(uv_default_loop(), &m_prepare_h);
+  uv_prepare_start(&m_prepare_h, prepare_cb);
 
   /*
    * uv_poll use epoll with infinite timeout(-1) if there are no registered
@@ -59,18 +72,16 @@ void register_loop_integration() {
    * events are registered.
    * so, add fake event source(idle) to libuv.
    */
-  uv_idle_init(uv_default_loop(), &idle_h);
-  uv_idle_start(&idle_h, _idle_cb);
+  uv_idle_init(uv_default_loop(), &m_idle_h);
+  uv_idle_start(&m_idle_h, _idle_cb);
 }
 
-void unregister_loop_integration() {
-  if (_ref_count == 0)
+void GlibLoop::detach() {
+  if ((m_refcount == 0) || (--m_refcount > 0))
     return;
 
-  _ref_count--;
-  if (_ref_count > 0)
-    return;
-
-  uv_idle_stop(&idle_h);
-  uv_prepare_stop(&prepare_h);
+  uv_idle_stop(&m_idle_h);
+  uv_prepare_stop(&m_prepare_h);
 }
+
+}  // namespace artik

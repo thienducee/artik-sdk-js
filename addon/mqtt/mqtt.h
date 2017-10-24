@@ -26,6 +26,8 @@
 #include <artik_mqtt.hh>
 #include <utils.h>
 
+#include <loop.h>
+
 using v8::Function;
 using v8::Local;
 
@@ -67,6 +69,7 @@ class MqttWrapper : public node::ObjectWrap {
   v8::Persistent<v8::Function>* m_message_cb;
   v8::Persistent<v8::Function>* m_subscribe_cb;
   v8::Persistent<v8::Function>* m_unsubscribe_cb;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik

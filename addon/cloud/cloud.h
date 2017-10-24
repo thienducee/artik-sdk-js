@@ -25,6 +25,7 @@
 #include <artik_cloud.hh>
 
 #include <utils.h>
+#include <loop.h>
 
 namespace artik {
 
@@ -108,6 +109,7 @@ class CloudWrapper : public node::ObjectWrap {
   CloudAsyncWork* m_work;
   v8::Persistent<v8::Function>* m_connection_cb;
   v8::Persistent<v8::Function>* m_receive_cb;
+  GlibLoop *m_loop;
 };
 
 }  // namespace artik

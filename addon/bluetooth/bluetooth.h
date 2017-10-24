@@ -24,6 +24,7 @@
 
 #include <uv.h>
 #include <artik_bluetooth.hh>
+#include <loop.h>
 
 #include <array>
 #include <unordered_map>
@@ -91,6 +92,7 @@ class BluetoothWrapper : public node::ObjectWrap {
   v8::Persistent<v8::Function>* m_scan_cb;
   v8::Persistent<v8::Function>* m_bond_cb;
   v8::Persistent<v8::Function>* m_connect_cb;
+  GlibLoop *m_loop;
 };
 
 }  // namespace artik

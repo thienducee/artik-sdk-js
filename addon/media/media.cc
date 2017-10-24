@@ -56,10 +56,13 @@ static void on_finished(void *userdata) {
 
 MediaWrapper::MediaWrapper() {
   m_media = new Media();
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 MediaWrapper::~MediaWrapper() {
   delete m_media;
+  m_loop->detach();
 }
 
 void MediaWrapper::Init(Local<Object> exports) {

@@ -183,15 +183,20 @@ static void websocket_receive_callback(void* user_data, void* message) {
 
 WebsocketWrapper::WebsocketWrapper() {
   m_websocket = new Websocket();
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 WebsocketWrapper::WebsocketWrapper(char* uri, artik_ssl_config *ssl_config) {
   m_websocket = new Websocket(uri, ssl_config);
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 WebsocketWrapper::~WebsocketWrapper() {
   // clean up routine
   delete m_websocket;
+  m_loop->detach();
 }
 
 void WebsocketWrapper::Init(Local<Object> exports) {

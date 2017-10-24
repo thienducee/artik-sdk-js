@@ -64,9 +64,12 @@ GpioWrapper::GpioWrapper(artik_gpio_id id, char* name, artik_gpio_dir_t dir,
     artik_gpio_edge_t edge, int initial_value) {
   m_gpio = new Gpio(id, name, dir, edge, initial_value);
   m_change_cb = NULL;
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 GpioWrapper::~GpioWrapper() {
+  m_loop->detach();
   delete m_gpio;
 }
 

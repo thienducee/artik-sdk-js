@@ -25,6 +25,8 @@
 #include <uv.h>
 #include <artik_media.hh>
 
+#include <loop.h>
+
 namespace artik {
 
 class MediaWrapper : public node::ObjectWrap {
@@ -45,6 +47,7 @@ class MediaWrapper : public node::ObjectWrap {
 
   Media* m_media;
   v8::Persistent<v8::Function>* m_finished_cb;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik

@@ -25,6 +25,8 @@
 
 #include <artik_time.hh>
 
+#include <loop.h>
+
 namespace artik {
 
 class AlarmWrapper : public node::ObjectWrap {
@@ -81,6 +83,7 @@ class TimeWrapper : public node::ObjectWrap {
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
   Time  *m_time;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik
