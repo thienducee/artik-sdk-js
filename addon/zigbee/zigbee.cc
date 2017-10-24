@@ -52,10 +52,13 @@ Persistent<Function> ZigbeeWrapper::constructor;
 ZigbeeWrapper::ZigbeeWrapper() :
     m_init_cb(0) {
   m_zb = new Zigbee();
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 ZigbeeWrapper::~ZigbeeWrapper() {
   delete m_zb;
+  m_loop->detach();
 }
 
 void ZigbeeWrapper::Init(Local<Object> exports) {

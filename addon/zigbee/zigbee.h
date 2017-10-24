@@ -24,6 +24,8 @@
 #include <uv.h>
 #include <artik_zigbee.hh>
 
+#include <loop.h>
+
 using v8::Function;
 using v8::Local;
 using v8::Isolate;
@@ -76,6 +78,7 @@ class ZigbeeWrapper: public node::ObjectWrap {
 
   Zigbee* m_zb;
   v8::Persistent<v8::Function>* m_init_cb;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik

@@ -116,10 +116,13 @@ Lwm2mWrapper::Lwm2mWrapper() {
   m_error_cb = NULL;
   m_execute_cb = NULL;
   m_changed_cb = NULL;
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 Lwm2mWrapper::~Lwm2mWrapper() {
   delete m_lwm2m;
+  m_loop->detach();
 }
 
 void Lwm2mWrapper::Init(Local<Object> exports) {

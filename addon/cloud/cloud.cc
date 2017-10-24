@@ -483,10 +483,13 @@ static void on_connection_callback(void *user_data, void *result) {
 
 CloudWrapper::CloudWrapper(const char* token) {
   m_cloud = new Cloud(token);
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 CloudWrapper::~CloudWrapper() {
   delete m_cloud;
+  m_loop->detach();
 }
 
 void CloudWrapper::Init(Local<Object> exports) {

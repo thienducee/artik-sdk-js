@@ -89,10 +89,13 @@ SerialWrapper::SerialWrapper(unsigned int port, char *name,
     artik_serial_flowcontrol_t flowctrl) {
   m_serial = new Serial(port, name, baudrate, parity, data, stop, flowctrl);
   m_rx_buf_size = 128;
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 SerialWrapper::~SerialWrapper() {
   delete m_serial;
+  m_loop->detach();
 }
 
 void SerialWrapper::Init(Local<Object> exports) {

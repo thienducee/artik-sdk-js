@@ -134,11 +134,14 @@ static char* convert_aps_to_json(artik_wifi_ap* aps, int num_aps) {
 WifiWrapper::WifiWrapper() {
   setMode(ARTIK_WIFI_MODE_NONE);
   m_wifi = new Wifi();
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 WifiWrapper::~WifiWrapper() {
   m_wifi->deinit();
   delete m_wifi;
+  m_loop->detach();
 }
 
 void WifiWrapper::Init(Local<Object> exports) {

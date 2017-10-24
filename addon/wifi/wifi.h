@@ -24,7 +24,9 @@
 
 #include <uv.h>
 #include <artik_wifi.hh>
+
 #include <utils.h>
+#include <loop.h>
 
 namespace artik {
 
@@ -57,6 +59,7 @@ class WifiWrapper : public node::ObjectWrap {
 
   v8::Persistent<v8::Function>* m_scan_cb;
   v8::Persistent<v8::Function>* m_connect_cb;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik

@@ -25,6 +25,8 @@
 #include <uv.h>
 #include <artik_lwm2m.hh>
 
+#include <loop.h>
+
 using v8::Function;
 using v8::Local;
 
@@ -65,6 +67,7 @@ class Lwm2mWrapper : public node::ObjectWrap {
   v8::Persistent<v8::Function>* m_error_cb;
   v8::Persistent<v8::Function>* m_execute_cb;
   v8::Persistent<v8::Function>* m_changed_cb;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik

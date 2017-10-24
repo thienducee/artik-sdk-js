@@ -25,6 +25,7 @@
 
 #include <uv.h>
 #include <artik_serial.hh>
+#include <loop.h>
 
 #include <array>
 
@@ -77,6 +78,7 @@ class SerialWrapper : public node::ObjectWrap {
   Serial* m_serial;
   v8::Persistent<v8::Function>* m_change_cb;
   int m_rx_buf_size;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik

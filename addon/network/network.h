@@ -24,7 +24,9 @@
 
 #include <uv.h>
 #include <artik_network.hh>
+
 #include <utils.h>
+#include <loop.h>
 
 namespace artik {
 
@@ -65,6 +67,7 @@ class NetworkWrapper : public node::ObjectWrap {
   Network* m_network;
   v8::Persistent<v8::Function>* m_watch_online_status_cb;
   watch_online_status_handle m_handle;
+  GlibLoop* m_loop;
 };
 
 }  // namespace artik

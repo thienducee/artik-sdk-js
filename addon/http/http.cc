@@ -259,9 +259,12 @@ static void http_response_del_callback(artik_error result, int status,
 
 HttpWrapper::HttpWrapper() {
   m_http = new Http();
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 HttpWrapper::~HttpWrapper() {
+  m_loop->detach();
   delete m_http;
 }
 

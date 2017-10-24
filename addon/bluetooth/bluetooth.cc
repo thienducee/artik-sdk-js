@@ -325,10 +325,13 @@ static char* convert_devices_to_json(artik_bt_device* devs, int num_devs) {
 
 BluetoothWrapper::BluetoothWrapper() {
   m_bt = new Bluetooth();
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 BluetoothWrapper::~BluetoothWrapper() {
   delete m_bt;
+  m_loop->detach();
 }
 
 void BluetoothWrapper::Init(Local<Object> exports) {

@@ -20,7 +20,6 @@
 
 #include <node.h>
 
-#include "loop/loop.h"
 #include "i2c/i2c.h"
 #include "gpio/gpio.h"
 #include "serial/serial.h"
@@ -93,12 +92,9 @@ namespace artik {
   }
 
   void DestroyAll(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    unregister_loop_integration();
   }
 
   void InitAll(Local<Object> exports) {
-    /* Register glib main loop integration in node.js libuv one */
-    register_loop_integration();
 
     /* Register own methods */
     NODE_SET_METHOD(exports, "get_modules", GetModules);

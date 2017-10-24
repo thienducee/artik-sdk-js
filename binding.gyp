@@ -49,7 +49,7 @@
       'sources': [
         'addon/artik.cc',
         'addon/utils.cc',
-        'addon/loop/loop.cc',
+        'addon/loop.cc',
         'addon/gpio/gpio.cc',
         'addon/serial/serial.cc',
         'addon/i2c/i2c.cc',

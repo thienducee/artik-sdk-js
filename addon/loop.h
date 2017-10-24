@@ -16,10 +16,29 @@
  *
  */
 
-#ifndef ADDON_LOOP_LOOP_H_
-#define ADDON_LOOP_LOOP_H_
+#ifndef ADDON_LOOP_H_
+#define ADDON_LOOP_H_
 
-void register_loop_integration();
-void unregister_loop_integration();
+#include <glib.h>
+#include <uv.h>
 
-#endif  // ADDON_LOOP_LOOP_H_
+namespace artik {
+
+class GlibLoop {
+  public:
+    static GlibLoop* Instance();
+    void attach();
+    void detach();
+  private:
+    GlibLoop();
+    ~GlibLoop();
+
+    static GlibLoop* m_instance;
+    static int m_refcount;
+    static uv_prepare_t m_prepare_h;
+    static uv_idle_t m_idle_h;
+};
+
+}  // namespace artik
+
+#endif  // ADDON_LOOP_H_
