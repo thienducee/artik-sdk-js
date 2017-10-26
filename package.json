@@ -103,6 +103,7 @@
     "src/platform/artik1020.js",
     "src/platform/artik710.js",
     "src/platform/artik530.js",
+    "src/platform/artik305.js",
     "src/gpio.js",
     "src/wifi.js",
     "src/zigbee.js",

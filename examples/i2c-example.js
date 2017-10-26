@@ -21,6 +21,9 @@ if(name == 'ARTIK 520') {
 } else if(name == 'ARTIK 530') {
 	console.log('Running I2C test on ARTIK 530');
 	var cw2015 = artik.i2c(8, 2000, '8', 0x62);
+} else if(name == 'ARTIK 305') {
+	console.log('Running I2C test on ARTIK 305');
+	var cw2015 = artik.i2c(8, 2000, '8', 0x62);
 } else {
     console.log('Unrecognized platform');
     process.exit(-1);

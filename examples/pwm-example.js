@@ -18,6 +18,10 @@ if(name == 'ARTIK 520') {
     console.log('Running PWM test on ARTIK 530');
     const a530 = require('../src/platform/artik530');
     var pwm = artik.pwm(a530.ARTIK_A530_PWM.PWMIO.XPWMIO0, "pwm-test", 400000, a530.ARTIK_A530_PWM.POLR.NORMAL, 200000);
+} else if(name == 'ARTIK 305') {
+    console.log('Running PWM test on ARTIK 305');
+    const a305 = require('../src/platform/artik305');
+    var pwm = artik.pwm(a305.ARTIK_A305_PWM.PWMIO.XPWMIO0, "pwm-test", 400000, a305.ARTIK_A305_PWM.POLR.NORMAL, 200000);
 } else {
     console.log('Unrecognized platform');
     process.exit(-1);

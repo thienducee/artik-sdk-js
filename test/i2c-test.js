@@ -32,6 +32,9 @@ testCase('I2C', function() {
 		} else if(name == 'ARTIK 530') {
 			console.log('Running I2C test on ARTIK 530');
 			cw2015 = artik.i2c(8, 2000, '8', 0x62);
+		} else if(name == 'ARTIK 305') {
+			console.log('Running I2C test on ARTIK 305');
+			cw2015 = artik.i2c(8, 2000, '8', 0x62);
 		}
 
 		cw2015.request();

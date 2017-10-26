@@ -49,21 +49,32 @@ testCase('GPIO', function() {
 		} else if(name == 'ARTIK 530') {
 			console.log('Running GPIO test on ARTIK 530');
 			const a530 = require('../src/platform/artik530');
-			red      = new artik.gpio(a530.ARTIK_A530_GPIO_GPIO0, 'red', 'out', 'none', 0);
-			green    = new artik.gpio(a530.ARTIK_A530_GPIO_GPIO1, 'green', 'out', 'none', 0);
-			blue     = new artik.gpio(a530.ARTIK_A530_GPIO_GPIO2, 'blue', 'out', 'none', 0);
-			led400 	 = new artik.gpio(a530.ARTIK_A530_GPIO_LED400, 'led400', 'out', 'none', 0);
-			led401 	 = new artik.gpio(a530.ARTIK_A530_GPIO_LED401, 'led401', 'out', 'none', 0);
-			sw403 	 = new artik.gpio(a530.ARTIK_A530_GPIO_SW403, 'sw403', 'in', 'both', 0);
-			sw404 	 = new artik.gpio(a530.ARTIK_A530_GPIO_SW404, 'sw404', 'in', 'both', 0);
-			button   = new artik.gpio(a530.ARTIK_A530_GPIO_GPIO4, 'button', 'in', 'both', 0);
+			red        = new artik.gpio(a530.ARTIK_A530_GPIO_GPIO0, 'red', 'out', 'none', 0);
+			green      = new artik.gpio(a530.ARTIK_A530_GPIO_GPIO1, 'green', 'out', 'none', 0);
+			blue       = new artik.gpio(a530.ARTIK_A530_GPIO_GPIO2, 'blue', 'out', 'none', 0);
+			led400 	   = new artik.gpio(a530.ARTIK_A530_GPIO_LED400, 'led400', 'out', 'none', 0);
+			led401 	   = new artik.gpio(a530.ARTIK_A530_GPIO_LED401, 'led401', 'out', 'none', 0);
+			sw403 	   = new artik.gpio(a530.ARTIK_A530_GPIO_SW403, 'sw403', 'in', 'both', 0);
+			sw404 	   = new artik.gpio(a530.ARTIK_A530_GPIO_SW404, 'sw404', 'in', 'both', 0);
+			button     = new artik.gpio(a530.ARTIK_A530_GPIO_GPIO4, 'button', 'in', 'both', 0);
+		} else if(name == 'ARTIK 305') {
+			console.log('Running GPIO test on ARTIK 305');
+			const a305 = require('../src/platform/artik305');
+			red        = new artik.gpio(a305.ARTIK_A305_GPIO_GPIO0, 'red', 'out', 'none', 0);
+			green      = new artik.gpio(a305.ARTIK_A305_GPIO_GPIO1, 'green', 'out', 'none', 0);
+			blue       = new artik.gpio(a305.ARTIK_A305_GPIO_GPIO2, 'blue', 'out', 'none', 0);
+			led400 	   = new artik.gpio(a305.ARTIK_A305_GPIO_LED400, 'led400', 'out', 'none', 0);
+			led401 	   = new artik.gpio(a305.ARTIK_A305_GPIO_LED401, 'led401', 'out', 'none', 0);
+			sw403 	   = new artik.gpio(a305.ARTIK_A305_GPIO_SW403, 'sw403', 'in', 'both', 0);
+			sw404 	   = new artik.gpio(a305.ARTIK_A305_GPIO_SW404, 'sw404', 'in', 'both', 0);
+			button     = new artik.gpio(a305.ARTIK_A305_GPIO_GPIO4, 'button', 'in', 'both', 0);
 		}
 
 		red.request();
 		green.request();
 		blue.request();
 
-		if (name == 'ARTIK 530' || name == 'ARTIK 710'){
+		if (name == 'ARTIK 530' || name == 'ARTIK 710' || name == 'ARTIK 305'){
 			led400.request();
 			led401.request();
 		}
@@ -72,7 +83,7 @@ testCase('GPIO', function() {
 		blue.write(0);
 		green.write(0);
 
-		if (name == 'ARTIK 530' || name == 'ARTIK 710'){
+		if (name == 'ARTIK 530' || name == 'ARTIK 710' || name == 'ARTIK 305'){
 			led400.write(0);
 			led401.write(0);
 		}
@@ -97,7 +108,7 @@ testCase('GPIO', function() {
 
 			const name = artik.get_platform_name();
 
-			if (name != 'ARTIK 530' && name != 'ARTIK 710')
+			if (name != 'ARTIK 530' && name != 'ARTIK 710' && name != 'ARTIK 305')
 				this.skip();
 
 			led400.write(1);
@@ -135,7 +146,7 @@ testCase('GPIO', function() {
 
 		const name = artik.get_platform_name();
 
-		if (!runManualTests && (name != 'ARTIK 530' && name != 'ARTIK 710'))
+		if (!runManualTests && (name != 'ARTIK 530' && name != 'ARTIK 710' && name != 'ARTIK 305'))
 			this.skip();
 
 		this.timeout(10000);
@@ -157,7 +168,7 @@ testCase('GPIO', function() {
 
 		const name = artik.get_platform_name();
 
-		if (!runManualTests && (name != 'ARTIK 530' && name != 'ARTIK 710'))
+		if (!runManualTests && (name != 'ARTIK 530' && name != 'ARTIK 710' && name != 'ARTIK 305'))
 			this.skip();
 
 		this.timeout(10000);
@@ -181,7 +192,7 @@ testCase('GPIO', function() {
 		blue.release();
 		button.release();
 
-		if (name == 'ARTIK 530' || name == 'ARTIK 710'){
+		if (name == 'ARTIK 530' || name == 'ARTIK 710' || name == 'ARTIK 305'){
 			led400.write(0);
 			led401.write(0);
 

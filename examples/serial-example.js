@@ -18,6 +18,13 @@ if(name == 'ARTIK 520') {
 	console.log("Running SERIAL test on ARTIK 530");
 	const a530 = require('../src/platform/artik530');
 	var port = a530.ARTIK_A530_SERIAL.UART.UART4;
+} else if(name == 'ARTIK 305') {
+	console.log("Running SERIAL test on ARTIK 305");
+	const a305 = require('../src/platform/artik305');
+	var port = a305.ARTIK_A305_SERIAL.UART.UART2;
+} else {
+	console.log('Unrecognized platform');
+	process.exit(-1);
 }
 
 var loopback = new artik.serial(port,

@@ -34,8 +34,18 @@ if(name == 'ARTIK 520') {
 						  a530.ARTIK_A530_SPI.MODE.MODE0,
 						  a530.ARTIK_A530_SPI.BITS.BITS8,
 						  500000);
+} else if(name == 'ARTIK 305') {
+	console.log('Running SPI test on ARTIK 305');
+	const a305 = require('../src/platform/artik305.js');
+	var spi = artik.spi(a305.ARTIK_A305_SPI.BUS.BUS0,
+						  a305.ARTIK_A305_SPI.CS.CS0,
+						  a305.ARTIK_A305_SPI.MODE.MODE0,
+						  a305.ARTIK_A305_SPI.BITS.BITS8,
+						  500000);
+} else {
+	console.log('Unrecognized platform');
+	process.exit(-1);
 }
-
 
 if (spi.request()) {
 	console.log('Failed to request spi');

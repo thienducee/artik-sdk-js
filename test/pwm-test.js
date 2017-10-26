@@ -37,6 +37,11 @@ testCase('PWM', function() {
 			console.log('Running PWM test on ARTIK 530');
 			const a530 = require('../src/platform/artik530');
 			pwm = artik.pwm(a530.ARTIK_A530_PWM.PWMIO.XWMIO0, "pwm-test", 400000, a530.ARTIK_A530_PWM.POLR.NORMAL, 200000);
+		} else if(name == 'ARTIK 305') {
+			console.log('Running PWM test on ARTIK 305');
+			const a305 = require('../src/platform/artik305');
+			pwm = artik.pwm(a305.ARTIK_A305_PWM.PWMIO.XWMIO0, "pwm-test", 400000, a530.ARTIK_A305_PWM.POLR.NORMAL, 200000);
+
 		}
 		pwm.request();
 	});
