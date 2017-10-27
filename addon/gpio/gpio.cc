@@ -105,6 +105,7 @@ void GpioWrapper::New(const FunctionCallbackInfo<Value>& args) {
         args[4]->IsUndefined()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
+        return;
     }
 
     artik_gpio_id id = args[0]->NumberValue();
@@ -116,13 +117,15 @@ void GpioWrapper::New(const FunctionCallbackInfo<Value>& args) {
     v8::String::Utf8Value param2(args[2]->ToString());
     char* dir_str = *param2;
 
-    if (!strncmp(dir_str, "out", MAX_ARG_STR_LEN))
+    if (!strncmp(dir_str, "out", MAX_ARG_STR_LEN)) {
       dir = GPIO_OUT;
-    else if (!strncmp(dir_str, "in", MAX_ARG_STR_LEN))
+    } else if (!strncmp(dir_str, "in", MAX_ARG_STR_LEN)) {
       dir = GPIO_IN;
-    else
+    } else {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
+      return;
+    }
 
     artik_gpio_edge_t edge = artik_gpio_edge_t::GPIO_EDGE_NONE;
     v8::String::Utf8Value param3(args[3]->ToString());
@@ -211,9 +214,11 @@ void GpioWrapper::write(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args.Length() < 1 || args[0]->IsUndefined())
+  if (args.Length() < 1 || args[0]->IsUndefined()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
             isolate, "Wrong arguments")));
+      return;
+  }
 
   Gpio* obj = ObjectWrap::Unwrap<GpioWrapper>(args.Holder())->getObj();
   artik_error ret = obj->write(args[0]->NumberValue());
