@@ -18,6 +18,29 @@ var wifi_ap = new wifi.wifi_ap();
 
 According to the selected mode, some functions cannot be used by the object.
 
+## get_info (Station mode)
+
+```javascript
+String get_info()
+```
+
+**Description**
+
+Return the status of the current wifi.
+
+**Parameters**
+
+None.
+
+**Return value**
+
+*String*: JSON formatted string containing the current Wi-Fi information
+
+**Example**
+
+See [full example](#full-example)
+
+
 ## scan_request (Station mode)
 
 ```javascript
@@ -210,6 +233,7 @@ var pwd = '<passphrase of the SSID>';
 var wifi_station = new wifi.wifi_station();
 
 wifi_station.on('started', function() {
+	console.log(wifi_station.get_info());
 	wifi_station.scan_request();
 });
 

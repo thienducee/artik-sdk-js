@@ -56,6 +56,10 @@ Wifi_Station.prototype.get_scan_result = function() {
 	return this.wifi.get_scan_result();
 };
 
+Wifi_Station.prototype.get_info = function() {
+	return this.wifi.get_info();
+};
+
 Wifi_AP.prototype.start_ap = function(ssid, password, channel, encryption) {
 	return this.wifi.start_ap(ssid, password, channel, encryption);
 };

@@ -37,6 +37,19 @@ testCase('Wifi', function() {
 
 	});
 
+	testCase('#get_info()', function() {
+
+		assertions('Returns current wifi station information', function(done) {
+
+			var info = JSON.parse(wifi_station.get_info());
+			assert.isNotNull(info);
+			console.log(info);
+			done();
+
+		});
+
+	});
+
 	testCase('#scan_request(), on(scan)', function() {
 
 		assertions('Return callback event when the wifi scan request is performed', function(done) {

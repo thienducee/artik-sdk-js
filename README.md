@@ -54,7 +54,7 @@ Before Installing with npm, you must install these packages on the ARTIK board.
 
 ### 8. ZigBee
   * [ZigBee API](/doc/ZIGBEE_README.md)
-  
+
 ### 9. LWM2M
   * [LWM2M API](/doc/LWM2M_README.md)
 

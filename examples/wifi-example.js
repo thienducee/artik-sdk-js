@@ -6,6 +6,7 @@ var pwd = '<passphrase of the SSID>';
 var wifi_station = new wifi.wifi_station();
 
 wifi_station.on('started', function() {
+	console.log("Current Wifi Information: " + wifi_station.get_info());
 	wifi_station.scan_request();
 });
 

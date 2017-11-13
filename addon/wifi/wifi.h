@@ -50,6 +50,7 @@ class WifiWrapper : public node::ObjectWrap {
   static void disconnect(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void scan_request(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void get_scan_result(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_info(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void connect(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   static void start_ap(const v8::FunctionCallbackInfo<v8::Value>& args);

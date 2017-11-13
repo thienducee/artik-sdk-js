@@ -102,7 +102,7 @@ static char* convert_aps_to_json(artik_wifi_ap* aps, int num_aps) {
       strncat(encryption, "WPA,", JSON_MAX_ENC_LEN);
     if (aps[i].encryption_flags & WIFI_ENCRYPTION_WEP)
       strncat(encryption, "WEP,", JSON_MAX_ENC_LEN);
-    if (aps[i].encryption_flags & WIFI_ENCRYPTION_OPEN)
+    if (aps[i].encryption_flags == WIFI_ENCRYPTION_OPEN)
       strncat(encryption, "OPEN,", JSON_MAX_ENC_LEN);
 
     snprintf(entry, max_entry_len, ap_entry,
@@ -158,7 +158,7 @@ void WifiWrapper::Init(Local<Object> exports) {
 
   NODE_SET_PROTOTYPE_METHOD(tpl, "scan_request", scan_request);
   NODE_SET_PROTOTYPE_METHOD(tpl, "get_scan_result", get_scan_result);
-
+  NODE_SET_PROTOTYPE_METHOD(tpl, "get_info", get_info);
   NODE_SET_PROTOTYPE_METHOD(tpl, "start_ap", start_ap);
 
   constructor.Reset(isolate, tpl->GetFunction());
@@ -382,6 +382,73 @@ void WifiWrapper::get_scan_result(const FunctionCallbackInfo<v8::Value>& args) {
 
   args.GetReturnValue().Set(
       String::NewFromUtf8(isolate, json_res ? json_res : "null data"));
+
+  ARTIK_FREE(json_res);
+}
+
+void WifiWrapper::get_info(const FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  WifiWrapper* wrap = ObjectWrap::Unwrap<WifiWrapper>(args.Holder());
+  Wifi* obj = wrap->getObj();
+  artik_wifi_ap wifi_ap;
+  artik_wifi_connection_info info;
+  char* json_res = NULL;
+  const char result[] = "\t{\n"
+      "\t\t\"connected\": %s,\n"
+      "\t\t\"error\": %s,\n"
+      "\t\t\"name\": \"%s\",\n"
+      "\t\t\"bssid\": \"%s\",\n"
+      "\t\t\"frequency\": %d,\n"
+      "\t\t\"signal\": %d,\n"
+      "\t\t\"encryption\": \"%s\",\n"
+      "\t\t\"mode\": \"%s\"\n"
+      "\t}\n";
+
+
+  if (wrap->getMode() != ARTIK_WIFI_MODE_STATION) {
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "get_info() works only in"
+                                     " station mode")));
+    return;
+  }
+
+  log_dbg("");
+
+  artik_error ret = S_OK;
+  memset(&info, 0, sizeof(artik_wifi_connection_info));
+  memset(&wifi_ap, 0, sizeof(artik_wifi_ap));
+  ret = obj->get_info(&info, &wifi_ap);
+
+  if (ret != S_OK) {
+    json_res = NULL;
+  } else {
+    char encryption[JSON_MAX_ENC_LEN];
+    memset(encryption, 0, JSON_MAX_ENC_LEN);
+
+    if (info.connected) {
+        if (wifi_ap.encryption_flags & WIFI_ENCRYPTION_WPA2)
+            strncpy(encryption, "WPA2", JSON_MAX_ENC_LEN);
+        if (wifi_ap.encryption_flags & WIFI_ENCRYPTION_WPA)
+            strncpy(encryption, "WPA", JSON_MAX_ENC_LEN);
+        if (wifi_ap.encryption_flags & WIFI_ENCRYPTION_WEP)
+            strncpy(encryption, "WEP", JSON_MAX_ENC_LEN);
+        if (wifi_ap.encryption_flags == WIFI_ENCRYPTION_OPEN)
+            strncpy(encryption, "OPEN", JSON_MAX_ENC_LEN);
+    }
+
+    asprintf(&json_res, result,
+            (info.connected) ? "true" : "false",
+            (info.error != S_OK) ? "true" : "false",
+            (info.connected && strlen(wifi_ap.name) > 0) ? wifi_ap.name:"null",
+            (info.connected && strlen(wifi_ap.bssid) > 0)? wifi_ap.bssid:"null",
+            (info.connected) ? wifi_ap.frequency : 0,
+            (info.connected) ? wifi_ap.signal_level : 0,
+            (info.connected) ? encryption : "null",
+            (info.connected) ? "none" : "null");
+  }
+
+  args.GetReturnValue().Set(
+      String::NewFromUtf8(isolate, json_res ? json_res : error_msg(ret)));
 
   ARTIK_FREE(json_res);
 }
