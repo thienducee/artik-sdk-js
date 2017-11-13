@@ -28,7 +28,6 @@
       ],
       'cflags_cc': [
                 '-fexceptions',
-                '-DCONFIG_RELEASE',
                 '<!@(pkg-config --cflags-only-I glib-2.0)'
       ],
       'link_settings' : {
@@ -50,6 +49,7 @@
         'addon/artik.cc',
         'addon/utils.cc',
         'addon/loop.cc',
+        'addon/base/ssl_config_converter.cc',
         'addon/gpio/gpio.cc',
         'addon/serial/serial.cc',
         'addon/i2c/i2c.cc',

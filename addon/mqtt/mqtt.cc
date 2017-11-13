@@ -25,7 +25,10 @@
 #include <artik_error.hh>
 
 #include <iostream>
+#include <memory>
 #include <string>
+
+#include "base/ssl_config_converter.h"
 
 namespace artik {
 
@@ -50,88 +53,6 @@ using v8::Context;
 #define CHECK_ARGUMENT_OBJECT(x) (x->IsUndefined() || !x->IsObject())
 
 Persistent<Function> MqttWrapper::constructor;
-
-static void updateSSLConfig(Isolate *isolate, Local<Value> val,
-    artik_ssl_config **ssl_config) {
-  *ssl_config = reinterpret_cast<artik_ssl_config*>(malloc(
-      sizeof(artik_ssl_config)));
-
-  memset(*ssl_config, 0, sizeof(artik_ssl_config));
-
-  // use_se parameter
-  auto use_se = js_object_attribute_to_cpp<bool>(val, "use_se");
-
-  if (use_se)
-    (*ssl_config)->se_config.use_se = use_se.value();
-
-  // ca_cert parameter
-  auto ca_cert = js_object_attribute_to_cpp<Local<Value>>(val, "ca_cert");
-
-  if (ca_cert) {
-    if (node::Buffer::HasInstance(ca_cert.value())) {
-      char *val = reinterpret_cast<char *>(node::Buffer::Data(ca_cert.value()));
-      size_t len = node::Buffer::Length(ca_cert.value());
-
-      (*ssl_config)->ca_cert.data = strdup(val);
-      (*ssl_config)->ca_cert.len = len;
-    } else {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-          "Wrong definition of ca_cert")));
-    }
-  }
-
-  // client_cert parameter
-  auto client_cert = js_object_attribute_to_cpp<Local<Value>>(val,
-      "client_cert");
-
-  if (client_cert) {
-    if (node::Buffer::HasInstance(client_cert.value())) {
-      char *val = reinterpret_cast<char *>(node::Buffer::Data(
-          client_cert.value()));
-      size_t len = node::Buffer::Length(client_cert.value());
-
-      (*ssl_config)->client_cert.data = strdup(val);
-      (*ssl_config)->client_cert.len = len;
-    } else {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-          "Wrong definition of client_cert")));
-    }
-  }
-
-  // client_key parameter
-  auto client_key = js_object_attribute_to_cpp<Local<Value>>(val, "client_key");
-
-  if (client_key) {
-    if (node::Buffer::HasInstance(client_key.value())) {
-      char *val = reinterpret_cast<char *>(node::Buffer::Data(
-          client_key.value()));
-      size_t len = node::Buffer::Length(client_key.value());
-
-      (*ssl_config)->client_key.data = strdup(val);
-      (*ssl_config)->client_key.len = len;
-    } else {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-          "Wrong definition of client_key")));
-    }
-  }
-
-  // verify_cert parameter
-  auto verify_cert = js_object_attribute_to_cpp<std::string>(val,
-      "verify_cert");
-
-  if (verify_cert) {
-    if (verify_cert.value() == "none")
-      (*ssl_config)->verify_cert = ARTIK_SSL_VERIFY_NONE;
-    else if (verify_cert.value() == "optional")
-      (*ssl_config)->verify_cert = ARTIK_SSL_VERIFY_OPTIONAL;
-    else if (verify_cert.value() == "required")
-      (*ssl_config)->verify_cert = ARTIK_SSL_VERIFY_REQUIRED;
-    else
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-          "Wrong definition of verify_cert : expect 'none', 'optional' "
-          "or 'required'.")));
-  }
-}
 
 static void on_mqtt_connect(artik_mqtt_config *client_config, void *user_data,
     artik_error result) {
@@ -304,6 +225,7 @@ void MqttWrapper::Init(Local<Object> exports) {
 
 void MqttWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate *isolate = args.GetIsolate();
+  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
   MqttWrapper* obj = NULL;
 
   log_dbg("");
@@ -331,8 +253,10 @@ void MqttWrapper::New(const FunctionCallbackInfo<Value>& args) {
     config.keep_alive_time = args[4]->NumberValue();
     config.block = args[5]->BooleanValue();
 
-    if (!args[6]->IsUndefined() && args[6]->IsObject())
-      updateSSLConfig(isolate, args[6], &(config.tls));
+    if (!args[6]->IsUndefined() && args[6]->IsObject()) {
+      ssl_config = SSLConfigConverter::convert(isolate, args[6]);
+      config.tls = ssl_config.get();
+    }
 
     obj = new MqttWrapper(config);
     obj->Wrap(args.This());

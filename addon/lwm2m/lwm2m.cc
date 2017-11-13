@@ -29,6 +29,8 @@
 
 #include "json.hpp"
 
+#include "base/ssl_config_converter.h"
+
 using json = nlohmann::json;
 
 namespace artik {
@@ -281,15 +283,27 @@ void Lwm2mWrapper::client_request(
 
     if (args.Length() > 7 && args[7]->IsObject()) {
       wrap->m_config.ssl_config = new artik_ssl_config;
-      auto use_se = js_object_attribute_to_cpp<bool>(args[7], "use_se");
+      auto se_cert_id_str =
+        js_object_attribute_to_cpp<std::string>(args[7], "se_cert_id");
       auto client_cert =
         js_object_attribute_to_cpp<std::string>(args[7], "client_cert");
       auto client_private_key =
         js_object_attribute_to_cpp<std::string>(args[7],
                                                 "client_private_key");
 
-      if (use_se && use_se.value()) {
+      if (se_cert_id_str) {
+        auto cert_id =
+          to_artik_parameter<artik_security_certificate_id>(
+            SSLConfigConverter::security_certificate_ids,
+            se_cert_id_str.value().c_str());
+        if (!cert_id) {
+          isolate->ThrowException(
+                Exception::TypeError(String::NewFromUtf8(isolate,
+                    "Wrong value of cert_id. ")));
+          return;
+        }
         wrap->m_config.ssl_config->se_config.use_se = true;
+        wrap->m_config.ssl_config->se_config.certificate_id = cert_id.value();
       } else if (client_cert && client_private_key) {
         wrap->m_config.ssl_config->se_config.use_se = false;
         wrap->m_config.ssl_config->client_cert.data =

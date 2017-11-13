@@ -27,6 +27,8 @@
 #include <utils.h>
 #include <loop.h>
 
+#include <memory>
+
 namespace artik {
 
 struct CloudAsyncWork {
@@ -53,7 +55,8 @@ struct CloudAsyncWork {
   int count;
   int offset;
   char* response;
-  artik_ssl_config *ssl_config;
+  std::unique_ptr<artik_ssl_config> ssl_config;
+  artik_security_certificate_id cert_id;
 };
 
 class CloudWrapper : public node::ObjectWrap {

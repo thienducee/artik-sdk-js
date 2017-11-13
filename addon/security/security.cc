@@ -18,6 +18,10 @@
 
 #include "security/security.h"
 
+#include <utils.h>
+
+#include "base/ssl_config_converter.h"
+
 namespace artik {
 
 using v8::Exception;
@@ -90,21 +94,39 @@ void SecurityWrapper::New(const FunctionCallbackInfo<Value>& args) {
 
 void SecurityWrapper::get_certificate(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-
-  if (args.Length() != 0)
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-        isolate, "Wrong number of arguments")));
-
   Security *obj = ObjectWrap::Unwrap<SecurityWrapper>(args.Holder())->getObj();
-
   char *cert = NULL;
   artik_error res = S_OK;
 
+  if (args.Length() != 1) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments")));
+    return;
+  }
+
+  String::Utf8Value param0(args[0]->ToString());
+  auto cert_id =
+    to_artik_parameter<artik_security_certificate_id>(
+      SSLConfigConverter::security_certificate_ids, *param0);
+  if (!cert_id) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
+      "Wrong value of cert_id. ")));
+    return;
+  }
+
   try {
-    res = obj->get_certificate(CERT_ID_ARTIK, &cert);
-    if (res != S_OK)
+    res = obj->get_certificate(cert_id.value(), &cert);
+    if (res != S_OK) {
       isolate->ThrowException(Exception::TypeError(
           String::NewFromUtf8(isolate, error_msg(res))));
+      return;
+    }
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, cert));
     free(cert);
   } catch (artik::ArtikException &e) {
@@ -116,17 +138,34 @@ void SecurityWrapper::get_certificate(const FunctionCallbackInfo<Value>& args) {
 void SecurityWrapper::get_ca_chain(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args.Length() != 0)
+    if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments")));
+    return;
+  }
 
   Security *obj = ObjectWrap::Unwrap<SecurityWrapper>(args.Holder())->getObj();
 
   char *chain = NULL;
   artik_error res = S_OK;
+  String::Utf8Value param0(args[0]->ToString());
+  auto cert_id =
+    to_artik_parameter<artik_security_certificate_id>(
+      SSLConfigConverter::security_certificate_ids, *param0);
+  if (!cert_id) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
+      "Wrong value of cert_id. ")));
+    return;
+  }
 
   try {
-    res = obj->get_ca_chain(CERT_ID_ARTIK, &chain);
+    res = obj->get_ca_chain(cert_id.value(), &chain);
     if (res != S_OK)
       isolate->ThrowException(Exception::TypeError(
           String::NewFromUtf8(isolate, error_msg(res))));
@@ -200,14 +239,36 @@ void SecurityWrapper::get_certificate_sn(
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                      isolate, "Wrong number of arguments")));
 
+
+  if (args.Length() != 1) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments")));
+    return;
+  }
+
   Security *obj = ObjectWrap::Unwrap<SecurityWrapper>(args.Holder())->getObj();
 
   unsigned int len = ARTIK_CERT_SN_MAXLEN;
   unsigned char sn[len];
   artik_error res = S_OK;
+  String::Utf8Value param0(args[0]->ToString());
+  auto cert_id =
+    to_artik_parameter<artik_security_certificate_id>(
+      SSLConfigConverter::security_certificate_ids, *param0);
+  if (!cert_id) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
+      "Wrong value of cert_id. ")));
+    return;
+  }
 
   try {
-    res = obj->get_certificate_sn(CERT_ID_ARTIK, sn, &len);
+    res = obj->get_certificate_sn(cert_id.value(), sn, &len);
     if (res != S_OK)
       isolate->ThrowException(Exception::TypeError(
             String::NewFromUtf8(isolate, error_msg(res))));

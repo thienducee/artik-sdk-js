@@ -100,6 +100,8 @@
     "addon/adc/adc.cc",
     "addon/websocket/websocket.h",
     "addon/websocket/websocket.cc",
+    "addon/base/ssl_config_converter.h",
+    "addon/base/ssl_config_converter.cc",
     "src/platform/artik520.js",
     "src/platform/artik1020.js",
     "src/platform/artik710.js",

@@ -22,8 +22,10 @@
 #include <node_buffer.h>
 #include <artik_log.h>
 
+#include <memory>
 #include <string>
 
+#include "base/ssl_config_converter.h"
 
 namespace artik {
 
@@ -44,96 +46,6 @@ using v8::Int32;
 using v8::Context;
 
 Persistent<Function> HttpWrapper::constructor;
-
-static void updateSSLConfig(Isolate *isolate, Local<Value> val,
-    artik_ssl_config **ssl_config) {
-
-  artik_ssl_config * config = reinterpret_cast<artik_ssl_config*>(malloc(
-      sizeof(artik_ssl_config)));
-
-  if (!config) {
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-        "Not enough memory")));
-  }
-
-  memset(config, 0, sizeof(artik_ssl_config));
-
-  /* use_se parameter */
-  auto use_se = js_object_attribute_to_cpp<bool>(val, "use_se");
-
-  if (use_se)
-    config->se_config.use_se = use_se.value();
-
-  /* ca_cert parameter */
-  auto ca_cert = js_object_attribute_to_cpp<Local<Value>>(val, "ca_cert");
-
-  if (ca_cert) {
-    if (node::Buffer::HasInstance(ca_cert.value())) {
-      char *val = reinterpret_cast<char *>(node::Buffer::Data(ca_cert.value()));
-      size_t len = node::Buffer::Length(ca_cert.value());
-
-      config->ca_cert.data = strndup(val, len);
-      config->ca_cert.len = len;
-    } else {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-          "Wrong definition of ca_cert")));
-    }
-  }
-
-  /* client_cert parameter */
-  auto client_cert = js_object_attribute_to_cpp<Local<Value>>(val,
-      "client_cert");
-
-  if (client_cert) {
-    if (node::Buffer::HasInstance(client_cert.value())) {
-      char *val = reinterpret_cast<char *>(node::Buffer::Data(
-          client_cert.value()));
-      size_t len = node::Buffer::Length(client_cert.value());
-
-      config->client_cert.data = strndup(val, len);
-      config->client_cert.len = len;
-    } else {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-          "Wrong definition of client_cert")));
-    }
-  }
-
-  /* client_key parameter */
-  auto client_key = js_object_attribute_to_cpp<Local<Value>>(val, "client_key");
-
-  if (client_key) {
-    if (node::Buffer::HasInstance(client_key.value())) {
-      char *val = reinterpret_cast<char *>(node::Buffer::Data(
-          client_key.value()));
-      size_t len = node::Buffer::Length(client_key.value());
-
-      config->client_key.data = strndup(val, len);
-      config->client_key.len = len;
-    } else {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-          "Wrong definition of client_key")));
-    }
-  }
-
-  /* verify_cert parameter */
-  auto verify_cert = js_object_attribute_to_cpp<std::string>(val,
-      "verify_cert");
-
-  if (verify_cert) {
-    if (verify_cert.value() == "none")
-      config->verify_cert = ARTIK_SSL_VERIFY_NONE;
-    else if (verify_cert.value() == "optional")
-      config->verify_cert = ARTIK_SSL_VERIFY_OPTIONAL;
-    else if (verify_cert.value() == "required")
-      config->verify_cert = ARTIK_SSL_VERIFY_REQUIRED;
-    else
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-          "Wrong definition of verify_cert : expect 'none', 'optional' "
-          "or 'required'.")));
-  }
-
-  *ssl_config = config;
-}
 
 static int on_http_data(char *data, unsigned int len, void *user_data) {
   Isolate * isolate = Isolate::GetCurrent();
@@ -291,6 +203,7 @@ void HttpWrapper::Init(Local<Object> exports) {
 void HttpWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
+  log_dbg("Create Http JS Wrapper");
   if (args.IsConstructCall()) {
     HttpWrapper* obj = new HttpWrapper();
     obj->Wrap(args.This());
@@ -308,7 +221,7 @@ void HttpWrapper::get_stream(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  artik_ssl_config* ssl_config = NULL;
+  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
 
   log_dbg("");
 
@@ -355,8 +268,12 @@ void HttpWrapper::get_stream(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject())
-    updateSSLConfig(isolate, args[2], &ssl_config);
+  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+    ssl_config = SSLConfigConverter::convert(isolate, args[2]);
+    if (!ssl_config) {
+      return;
+    }
+  }
 
   /* Data Callback */
   if (!args[3]->IsUndefined()) {
@@ -373,7 +290,7 @@ void HttpWrapper::get_stream(const FunctionCallbackInfo<Value>& args) {
   v8::String::Utf8Value param0(args[0]->ToString());
   const char *url = *param0;
   artik_error ret = http->get_stream(url, headers, NULL, on_http_data,
-    reinterpret_cast<void*>(obj), ssl_config);
+    reinterpret_cast<void*>(obj), ssl_config.get());
 
   on_http_error(ret, reinterpret_cast<void*>(obj));
 
@@ -385,7 +302,7 @@ void HttpWrapper::get(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  artik_ssl_config* ssl_config = NULL;
+  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
 
   log_dbg("");
 
@@ -432,8 +349,12 @@ void HttpWrapper::get(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject())
-    updateSSLConfig(isolate, args[2], &ssl_config);
+  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+    ssl_config = SSLConfigConverter::convert(isolate, args[2]);
+    if (!ssl_config) {
+      return;
+    }
+  }
 
   /* If callback is provided, make the call asynchronous */
   if (!args[3]->IsUndefined()) {
@@ -442,8 +363,9 @@ void HttpWrapper::get(const FunctionCallbackInfo<Value>& args) {
 
     v8::String::Utf8Value param0(args[0]->ToString());
     const char *url = *param0;
-    artik_error ret = http->get_async(url, headers, http_response_get_callback,
-                                      reinterpret_cast<void*>(obj), ssl_config);
+    artik_error ret = http->get_async(
+      url, headers, http_response_get_callback,
+      reinterpret_cast<void*>(obj), ssl_config.get());
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 
@@ -451,7 +373,8 @@ void HttpWrapper::get(const FunctionCallbackInfo<Value>& args) {
     v8::String::Utf8Value param0(args[0]->ToString());
     const char *url = *param0;
     char *response = NULL;
-    artik_error ret = http->get(url, headers, &response, NULL, ssl_config);
+    artik_error ret =
+      http->get(url, headers, &response, NULL, ssl_config.get());
 
     if (ret != S_OK)
       response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
@@ -467,7 +390,7 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  artik_ssl_config* ssl_config = NULL;
+  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
 
   log_dbg("");
 
@@ -514,8 +437,12 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[3]->IsUndefined() && args[3]->IsObject())
-    updateSSLConfig(isolate, args[3], &ssl_config);
+  if (!args[3]->IsUndefined() && args[3]->IsObject()) {
+    ssl_config = SSLConfigConverter::convert(isolate, args[3]);
+    if (!ssl_config) {
+      return;
+    }
+  }
 
   /* If callback is provided, make the call asynchronous */
   if (!args[4]->IsUndefined()) {
@@ -532,9 +459,10 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
       body = strndup(*param2, strlen(*param2));
     }
 
-    artik_error ret = http->post_async(url, headers, body,
-                                      http_response_post_callback,
-                                      reinterpret_cast<void*>(obj), ssl_config);
+    artik_error ret = http->post_async(
+      url, headers, body,
+      http_response_post_callback,
+      reinterpret_cast<void*>(obj), ssl_config.get());
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 
@@ -551,7 +479,7 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
       body = strndup(*param2, strlen(*param2));
     }
 
-    ret = http->post(url, headers, body, &response, NULL, ssl_config);
+    ret = http->post(url, headers, body, &response, NULL, ssl_config.get());
 
     if (ret != S_OK)
       response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
@@ -567,7 +495,7 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  artik_ssl_config* ssl_config = NULL;
+  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
 
   log_dbg("");
 
@@ -614,8 +542,12 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[3]->IsUndefined() && args[3]->IsObject())
-    updateSSLConfig(isolate, args[3], &ssl_config);
+  if (!args[3]->IsUndefined() && args[3]->IsObject()) {
+    ssl_config = SSLConfigConverter::convert(isolate, args[3]);
+    if (!ssl_config) {
+      return;
+    }
+  }
 
   /* If callback is provided, make the call asynchronous */
   if (!args[4]->IsUndefined()) {
@@ -632,9 +564,10 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
       body = strndup(*param2, strlen(*param2));
     }
 
-    artik_error ret = http->put_async(url, headers, body,
-                                      http_response_put_callback,
-                                      reinterpret_cast<void*>(obj), ssl_config);
+    artik_error ret = http->put_async(
+      url, headers, body,
+      http_response_put_callback,
+      reinterpret_cast<void*>(obj), ssl_config.get());
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 
@@ -651,7 +584,7 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
       body = strndup(*param2, strlen(*param2));
     }
 
-    ret = http->put(url, headers, body, &response, NULL, ssl_config);
+    ret = http->put(url, headers, body, &response, NULL, ssl_config.get());
 
     if (ret != S_OK)
       response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
@@ -667,7 +600,7 @@ void HttpWrapper::del(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  artik_ssl_config* ssl_config = NULL;
+  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
 
   log_dbg("");
 
@@ -714,8 +647,12 @@ void HttpWrapper::del(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject())
-    updateSSLConfig(isolate, args[2], &ssl_config);
+  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+    ssl_config = SSLConfigConverter::convert(isolate, args[2]);
+    if (!ssl_config) {
+      return;
+    }
+  }
 
   /* If callback is provided, make the call asynchronous */
   if (!args[3]->IsUndefined()) {
@@ -724,8 +661,9 @@ void HttpWrapper::del(const FunctionCallbackInfo<Value>& args) {
 
     v8::String::Utf8Value param0(args[0]->ToString());
     const char *url = *param0;
-    artik_error ret = http->del_async(url, headers, http_response_del_callback,
-                                      reinterpret_cast<void*>(obj), ssl_config);
+    artik_error ret =
+      http->del_async(url, headers, http_response_del_callback,
+                      reinterpret_cast<void*>(obj), ssl_config.get());
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 
@@ -735,7 +673,7 @@ void HttpWrapper::del(const FunctionCallbackInfo<Value>& args) {
     char *response = NULL;
     artik_error ret = S_OK;
 
-    ret = http->del(url, headers, &response, NULL, ssl_config);
+    ret = http->del(url, headers, &response, NULL, ssl_config.get());
 
     if (ret != S_OK)
       response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
