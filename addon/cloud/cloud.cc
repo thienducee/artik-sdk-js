@@ -54,7 +54,7 @@ static void updateSSLConfig(Isolate *isolate, Local<Value> val,
   auto use_se = js_object_attribute_to_cpp<bool>(val, "use_se");
 
   if (use_se)
-    (*ssl_config)->use_se = use_se.value();
+    (*ssl_config)->se_config.use_se = use_se.value();
 
   /* ca_cert parameter */
   auto ca_cert = js_object_attribute_to_cpp<Local<Value>>(val, "ca_cert");
@@ -166,8 +166,8 @@ static void CloudWorkAsyncSdrCompleteRegistration(uv_work_t *req) {
   log_dbg("");
 
   work->response = NULL;
-  work->ret = work->cloud->sdr_complete_registration(work->reg_id, work->nonce,
-      &work->response);
+  work->ret = work->cloud->sdr_complete_registration(CERT_ID_ARTIK,
+      work->reg_id, work->nonce, &work->response);
   if (work->ret == E_INTERRUPTED) {
     cleanup_work(work);
     return;
@@ -180,8 +180,8 @@ static void CloudWorkAsyncSdrRegistrationStatus(uv_work_t *req) {
   log_dbg("");
 
   work->response = NULL;
-  work->ret = work->cloud->sdr_registration_status(work->reg_id,
-      &work->response);
+  work->ret = work->cloud->sdr_registration_status(CERT_ID_ARTIK,
+      work->reg_id, &work->response);
   if (work->ret == E_INTERRUPTED) {
     cleanup_work(work);
     return;
@@ -194,8 +194,8 @@ static void CloudWorkAsyncSdrStartRegistration(uv_work_t *req) {
   log_dbg("");
 
   work->response = NULL;
-  work->ret = work->cloud->sdr_start_registration(work->device_type_id,
-      work->vendor_id, &work->response);
+  work->ret = work->cloud->sdr_start_registration(CERT_ID_ARTIK,
+      work->device_type_id, work->vendor_id, &work->response);
   if (work->ret == E_INTERRUPTED) {
     cleanup_work(work);
     return;
@@ -1363,8 +1363,8 @@ void CloudWrapper::sdr_start_registration(
     const char *device_type_id = *param0;
     const char *vendor_id = *param1;
     char *response = NULL;
-    artik_error ret = cloud->sdr_start_registration(device_type_id, vendor_id,
-        &response);
+    artik_error ret = cloud->sdr_start_registration(CERT_ID_ARTIK,
+      device_type_id, vendor_id, &response);
 
     if (ret != S_OK && !response)
       response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
@@ -1408,7 +1408,8 @@ void CloudWrapper::sdr_registration_status(
   } else { /* Otherwise make the call directly */
     const char *reg_id = *param0;
     char *response = NULL;
-    artik_error ret = cloud->sdr_registration_status(reg_id, &response);
+    artik_error ret = cloud->sdr_registration_status(CERT_ID_ARTIK, reg_id,
+        &response);
 
     if (ret != S_OK && !response)
       response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
@@ -1456,8 +1457,8 @@ void CloudWrapper::sdr_complete_registration(
     const char *reg_id = *param0;
     const char *nonce = *param1;
     char *response = NULL;
-    artik_error ret = cloud->sdr_complete_registration(reg_id, nonce,
-        &response);
+    artik_error ret = cloud->sdr_complete_registration(CERT_ID_ARTIK, reg_id,
+      nonce, &response);
 
     if (ret != S_OK && !response)
       response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);

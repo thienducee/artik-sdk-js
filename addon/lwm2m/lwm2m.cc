@@ -289,9 +289,9 @@ void Lwm2mWrapper::client_request(
                                                 "client_private_key");
 
       if (use_se && use_se.value()) {
-        wrap->m_config.ssl_config->use_se = true;
+        wrap->m_config.ssl_config->se_config.use_se = true;
       } else if (client_cert && client_private_key) {
-        wrap->m_config.ssl_config->use_se = false;
+        wrap->m_config.ssl_config->se_config.use_se = false;
         wrap->m_config.ssl_config->client_cert.data =
           strdup(client_cert.value().c_str());
         wrap->m_config.ssl_config->client_cert.len =

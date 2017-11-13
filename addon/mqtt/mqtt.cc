@@ -62,7 +62,7 @@ static void updateSSLConfig(Isolate *isolate, Local<Value> val,
   auto use_se = js_object_attribute_to_cpp<bool>(val, "use_se");
 
   if (use_se)
-    (*ssl_config)->use_se = use_se.value();
+    (*ssl_config)->se_config.use_se = use_se.value();
 
   // ca_cert parameter
   auto ca_cert = js_object_attribute_to_cpp<Local<Value>>(val, "ca_cert");

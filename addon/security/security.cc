@@ -101,7 +101,7 @@ void SecurityWrapper::get_certificate(const FunctionCallbackInfo<Value>& args) {
   artik_error res = S_OK;
 
   try {
-    res = obj->get_certificate(&cert);
+    res = obj->get_certificate(CERT_ID_ARTIK, &cert);
     if (res != S_OK)
       isolate->ThrowException(Exception::TypeError(
           String::NewFromUtf8(isolate, error_msg(res))));
@@ -126,7 +126,7 @@ void SecurityWrapper::get_ca_chain(const FunctionCallbackInfo<Value>& args) {
   artik_error res = S_OK;
 
   try {
-    res = obj->get_ca_chain(&chain);
+    res = obj->get_ca_chain(CERT_ID_ARTIK, &chain);
     if (res != S_OK)
       isolate->ThrowException(Exception::TypeError(
           String::NewFromUtf8(isolate, error_msg(res))));
@@ -207,7 +207,7 @@ void SecurityWrapper::get_certificate_sn(
   artik_error res = S_OK;
 
   try {
-    res = obj->get_certificate_sn(sn, &len);
+    res = obj->get_certificate_sn(CERT_ID_ARTIK, sn, &len);
     if (res != S_OK)
       isolate->ThrowException(Exception::TypeError(
             String::NewFromUtf8(isolate, error_msg(res))));
