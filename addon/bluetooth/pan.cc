@@ -46,10 +46,13 @@ Persistent<Function> PanWrapper::constructor;
 
 PanWrapper::PanWrapper()
   : m_bt(new Bluetooth()) {
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 PanWrapper::~PanWrapper() {
   delete m_bt;
+  m_loop->detach();
 }
 
 void PanWrapper::Init(Local<Object> exports) {

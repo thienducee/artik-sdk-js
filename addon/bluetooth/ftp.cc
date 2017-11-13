@@ -78,11 +78,14 @@ static void _ftp_event_callback(artik_bt_event event, void *data,
 
 FtpWrapper::FtpWrapper()
   : m_bt(new Bluetooth()) {
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 FtpWrapper::~FtpWrapper() {
   delete m_bt;
   delete m_emit;
+  m_loop->detach();
 }
 
 void FtpWrapper::Init(Local<Object> exports) {

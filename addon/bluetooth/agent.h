@@ -23,6 +23,7 @@
 #include <node_object_wrap.h>
 
 #include <artik_bluetooth.hh>
+#include <loop.h>
 
 #include <array>
 
@@ -130,6 +131,8 @@ class AgentWrapper : public node::ObjectWrap {
   v8::Persistent<v8::Function> *m_request_authorization_cb;
   v8::Persistent<v8::Function> *m_authorize_service_cb;
   v8::Persistent<v8::Function> *m_cancel_cb;
+
+  GlibLoop *m_loop;
 };
 
 }  // namespace artik

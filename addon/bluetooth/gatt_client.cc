@@ -701,11 +701,14 @@ GattClientWrapper::GattClientWrapper()
   : m_bt(new Bluetooth()) {
   m_bt->set_callback(BT_EVENT_GATT_CHARACTERISTIC, on_received, NULL);
   m_bt->set_callback(BT_EVENT_SERVICE_RESOLVED, on_services_discover, this);
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 GattClientWrapper::~GattClientWrapper() {
   delete m_bt;
   delete m_emit;
+  m_loop->detach();
 }
 
 void GattClientWrapper::emit(int argc, v8::Local<v8::Value> argv[]) {

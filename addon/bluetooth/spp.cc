@@ -409,7 +409,10 @@ static bool _js_object_to_artik_bt_spp_profile_option(
   return true;
 }
 
-SppWrapper::SppWrapper() : m_bt(new Bluetooth()) {
+SppWrapper::SppWrapper()
+  : m_bt(new Bluetooth()) {
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 SppWrapper::~SppWrapper() {
@@ -419,6 +422,8 @@ SppWrapper::~SppWrapper() {
   for (auto& value : m_sockets) {
     delete value.second;
   }
+
+  m_loop->detach();
 }
 
 void SppWrapper::Init(Local<Object> exports) {

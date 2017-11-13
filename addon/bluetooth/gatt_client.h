@@ -23,6 +23,7 @@
 #include <node_object_wrap.h>
 
 #include <artik_bluetooth.hh>
+#include <loop.h>
 
 #include <vector>
 #include <string>
@@ -152,6 +153,7 @@ class GattClientWrapper : public node::ObjectWrap {
 
   Bluetooth *m_bt;
   v8::Persistent<v8::Function>* m_emit;
+  GlibLoop *m_loop;
 };
 
 }  // namespace artik

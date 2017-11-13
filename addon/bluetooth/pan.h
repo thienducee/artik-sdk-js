@@ -23,6 +23,7 @@
 #include <node_object_wrap.h>
 
 #include <artik_bluetooth.hh>
+#include <loop.h>
 
 namespace artik {
 
@@ -51,6 +52,7 @@ class PanWrapper : public node::ObjectWrap {
   static void pan_get_UUID(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   Bluetooth* m_bt;
+  GlibLoop *m_loop;
 };
 
 }  // namespace artik

@@ -23,6 +23,7 @@
 
 #include <node.h>
 #include <node_object_wrap.h>
+#include <loop.h>
 
 #include <map>
 #include <string>
@@ -89,6 +90,7 @@ class SppWrapper : public node::ObjectWrap {
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
   Bluetooth* m_bt;
+  GlibLoop *m_loop;
 
   v8::Persistent<v8::Function>* m_emit;
   std::map<std::string, v8::Persistent<v8::Object>*> m_sockets;

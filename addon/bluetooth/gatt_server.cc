@@ -557,10 +557,13 @@ ServiceWrapper::~ServiceWrapper() {
 
 GattServerWrapper::GattServerWrapper()
   : m_bt(new Bluetooth()) {
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 GattServerWrapper::~GattServerWrapper() {
   delete m_bt;
+  m_loop->detach();
 }
 
 void GattServerWrapper::Init(Local<Object> exports) {

@@ -435,6 +435,8 @@ AgentWrapper::AgentWrapper(
     m_request_authorization_cb(request_authorization_cb),
     m_authorize_service_cb(authorize_service_cb),
     m_cancel_cb(cancel_cb) {
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 AgentWrapper::~AgentWrapper() {
@@ -447,6 +449,7 @@ AgentWrapper::~AgentWrapper() {
   delete m_request_confirmation_cb;
   delete m_request_authorization_cb;
   delete m_cancel_cb;
+  m_loop->detach();
 }
 
 void AgentWrapper::Init(Local<Object> exports) {

@@ -127,10 +127,13 @@ static Local<Object> convert_item_property_to_json_object(Isolate *isolate,
 
 AvrcpWrapper::AvrcpWrapper()
   : m_bt(new Bluetooth()) {
+  m_loop = GlibLoop::Instance();
+  m_loop->attach();
 }
 
 AvrcpWrapper::~AvrcpWrapper() {
   delete m_bt;
+  m_loop->detach();
 }
 
 void AvrcpWrapper::Init(Local<Object> exports) {
