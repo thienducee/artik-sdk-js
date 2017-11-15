@@ -195,6 +195,14 @@ void DescriptorWrapper::Emit(int argc, Local<Value> argv[]) {
   Nan::MakeCallback(this->handle(), emit_f, argc, argv);
 }
 
+void DescriptorWrapper::SetId(int desc_id) {
+  m_descriptor_id = desc_id;
+}
+
+int DescriptorWrapper::GetDescriptorId() const {
+  return m_descriptor_id;
+}
+
 bool CharacteristicWrapper::HasInstance(Local<Value> obj) {
   Isolate *isolate = Isolate::GetCurrent();
   return Local<FunctionTemplate>::New(isolate,
@@ -544,6 +552,7 @@ ServiceWrapper::ServiceWrapper(
       m_bt->gatt_set_desc_on_write_request(m_service_id, char_id, desc_id,
           desc_on_write_request, reinterpret_cast<void*>(desc));
       m_persistent_objects.push_back(desc->persistent());
+      desc->SetId(desc_id);
     }
   }
 
@@ -551,6 +560,14 @@ ServiceWrapper::ServiceWrapper(
 }
 
 ServiceWrapper::~ServiceWrapper() {
+  for (auto& chr : m_characteristics) {
+    for (auto& desc : chr->GetDescriptors()) {
+      m_bt->gatt_remove_descriptor(m_service_id, chr->GetCharacteristicId(),
+          desc->GetDescriptorId());
+    }
+    m_bt->gatt_remove_characteristic(m_service_id, chr->GetCharacteristicId());
+  }
+  m_bt->gatt_remove_service(m_service_id);
   m_bt->gatt_unregister_service(m_service_id);
   delete m_bt;
 }

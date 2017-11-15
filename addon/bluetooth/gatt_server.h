@@ -40,6 +40,9 @@ class DescriptorWrapper : public node::ObjectWrap {
 
   void Emit(int argc, v8::Local<v8::Value> argv[]);
   const artik_bt_gatt_desc& GetDesc() const { return m_descriptor; }
+  void SetId(int desc_id);
+  int GetDescriptorId() const;
+
  private:
   explicit DescriptorWrapper(const artik_bt_gatt_desc& descriptor);
 

@@ -452,6 +452,28 @@ Get property of the item.
 var item = avrcp.controller_get_property("/Filesystem/song1");
 ```
 
+### controller_get_metadata
+```javascript
+AvrcpMetadata controller_get_metadata();
+```
+
+**Description**
+
+Get current track metadata from AVRCP target.
+
+**Parameters**
+
+None
+
+**Return value**
+
+*AvrcpMetadata*: Metadata of the current track.
+
+**Example**
+```javascript
+var item = avrcp.controller_get_metadata();
+```
+
 ### controller_play_item
 ```javascript
 controller_play_item(String item);

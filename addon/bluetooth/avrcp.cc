@@ -125,6 +125,27 @@ static Local<Object> convert_item_property_to_json_object(Isolate *isolate,
   return js_property;
 }
 
+static Local<Object> convert_item_metadata_to_json_object(Isolate *isolate,
+    artik_bt_avrcp_track_metadata *metadata) {
+  Local<Object> js_property = Object::New(isolate);
+  js_property->Set(String::NewFromUtf8(isolate, "title"),
+      string_to_js_val(isolate, metadata->title));
+  js_property->Set(String::NewFromUtf8(isolate, "artist"),
+      string_to_js_val(isolate, metadata->artist));
+  js_property->Set(String::NewFromUtf8(isolate, "album"),
+      string_to_js_val(isolate, metadata->album));
+  js_property->Set(String::NewFromUtf8(isolate, "genre"),
+      string_to_js_val(isolate, metadata->genre));
+  js_property->Set(String::NewFromUtf8(isolate, "number_of_tracks"),
+      Int32::New(isolate, metadata->number_of_tracks));
+  js_property->Set(String::NewFromUtf8(isolate, "number"),
+      Int32::New(isolate, metadata->number));
+  js_property->Set(String::NewFromUtf8(isolate, "duration"),
+      Int32::New(isolate, metadata->duration));
+
+  return js_property;
+}
+
 AvrcpWrapper::AvrcpWrapper()
   : m_bt(new Bluetooth()) {
   m_loop = GlibLoop::Instance();
@@ -189,6 +210,8 @@ void AvrcpWrapper::Init(Local<Object> exports) {
       avrcp_controller_is_browsable);
   NODE_SET_PROTOTYPE_METHOD(tpl, "controller_get_position",
       avrcp_controller_get_position);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "controller_get_metadata",
+      avrcp_controller_get_metadata);
 
   constructor.Reset(isolate, tpl->GetFunction());
   exports->Set(String::NewFromUtf8(isolate, "Avrcp"),
@@ -582,6 +605,7 @@ void AvrcpWrapper::avrcp_controller_get_property(
   Local<Object> js_property = convert_item_property_to_json_object(
       isolate, property);
   args.GetReturnValue().Set(js_property);
+  obj->avrcp_controller_free_property(&property);
 }
 
 void AvrcpWrapper::avrcp_controller_play_item(
@@ -815,5 +839,32 @@ void AvrcpWrapper::avrcp_controller_get_position(
   args.GetReturnValue().Set(Int32::New(isolate, position));
 }
 
+void AvrcpWrapper::avrcp_controller_get_metadata(
+    const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  Bluetooth* obj = ObjectWrap::Unwrap<AvrcpWrapper>(args.Holder())->getObj();
+
+  log_dbg("");
+
+  if (args.Length() != 0) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  artik_bt_avrcp_track_metadata *meta = NULL;
+  artik_error err = obj->avrcp_controller_get_metadata(&meta);
+  if (err != S_OK) {
+    std::string msg = "Error: " + std::string(error_msg(err));
+    isolate->ThrowException(Exception::Error(
+        String::NewFromUtf8(isolate, msg.c_str())));
+    return;
+  }
+
+  Local<Object> js_metadata = convert_item_metadata_to_json_object(
+      isolate, meta);
+  args.GetReturnValue().Set(js_metadata);
+  obj->avrcp_controller_free_metadata(&meta);
+}
 }  // namespace artik
 
