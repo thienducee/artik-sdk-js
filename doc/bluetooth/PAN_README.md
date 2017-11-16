@@ -116,7 +116,7 @@ pan.disconnect();
 
 ### get_connected
 ```javascript
-Boolean get_connected()
+Boolean is_connected()
 ```
 
 **Description**
@@ -133,7 +133,7 @@ None
 
 **Example**
 ```javascript
-var connected = pan.get_connected();
+var connected = pan.is_connected();
 console.log("Connected: " + connected);
 ```
 

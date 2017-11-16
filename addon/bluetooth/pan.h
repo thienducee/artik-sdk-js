@@ -45,7 +45,7 @@ class PanWrapper : public node::ObjectWrap {
   static void pan_unregister(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void pan_connect(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void pan_disconnect(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void pan_get_connected(
+  static void pan_is_connected(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void pan_get_interface(
       const v8::FunctionCallbackInfo<v8::Value>& args);

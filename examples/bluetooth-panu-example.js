@@ -86,7 +86,7 @@ process.on('SIGINT', function() {
 	if (bt.is_scanning())
 		bt.stop_scan();
 
-	if (pan.get_connected())
+	if (pan.is_connected())
 		pan.disconnect();
 
 	r1.close();

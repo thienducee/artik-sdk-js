@@ -70,7 +70,7 @@ void PanWrapper::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "unregister", pan_unregister);
   NODE_SET_PROTOTYPE_METHOD(tpl, "connect", pan_connect);
   NODE_SET_PROTOTYPE_METHOD(tpl, "disconnect", pan_disconnect);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "get_connected", pan_get_connected);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "get_connected", pan_is_connected);
   NODE_SET_PROTOTYPE_METHOD(tpl, "get_interface", pan_get_interface);
   NODE_SET_PROTOTYPE_METHOD(tpl, "get_UUID", pan_get_UUID);
 
@@ -209,7 +209,7 @@ void PanWrapper::pan_disconnect(const FunctionCallbackInfo<Value>& args) {
   }
 }
 
-void PanWrapper::pan_get_connected(const FunctionCallbackInfo<Value>& args) {
+void PanWrapper::pan_is_connected(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   Bluetooth* obj = ObjectWrap::Unwrap<PanWrapper>(args.Holder())->getObj();
 
