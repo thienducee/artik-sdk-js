@@ -164,7 +164,7 @@ var avrcp = new Avrcp();
 
 ### controller_change_folder
 ```javascript
-controller_change_folder(String folder)
+controller_change_folder(Number index)
 ```
 
 **Description**
@@ -173,7 +173,8 @@ Change to the specified folder
 
 **Parameters**
 
-*String*: The path of the folder.
+*Number*: The index of the folder, which can be get by list item.
+          0 means index of now playing folder.
 
 **Return value**
 
@@ -181,7 +182,7 @@ None
 
 **Example**
 ```javascript
-avrcp.controller_change_folder("/Filesystem/Album1");
+avrcp.controller_change_folder(1);
 ```
 
 ### controller_list_item
@@ -432,7 +433,7 @@ avrcp.controller_rewind();
 
 ### controller_get_property
 ```javascript
-AvrcpProperty controller_get_property(String item);
+AvrcpProperty controller_get_property(Number index);
 ```
 
 **Description**
@@ -441,7 +442,7 @@ Get property of the item.
 
 **Parameters**
 
-*String*: The path of AVRCP item
+*Number*: The index of AVRCP item, which can be get by list item.
 
 **Return value**
 
@@ -449,7 +450,7 @@ Get property of the item.
 
 **Example**
 ```javascript
-var item = avrcp.controller_get_property("/Filesystem/song1");
+var item = avrcp.controller_get_property(1);
 ```
 
 ### controller_get_metadata
@@ -476,7 +477,7 @@ var item = avrcp.controller_get_metadata();
 
 ### controller_play_item
 ```javascript
-controller_play_item(String item);
+controller_play_item(Number index);
 ```
 
 **Description**
@@ -485,7 +486,7 @@ Play the item.
 
 **Parameters**
 
-*String*: The path of AVRCP item
+*Number*: The index of AVRCP item, which can be get by list item.
 
 **Return value**
 
@@ -493,12 +494,12 @@ None
 
 **Example**
 ```javascript
-avrcp.controller_play_item("/Filesystem/song1");
+avrcp.controller_play_item(1);
 ```
 
 ### controller_add_to_playing
 ```javascript
-controller_add_to_playing(String item);
+controller_add_to_playing(Number index);
 ```
 
 **Description**
@@ -507,7 +508,7 @@ Add the item to the playing list.
 
 **Parameters**
 
-*String*: The path of AVRCP item
+*Number*: The index of AVRCP item, which can be get by list item.
 
 **Return value**
 
@@ -515,7 +516,7 @@ None
 
 **Example**
 ```javascript
-avrcp.controller_add_to_playing("/Filesystem/song1");
+avrcp.controller_add_to_playing(1);
 ```
 
 ### controller_get_name

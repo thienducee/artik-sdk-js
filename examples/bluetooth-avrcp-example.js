@@ -21,18 +21,21 @@ function list_item(args, help) {
 
 	var items = avrcp.controller_list_item(begin, end);
 	items.forEach(function(e) {
-		console.log("Object path: " + e.path);
+		console.log("Index: #" + e.index);
 		console.log("Displayable name: " + e.property.name);
-		console.log("Type: " + e.property.type);
-		console.log("Folder: " + e.property.folder);
 		console.log("Playable: " + e.property.playable);
-		console.log("Title: " + e.property.title);
-		console.log("Artist: " + e.property.artist);
-		console.log("Album: " + e.property.album);
-		console.log("Genre: " + e.property.genre);
-		console.log("Number of tracks: " + e.property.number_of_tracks);
-		console.log("track: " + e.property.number);
-		console.log("duration: " + e.property.duration);
+		console.log("Type: " + e.property.type);
+		if (e.property.type == "folder") {
+			console.log("Folder: " + e.property.folder);
+		} else {
+			console.log("Title: " + e.property.title);
+			console.log("Artist: " + e.property.artist);
+			console.log("Album: " + e.property.album);
+			console.log("Genre: " + e.property.genre);
+			console.log("Number of tracks: " + e.property.number_of_tracks);
+			console.log("track: " + e.property.number);
+			console.log("duration: " + e.property.duration);
+		}
 	});
 }
 
@@ -50,7 +53,7 @@ function change_folder(args, help) {
 		return;
 	}
 
-	avrcp.controller_change_folder(args[0]);
+	avrcp.controller_change_folder(parseInt(args[0], 10));
 	console.log("Change folder to " + args[0] + "... Success");
 }
 
@@ -83,7 +86,7 @@ function play_item(args, help) {
 	}
 
 	console.log("Play " + args[0]);
-	avrcp.controller_play_item(args[0]);
+	avrcp.controller_play_item(parseInt(args[0], 10));
 }
 
 function addtoplay(args, help) {
@@ -100,7 +103,7 @@ function addtoplay(args, help) {
 	}
 
 	console.log("Add " + args[0] + " to the playing list.");
-	avrcp.controller_add_to_playing(args[0]);
+	avrcp.controller_add_to_playing(parseInt(args[0], 10));
 }
 
 function resume_play(args) {
@@ -131,18 +134,29 @@ function fast_forward(args) {
 	avrcp.controller_fast_forward();
 }
 
+function metadata(args) {
+	var metadata = avrcp.controller_get_metadata();
+	console.log("Title: " + metadata.title);
+	console.log("Artist: " + metadata.artist);
+	console.log("Album: " + metadata.album);
+	console.log("Genre: " + metadata.genre);
+	console.log("Number of tracks: " + metadata.number_of_tracks);
+	console.log("track: " + metadata.number);
+	console.log("duration: " + metadata.duration);
+}
+
 function quit(args) {
 	process.exit(0);
 }
 
 var commands = [
 	{ command: "list-item",
-	  description:"List items of current folder",
+	  description:"List item indexs of current folder",
 	  doc: "list-item [start_index end_index]\n    list-item or list-item 1 2",
 	  handler: list_item },
 	{ command: "change-folder",
-	  description: "Change the current folder",
-	  doc: "change-folder directory\n    change-folder /org/bluez/hci0/dev_54_40_AD_E2_BE_35/player0/Filesystem/item3/item1",
+	  description: "Change to the specified index of folder",
+	  doc: "change-folder directory\n    change-folder 1",
 	  handler: change_folder },
 	{ command: "get-repeat",
 	  description: "Get the repeat mode.",
@@ -153,12 +167,12 @@ var commands = [
 	  doc: "set-repeat [singletrack|alltracks|group|off]\n   set-repeat singletrack",
 	  handler: set_repeat },
 	{ command: "play-item",
-	  description: "Play the item.",
-	  doc: "play-item item\n    play-item /org/bluez/hci0/dev_54_40_AD_E2_BE_35/player0/Filesystem/item3/item1/item1",
+	  description: "Play the specified index of item.",
+	  doc: "play-item item\n    play-item 1",
 	  handler: play_item },
 	{ command: "addtoplay",
-	  description: "Add the item to the playing list.",
-	  doc: "addtoplay item\n    addtoplay /org/bluez/hci0/dev_54_40_AD_E2_BE_35/player0/Filesystem/item3/item1/item1",
+	  description: "Add the  specified index of item to the playing list.",
+	  doc: "addtoplay item\n    addtoplay 1",
 	  handler: addtoplay },
 	{ command: "resume-play",
 	  description: "Resume play",
@@ -188,6 +202,10 @@ var commands = [
 	  description: "Fast-forward the playing item.",
 	  doc: "fast-forward",
 	  handler: fast_forward },
+	{ command: "get-metadata",
+	  description: "Get the current metadata.",
+	  doc: "get-metadata",
+	  handler: metadata },
 	{ command: "quit",
 	  description: "Quit application",
 	  doc: "quit",
@@ -207,7 +225,7 @@ bt.on('started', function() {
 
 function stopScanning() {
 	bt.stop_scan();
-	console.log("Please input FTP server MAC address:");
+	console.log("Please input AVRCP controller MAC address:");
 	command_line.read_line(function(line) {
 		remote_addr = line;
 		bt.start_bond(line);

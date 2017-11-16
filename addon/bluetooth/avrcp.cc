@@ -53,24 +53,6 @@ std::array<const char*, 4> AvrcpWrapper::bt_avrcp_repeat_mode = {
   "off"
 };
 
-static int string_to_int(char *index) {
-  const char *s = index;
-  int result;
-
-  if (NULL == index || 0 == strlen(index))
-    return -1;
-
-  while (*s != '\0') {
-    if (*s >= '0' && *s <= '9')
-      s++;
-    else
-      return -1;
-  }
-
-  result = atoi(index);
-  return result;
-}
-
 static Local<Value> string_to_js_val(Isolate *isolate, char *str) {
   Local<Value> val;
   if (str != NULL) {
@@ -94,18 +76,15 @@ static Local<Object> convert_item_property_to_json_object(Isolate *isolate,
        String::NewFromUtf8(isolate, property->name));
   js_property->Set(String::NewFromUtf8(isolate, "type"),
        String::NewFromUtf8(isolate, property->type));
+  js_property->Set(String::NewFromUtf8(isolate, "playable"),
+       Boolean::New(isolate, property->playable));
 
   if (!is_audio_or_video) {
     js_property->Set(String::NewFromUtf8(isolate, "folder"),
          String::NewFromUtf8(isolate, property->folder));
-    js_property->Set(String::NewFromUtf8(isolate, "number_of_tracks"),
-         Int32::New(isolate, property->number_of_tracks));
   }
 
   if (is_audio_or_video) {
-    js_property->Set(String::NewFromUtf8(isolate, "playable"),
-         Boolean::New(isolate, property->playable));
-
     js_property->Set(String::NewFromUtf8(isolate, "title"),
         string_to_js_val(isolate, property->title));
     js_property->Set(String::NewFromUtf8(isolate, "artist"),
@@ -242,25 +221,19 @@ void AvrcpWrapper::avrcp_controller_change_folder(
 
   log_dbg("");
 
-  if (!args[0]->IsInt32() && !args[0]->IsString()) {
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-        isolate, "Wrong arguments")));
+      isolate, "Wrong number of arguments")));
     return;
   }
 
-  int index = -1;
-  if (args[0]->IsString()) {
-    char *val = *String::Utf8Value(args[0]->ToString());
-    index = string_to_int(val);
-    if (index == -1) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-        isolate, "Arguments must be index")));
-      return;
-    }
-  } else {
-    index = args[0]->Int32Value();
+  if (!args[0]->IsInt32()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments type")));
+    return;
   }
 
+  int index = args[0]->Int32Value();
   artik_error err = obj->avrcp_controller_change_folder(index);
   if (err != S_OK) {
     std::string msg = "Error: " + std::string(error_msg(err));
@@ -574,26 +547,14 @@ void AvrcpWrapper::avrcp_controller_get_property(
     return;
   }
 
-  if (!args[0]->IsInt32() && !args[0]->IsString()) {
+  if (!args[0]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments type")));
     return;
   }
 
-  int index = -1;
-  if (args[0]->IsString()) {
-    char *val = *String::Utf8Value(args[0]->ToString());
-    index = string_to_int(val);
-    if (index == -1) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-          isolate, "Arguments must be index")));
-      return;
-    }
-  } else {
-    index = args[0]->Int32Value();
-  }
-
   artik_bt_avrcp_item_property *property = NULL;
+  int index = args[0]->Int32Value();
   artik_error err = obj->avrcp_controller_get_property(index, &property);
   if (err != S_OK) {
     std::string msg = "Error: " + std::string(error_msg(err));
@@ -620,25 +581,13 @@ void AvrcpWrapper::avrcp_controller_play_item(
     return;
   }
 
-  if (!args[0]->IsInt32() && !args[0]->IsString()) {
+  if (!args[0]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments type")));
     return;
   }
 
-  int index = -1;
-  if (args[0]->IsString()) {
-    char *val = *String::Utf8Value(args[0]->ToString());
-    index = string_to_int(val);
-    if (index == -1) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-          isolate, "Arguments must be index")));
-      return;
-    }
-  } else {
-    index = args[0]->Int32Value();
-  }
-
+  int index = args[0]->Int32Value();
   artik_error err = obj->avrcp_controller_play_item(index);
   if (err != S_OK) {
     std::string msg = "Error: " + std::string(error_msg(err));
@@ -661,25 +610,13 @@ void AvrcpWrapper::avrcp_controller_add_to_playing(
     return;
   }
 
-  if (!args[0]->IsInt32() && !args[0]->IsString()) {
+  if (!args[0]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments type")));
     return;
   }
 
-  int index = -1;
-  if (args[0]->IsString()) {
-    char *val = *String::Utf8Value(args[0]->ToString());
-    index = string_to_int(val);
-    if (index == -1) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-          isolate, "Arguments must be index")));
-      return;
-    }
-  } else {
-    index = args[0]->Int32Value();
-  }
-
+  int index = args[0]->Int32Value();
   artik_error err = obj->avrcp_controller_add_to_playing(index);
   if (err != S_OK) {
     std::string msg = "Error: " + std::string(error_msg(err));
