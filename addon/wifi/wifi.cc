@@ -436,7 +436,7 @@ void WifiWrapper::get_info(const FunctionCallbackInfo<v8::Value>& args) {
             strncpy(encryption, "OPEN", JSON_MAX_ENC_LEN);
     }
 
-    asprintf(&json_res, result,
+    if (asprintf(&json_res, result,
             (info.connected) ? "true" : "false",
             (info.error != S_OK) ? "true" : "false",
             (info.connected && strlen(wifi_ap.name) > 0) ? wifi_ap.name:"null",
@@ -444,7 +444,10 @@ void WifiWrapper::get_info(const FunctionCallbackInfo<v8::Value>& args) {
             (info.connected) ? wifi_ap.frequency : 0,
             (info.connected) ? wifi_ap.signal_level : 0,
             (info.connected) ? encryption : "null",
-            (info.connected) ? "none" : "null");
+            (info.connected) ? "none" : "null") < 0) {
+      ret = E_NO_MEM;
+      json_res = NULL;
+    }
   }
 
   args.GetReturnValue().Set(
