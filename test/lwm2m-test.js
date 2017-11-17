@@ -70,7 +70,8 @@ testCase('Lwm2m', function() {
 			if (!dtls_psk_id || !dtls_psk_key || !dtls_psk_id.length || !dtls_psk_key.length)
 				this.skip();
 
-			lwm2m.client_connect(server_id, server_uri, dtls_psk_id, lifetime, objects, dtls_psk_id, dtls_psk_key);
+			lwm2m.client_request(server_id, server_uri, dtls_psk_id, lifetime, objects, dtls_psk_id, dtls_psk_key);
+			lwm2m.client_connect();
 			done();
 		});
 	});

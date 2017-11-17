@@ -11,14 +11,13 @@ var certificate_mode_config = null; // Certificate mode: disable
 
 /*
 var certificate_mode_config = { // Certificate mode: external client certificate
-    'use_se': false,
     'client_cert': fs.readFileSync('path client cert.pem'),
     'client_private_key': fs.readFileSync('path private key.pem'),
     'server_or_root_cert': fs.readFileSync('path server cert.cert')
 };
 
 var certificate_mode_config = { // Certificate mode: client certificate stored in the SE
-    'use_se': true,
+    'se_cert_id': 'artik',
     'server_cert_or_root_cert': fs.readFileSync('path server cert.cert')
 };
 */

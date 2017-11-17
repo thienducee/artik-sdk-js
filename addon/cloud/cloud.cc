@@ -513,7 +513,7 @@ void CloudWrapper::send_message(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -572,7 +572,7 @@ void CloudWrapper::send_action(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -619,7 +619,7 @@ void CloudWrapper::get_current_user_profile(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[1]->IsUndefined()) {
+  if (args[1]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -679,7 +679,7 @@ void CloudWrapper::get_user_devices(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[5]->IsUndefined()) {
+  if (args[5]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -743,7 +743,7 @@ void CloudWrapper::get_user_device_types(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[5]->IsUndefined()) {
+  if (args[5]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -802,7 +802,7 @@ void CloudWrapper::get_user_application_properties(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -862,7 +862,7 @@ void CloudWrapper::get_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -918,7 +918,7 @@ void CloudWrapper::get_device_token(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[2]->IsUndefined()) {
+  if (args[2]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -976,7 +976,7 @@ void CloudWrapper::add_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[4]->IsUndefined()) {
+  if (args[4]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -1035,7 +1035,7 @@ void CloudWrapper::update_device_token(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[2]->IsUndefined()) {
+  if (args[2]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -1090,7 +1090,7 @@ void CloudWrapper::delete_device_token(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[2]->IsUndefined()) {
+  if (args[2]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -1145,7 +1145,7 @@ void CloudWrapper::delete_device(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[2]->IsUndefined()) {
+  if (args[2]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -1208,7 +1208,7 @@ void CloudWrapper::get_device_properties(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -1272,7 +1272,7 @@ void CloudWrapper::set_device_server_properties(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -1336,7 +1336,7 @@ void CloudWrapper::sdr_start_registration(
   const char *vendor_id = *param2;
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -1345,7 +1345,7 @@ void CloudWrapper::sdr_start_registration(
     obj->m_work->vendor_id = strndup(vendor_id, strlen(vendor_id));
     obj->m_work->cert_id = cert_id.value();
 
-    Local<Function> callback = Local<Function>::Cast(args[2]);
+    Local<Function> callback = Local<Function>::Cast(args[3]);
     obj->m_work->callback.Reset(isolate, callback);
 
     uv_queue_work(uv_default_loop(), &(obj->m_work->request),
@@ -1395,14 +1395,14 @@ void CloudWrapper::sdr_registration_status(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[2]->IsUndefined()) {
+  if (args[2]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
     obj->m_work->reg_id = strndup(reg_id, strlen(reg_id));
     obj->m_work->cert_id = cert_id.value();
 
-    Local<Function> callback = Local<Function>::Cast(args[1]);
+    Local<Function> callback = Local<Function>::Cast(args[2]);
     obj->m_work->callback.Reset(isolate, callback);
 
     uv_queue_work(uv_default_loop(), &(obj->m_work->request),
@@ -1455,7 +1455,7 @@ void CloudWrapper::sdr_complete_registration(
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_work = new CloudAsyncWork();
     obj->m_work->request.data = obj->m_work;
     obj->m_work->cloud = cloud;
@@ -1463,7 +1463,7 @@ void CloudWrapper::sdr_complete_registration(
     obj->m_work->nonce = strndup(nonce, strlen(nonce));
     obj->m_work->cert_id = cert_id.value();
 
-    Local<Function> callback = Local<Function>::Cast(args[2]);
+    Local<Function> callback = Local<Function>::Cast(args[3]);
     obj->m_work->callback.Reset(isolate, callback);
 
     uv_queue_work(uv_default_loop(), &(obj->m_work->request),

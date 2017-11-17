@@ -45,16 +45,16 @@ function getRegistrationStatus(response) {
 	var regStatus = JSON.parse(response).data.status;
 	if (regStatus == "PENDING_USER_CONFIRMATION") {
 		sleep.sleep(1);
-		artik_cloud.sdr_registration_status(regId, getRegistrationStatus);
+		artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
 	} else if (regStatus == "PENDING_DEVICE_COMPLETION") {
-		artik_cloud.sdr_complete_registration(regId, regNonce, function(response) {
+		artik_cloud.sdr_complete_registration('artik', regId, regNonce, function(response) {
 			console.log('Response: ' + response);
 			process.exit(0);
 		});
 	}
 }
 
-artik_cloud.sdr_start_registration(dtid, vid, function(response) {
+artik_cloud.sdr_start_registration('artik', dtid, vid, function(response) {
 	var json = JSON.parse(response);
 
 	regId = json.data.rid;
@@ -62,5 +62,5 @@ artik_cloud.sdr_start_registration(dtid, vid, function(response) {
 
 	console.log('Enter pin ' + json.data.pin + ' in the ARTIK Cloud portal');
 
-	artik_cloud.sdr_registration_status(regId, getRegistrationStatus);
+	artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
 });

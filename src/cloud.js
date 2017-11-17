@@ -170,14 +170,14 @@ Cloud.prototype.websocket_close_stream = function websocket_close_stream() {
     return this.cloud.websocket_close_stream();
 };
 
-Cloud.prototype.sdr_start_registration = function sdr_start_registration(device_type_id, vendor_id, response_cb) {
-    return this.cloud.sdr_start_registration(device_type_id, vendor_id, response_cb);
+Cloud.prototype.sdr_start_registration = function sdr_start_registration(cert_id, device_type_id, vendor_id, response_cb) {
+    return this.cloud.sdr_start_registration(cert_id, device_type_id, vendor_id, response_cb);
 };
 
-Cloud.prototype.sdr_registration_status = function sdr_registration_status(registration_id, response_cb) {
-    return this.cloud.sdr_registration_status(registration_id, response_cb);
+Cloud.prototype.sdr_registration_status = function sdr_registration_status(cert_id, registration_id, response_cb) {
+    return this.cloud.sdr_registration_status(cert_id, registration_id, response_cb);
 }
 
-Cloud.prototype.sdr_complete_registration = function sdr_complete_registration(registration_id, nonce, response_cb) {
-    return this.cloud.sdr_complete_registration(registration_id, nonce, response_cb);
+Cloud.prototype.sdr_complete_registration = function sdr_complete_registration(cert_id, registration_id, nonce, response_cb) {
+    return this.cloud.sdr_complete_registration(cert_id, registration_id, nonce, response_cb);
 };

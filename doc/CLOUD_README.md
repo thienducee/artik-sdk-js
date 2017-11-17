@@ -52,9 +52,16 @@ var ssl_config = {
 
 	/*
 	optional
-	Enabling Secure Element
+	Secure Element Configuration
 	*/
-	use_se: false,
+	se_config: {
+		/*
+		mandatory
+		The selected certificate for SSL handshake
+		Must be 'artik' or 'manufacturer'
+		*/
+		certificate_identifier: String
+	},
 
 	/*
 	optional but could be required for verification
@@ -559,7 +566,7 @@ set_device_server_properties('<device ID>', <data>, function(response){
 ## sdr_start_registration
 
 ```javascript
-String sdr_start_registration(String device_type_id, String vendor_id, function(String response))
+String sdr_start_registration(String cert_id, String device_type_id, String vendor_id, function(String response))
 ```
 
 **Description**
@@ -568,6 +575,7 @@ Start Secure Device Registration process.
 
 **Parameters**
 
+ - *String*: Certificate identifier. Must be **artik** or **manufacturer**.
  - *String*: device type ID of the device to register.
  - *String*: vendor specific ID of the device to register.
  - *function(String)*: optional callback function that will be called after
@@ -587,7 +595,7 @@ See [Secure Device Registration example](#secure-device-registration-example)
 ## sdr_registration_status
 
 ```javascript
-String sdr_registration_status(String registration_id, function(String response))
+String sdr_registration_status(String cert_id, String registration_id, function(String response))
 ```
 
 **Description**
@@ -596,6 +604,7 @@ Get current status of the Secure Device Registration process.
 
 **Parameters**
 
+ - *String*: Certificate identifier. Must be **artik** or **manufacturer**.
  - *String*: registration ID returned by the *sdr_start_registration* function.
  - *function(String)*: optional callback function that will be called after
 performing the request asynchronously. Response from the cloud is passed as a
@@ -614,7 +623,7 @@ See [Secure Device Registration example](#secure-device-registration-example)
 ## sdr_complete_registration
 
 ```javascript
-String sdr_complete_registration(String registration_id, String nonce, function(String response))
+String sdr_complete_registration(String cert_id, String registration_id, String nonce, function(String response))
 ```
 
 **Description**
@@ -625,6 +634,7 @@ is set to **PENDING_DEVICE_COMPLETION**.
 
 **Parameters**
 
+ - *String*: Certificate identifier. Must be **artik** or **manufacturer**.
  - *String*: registration ID returned by the *sdr_start_registration* function.
  - *String*: registration nonce returned by the *sdr_start_registration* function.
  - *function(String)*: optional callback function that will be called after

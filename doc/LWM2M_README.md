@@ -47,11 +47,12 @@ This object is structured as the following:
 ```javascript
 {
 	/*
-	 * Use the certificate stored in the SE as the client certificate
-	 * When this field is true the field *client_cert* and *client_private_key* are ignored and optional.
-	 * When this field does not exist the *client_cert* and *client_private_key* must be filled.
+	 * Use a certificate stored in the SE as the client certificate
+	 * When this field is defined the field *client_cert* and *client_private_key* are ignored and optional.
+	 * When this field is undefined the *client_cert* and *client_private_key* must be filled.
+	 * Must be 'artik' or 'manufacturer'
 	 */
-	'use_se': Boolean,
+	'se_cert_id': String,
 
 	/*
 	 * The client certificate use for DTLS/TLS connection.

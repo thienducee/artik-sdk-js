@@ -3,7 +3,7 @@
 ## get_certificate
 
 ```javascript
-String get_certificate()
+String get_certificate(String cert_id)
 ```
 
 **Description**
@@ -12,7 +12,7 @@ Return the certificate stored in the Secure Element in PEM format
 
 **Parameters**
 
-None.
+*String*: Certificate identifier. Must be **artik** or **manufacturer**
 
 **Return value**
 
@@ -21,13 +21,13 @@ None.
 **Example**
 
 ```javascript
-console.log(get_certificate())
+console.log(get_certificate('artik'))
 ```
 
 ## get_ca_chain
 
 ```javascript
-String get_ca_chain()
+String get_ca_chain(String cert_id)
 ```
 
 **Description**
@@ -38,7 +38,7 @@ certificate stored in the SE.
 
 **Parameters**
 
-None.
+*String*: Certificate identifier. Must be **artik** or **manufacturer**
 
 **Return value**
 
@@ -47,7 +47,7 @@ None.
 **Example**
 
 ```javascript
-console.log(get_ca_chain())
+console.log(get_ca_chain('artik'))
 ```
 
 ## get_key_from_cert
@@ -72,14 +72,14 @@ as a parameter. The return string is in PEM format.
 **Example**
 
 ```javascript
-var cert = get_certificate()
+var cert = get_certificate('artik')
 console.log(get_key_from_cert(cert))
 ```
 
 ## get_certificate_sn
 
 ```javascript
-Buffer get_certificate_sn()
+Buffer get_certificate_sn(String cert_id)
 ```
 
 **Description**
@@ -89,7 +89,7 @@ stored in the Secure Element. It is returned as a buffer of bytes.
 
 **Parameters**
 
-None.
+*String*: Certificate identifier. Must be **artik** or **manufacturer**
 
 **Return value**
 
@@ -98,7 +98,7 @@ None.
 **Example**
 
 ```javascript
-console.log(get_certificate_sn())
+console.log(get_certificate_sn('artik'))
 ```
 
 ## get_random_bytes

@@ -30,7 +30,7 @@ testCase('Security', function() {
 
 	assertions('Get the serial number of the certificate from the Secure Element.', function() {
 	    try {
-		var sn  = security.get_certificate_sn();
+		var sn  = security.get_certificate_sn('artik');
 		assert.isNotNull(sn, "Invalid return type of the variable : 'sn'.\n");
 		console.log("Serial Number : ");
 		console.log(sn);
@@ -44,7 +44,7 @@ testCase('Security', function() {
 
 	assertions('Get the certificate from the Secure Element.', function() {
 	    try {
-		certificate = security.get_certificate();
+		certificate = security.get_certificate('artik');
 		assert.isString(certificate, "Invalid return type of the variable : 'Certificate'.\n");
 		console.log("Certificate : ");
 		console.log(certificate);
@@ -58,7 +58,7 @@ testCase('Security', function() {
 
 	assertions('Get root and intermediate certificates from the Secure Element.', function() {
 	    try {
-		certificates = security.get_ca_chain();
+		certificates = security.get_ca_chain('artik');
 		assert.isString(certificate, "Invalid return type of the variable : 'certificates'.\n");
 		console.log("Certificates : ");
 		console.log(certificates);

@@ -38,12 +38,18 @@ certificate. The object must be structured as the following example :
 
 ```javascript
 var ssl_config = {
-
 	/*
 	optional
-	Enabling Secure Element
+	Secure Element Configuration
 	*/
-	use_se: false,
+	se_config: {
+		/*
+		mandatory
+		The selected certificate for SSL handshake
+		Must be 'artik' or 'manufacturer'
+		*/
+		certificate_identifier: String
+	},
 
 	/*
 	optional but could be required for verification

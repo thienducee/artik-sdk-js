@@ -28,6 +28,7 @@
       ],
       'cflags_cc': [
                 '-fexceptions',
+		'-DCONFIG_RELEASE',
                 '<!@(pkg-config --cflags-only-I glib-2.0)'
       ],
       'link_settings' : {
