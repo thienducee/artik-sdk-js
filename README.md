@@ -3,10 +3,8 @@
 
 ## Prerequisites
 
-Before Installing with npm, you must install these packages on the ARTIK board.
-```bash
-# dnf install libartik-sdk-devel glib2-devel
-```
+This package only works with node.js version 4.6.x or newer. It is tested on
+4.x and 6.X LTS versions running on ARTIK boards (ARM 32 and 64 bit) only.
 
 ## Installation
 
