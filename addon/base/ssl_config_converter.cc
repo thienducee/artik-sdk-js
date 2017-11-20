@@ -52,7 +52,8 @@ std::unique_ptr<artik_ssl_config> SSLConfigConverter::convert(
   if (se_config) {
     log_dbg("Parse SE config");
     auto cert_id_str =
-      js_object_attribute_to_cpp<std::string>(val, "certificate_identifier");
+      js_object_attribute_to_cpp<std::string>(se_config.value(),
+                                              "certificate_identifier");
     if (!cert_id_str) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
         "Wrong definition of se_config:"
