@@ -35,6 +35,7 @@
 #include "sensor/sensor.h"
 #include "network/network.h"
 #include "bluetooth/bluetooth.h"
+#include "coap/coap.h"
 #include "zigbee/zigbee.h"
 #include "lwm2m/lwm2m.h"
 #include "mqtt/mqtt.h"
@@ -172,6 +173,7 @@ namespace artik {
     NetworkWrapper::Init(exports);
     WebsocketWrapper::Init(exports);
     BluetoothWrapper::Init(exports);
+    CoapWrapper::Init(exports);
     ZigbeeWrapper::Init(exports);
     Lwm2mWrapper::Init(exports);
     MqttWrapper::Init(exports);

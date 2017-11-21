@@ -74,3 +74,6 @@ Then install the node.js module:
 
 ### 10. MQTT
   * [MQTT API](/doc/MQTT_README.md)
+
+### 11. CoAP
+  * [CoAP API](/doc/COAP_README.md)

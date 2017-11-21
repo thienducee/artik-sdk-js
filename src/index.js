@@ -42,3 +42,4 @@ module.exports.mqtt = require('./mqtt');
 module.exports.cloud = require('./cloud');
 module.exports.network = require('./network');
 module.exports.security = require('./security');
+module.exports.coap = require('./coap');
