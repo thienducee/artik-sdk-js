@@ -1,5 +1,4 @@
 var cloud = require('../src/cloud');
-var sleep = require('sleep');
 var opt = require('getopt');
 
 var artik_cloud = new cloud();
@@ -44,8 +43,9 @@ var regNonce = '';
 function getRegistrationStatus(response) {
 	var regStatus = JSON.parse(response).data.status;
 	if (regStatus == "PENDING_USER_CONFIRMATION") {
-		sleep.sleep(1);
-		artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
+		setTimeout(function () {
+			artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
+		}, 1000);
 	} else if (regStatus == "PENDING_DEVICE_COMPLETION") {
 		artik_cloud.sdr_complete_registration('artik', regId, regNonce, function(response) {
 			console.log('Response: ' + response);
