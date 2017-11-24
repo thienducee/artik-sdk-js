@@ -31,6 +31,7 @@
 
 #include "bluetooth/agent.h"
 #include "bluetooth/avrcp.h"
+#include "bluetooth/a2dp.h"
 #include "bluetooth/ftp.h"
 #include "bluetooth/gatt_client.h"
 #include "bluetooth/gatt_server.h"
@@ -382,6 +383,7 @@ void BluetoothWrapper::Init(Local<Object> exports) {
   AgentRequestWrapper::Init(exports);
   AgentWrapper::Init(exports);
   AvrcpWrapper::Init(exports);
+  A2dpWrapper::Init(exports);
   PanWrapper::Init(exports);
   SppWrapper::Init(exports);
   SppSocketWrapper::Init(exports);

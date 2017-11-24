@@ -39,6 +39,7 @@ artik.Ftp.prototype.__proto__ = events.EventEmitter.prototype;
 
 module.exports = require('./bluetooth');
 module.exports.Avrcp = artik.Avrcp;
+module.exports.A2dp = artik.A2dp;
 module.exports.Pan = artik.Pan;
 module.exports.Spp = artik.Spp;
 module.exports.Ftp = artik.Ftp;

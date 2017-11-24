@@ -25,6 +25,7 @@ This package only works with node.js version 4.6.x or newer. It is tested on
    * [Bluetooth GATT Server API](/doc/bluetooth/GATTSERVER_README.md)
    * [Bluetooth PAN API](/doc/bluetooth/PAN_README.md)
    * [Bluetooth SPP API](/doc/bluetooth/SPP_README.md)
+   * [Bluetooth A2DP API](/doc/bluetooth/A2DP_README.md)
 
 ### 3. Connectivity
    * [ARTIK Cloud API](/doc/CLOUD_README.md)

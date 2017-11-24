@@ -68,6 +68,7 @@
         'addon/bluetooth/bluetooth.cc',
         'addon/bluetooth/agent.cc',
         'addon/bluetooth/avrcp.cc',
+        'addon/bluetooth/a2dp.cc',
         'addon/bluetooth/ftp.cc',
         'addon/bluetooth/gatt_client.cc',
         'addon/bluetooth/gatt_server.cc',
