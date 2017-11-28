@@ -21,6 +21,7 @@
 
 #include <node.h>
 #include <node_object_wrap.h>
+#include <nan.h>
 #include <uv.h>
 #include <artik_cloud.hh>
 
@@ -31,32 +32,9 @@
 
 namespace artik {
 
-struct CloudAsyncWork {
-  uv_work_t request;
-  v8::Persistent<v8::Function> callback;
-  Cloud *cloud;
-  artik_error ret;
-
-  /* Function parameters */
-  char* device_id;
-  char* device_type_id;
-  char* reg_id;
-  char* vendor_id;
-  char* nonce;
-  char* app_id;
-  char* user_id;
-  char* action;
-  char* message;
-  char* name;
-  char* data;
-  bool properties;
-  bool shared;
-  bool timestamp;
-  int count;
-  int offset;
-  char* response;
-  std::unique_ptr<artik_ssl_config> ssl_config;
-  artik_security_certificate_id cert_id;
+struct CloudWork {
+CloudWork(const v8::Local<v8::Function>& function) : callback(function) {}
+  Nan::Callback callback;
 };
 
 class CloudWrapper : public node::ObjectWrap {
@@ -109,7 +87,6 @@ class CloudWrapper : public node::ObjectWrap {
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
   Cloud* m_cloud;
-  CloudAsyncWork* m_work;
   v8::Persistent<v8::Function>* m_connection_cb;
   v8::Persistent<v8::Function>* m_receive_cb;
   GlibLoop *m_loop;

@@ -43,304 +43,45 @@ using v8::Array;
 using v8::Handle;
 using v8::Int32;
 using v8::Context;
+using v8::MaybeLocal;
+using v8::JSON;
 
 Persistent<Function> CloudWrapper::constructor;
 
-static void cleanup_work(CloudAsyncWork* work) {
-  log_dbg("");
-
-  if (work->device_id)
-    free(work->device_id);
-  if (work->device_type_id)
-    free(work->device_type_id);
-  if (work->reg_id)
-    free(work->reg_id);
-  if (work->vendor_id)
-    free(work->vendor_id);
-  if (work->nonce)
-    free(work->nonce);
-  if (work->app_id)
-    free(work->app_id);
-  if (work->user_id)
-    free(work->user_id);
-  if (work->action)
-    free(work->action);
-  if (work->message)
-    free(work->message);
-  if (work->response)
-    free(work->response);
-  if (work->name)
-    free(work->name);
-  if (work->data)
-    free(work->data);
-
-  delete work;
-  work = NULL;
-}
-
-static void CloudWorkAsyncSdrCompleteRegistration(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
+static void cloud_callback(artik_error ret, char *response, void *user_data) {
+  Isolate *isolate = Isolate::GetCurrent();
+  v8::HandleScope scope(isolate);
+  CloudWork *work = static_cast<CloudWork*>(user_data);
+  Local<Value> error = Nan::Null();
+  Local<Value> val = Nan::Null();
 
   log_dbg("");
 
-  work->response = NULL;
-  work->ret = work->cloud->sdr_complete_registration(work->cert_id,
-      work->reg_id, work->nonce, &work->response);
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
+  if (!work) {
     return;
   }
-}
 
-static void CloudWorkAsyncSdrRegistrationStatus(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->sdr_registration_status(work->cert_id,
-      work->reg_id, &work->response);
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
+  if (ret != S_OK) {
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    error = Nan::New<String>(msg).ToLocalChecked();
+  } else {
+    MaybeLocal<Value> result =
+      JSON::Parse(isolate, Nan::New<String>(response).ToLocalChecked());
+    if (!result.IsEmpty()) {
+      val = result.ToLocalChecked();
+    } else {
+      error = Nan::New<String>("Error: JSON Parser error").ToLocalChecked();
+    }
   }
-}
 
-static void CloudWorkAsyncSdrStartRegistration(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->sdr_start_registration(work->cert_id,
-      work->device_type_id, work->vendor_id, &work->response);
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncDeleteDeviceToken(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->delete_device_token(work->device_id, &work->response,
-      work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncUpdateDeviceToken(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->update_device_token(work->device_id, &work->response,
-      work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncGetDeviceToken(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->get_device_token(work->device_id, &work->response,
-      work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncGetDevice(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->get_device(work->device_id, work->properties,
-      &work->response, work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncGetUserApplicationProperties(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->get_user_application_properties(work->device_id,
-      work->app_id, &work->response, work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncGetUserDeviceTypes(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->get_user_device_types(work->count, work->shared,
-      work->offset, work->user_id, &work->response, work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncGetUserDevices(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->get_user_devices(work->count, work->properties,
-      work->offset, work->user_id, &work->response, work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncGetCurrentUserProfile(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->get_current_user_profile(&work->response,
-      work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncSendAction(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->send_action(work->device_id, work->action,
-      &work->response, work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncSendMessage(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->send_message(work->device_id, work->message,
-      &work->response, work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncAddDevice(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->add_device(work->user_id, work->device_type_id,
-      work->name, &work->response, work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncDeleteDevice(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->delete_device(work->device_id, &work->response,
-      work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncGetDeviceProps(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->get_device_properties(work->device_id,
-      work->timestamp, &work->response, work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncSetDeviceServerProps(uv_work_t *req) {
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  work->response = NULL;
-  work->ret = work->cloud->set_device_server_properties(work->device_id,
-      work->data, &work->response, work->ssl_config.get());
-  if (work->ret == E_INTERRUPTED) {
-    cleanup_work(work);
-    return;
-  }
-}
-
-static void CloudWorkAsyncComplete(uv_work_t *req, int status) {
-  Isolate * isolate = Isolate::GetCurrent();
-  v8::HandleScope handleScope(isolate);
-  CloudAsyncWork* work = static_cast<CloudAsyncWork*>(req->data);
-
-  log_dbg("");
-
-  if (!work)
-    return;
-
-  /* If an error occurred, return error message as the response */
-  if (work->ret != S_OK && !work->response)
-    work->response = strndup(error_msg(work->ret), MAX_ERRR_MSG_LEN);
-
-  /* Prepare the return values */
   Handle<Value> argv[] = {
-    Handle<Value>(String::NewFromUtf8(isolate, work->response)),
+    error,
+    val
   };
 
-  /* Call the callback function */
-  Local<Function>::New(isolate, work->callback)->Call(
-      isolate->GetCurrentContext()->Global(), 1, argv);
+  work->callback.Call(2, argv);
 
-  /* Clean up */
-  cleanup_work(work);
+  delete work;
 }
 
 static void on_receive_callback(void *user_data, void *result) {
@@ -399,9 +140,9 @@ static void on_connection_callback(void *user_data, void *result) {
   log_err("Wrong value for callback result");
 }
 
-CloudWrapper::CloudWrapper(const char* token) {
-  m_cloud = new Cloud(token);
-  m_loop = GlibLoop::Instance();
+CloudWrapper::CloudWrapper(const char* token)
+  : m_cloud(new Cloud(token)),
+    m_loop(GlibLoop::Instance()) {
   m_loop->attach();
 }
 
@@ -483,6 +224,24 @@ void CloudWrapper::New(const FunctionCallbackInfo<Value>& args) {
   }
 }
 
+template<typename Func>
+static void async_call(const Func& func, const Local<Function> &callback) {
+  CloudWork *work = new CloudWork(callback);
+
+  artik_error ret = func(work);
+
+  if (ret != S_OK) {
+    std::string msg = "Error: " + std::string(error_msg(ret));
+    Handle<Value> argv[] = {
+      Nan::New<String>(msg).ToLocalChecked(),
+      Nan::Null()
+    };
+
+    work->callback.Call(2, argv);
+    delete work;
+  }
+}
+
 void CloudWrapper::send_message(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = args.GetIsolate();
@@ -514,27 +273,22 @@ void CloudWrapper::send_message(
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(device_id, strlen(device_id));
-    obj->m_work->message = strndup(message, strlen(message));
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto send_message_cb = [&](CloudWork *work) {
+        return cloud->send_message_async(device_id, message,
+                                cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncSendMessage, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(send_message_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
     artik_error ret = cloud->send_message(device_id, message, &response,
                 ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -573,27 +327,22 @@ void CloudWrapper::send_action(
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(device_id, strlen(device_id));
-    obj->m_work->action = strndup(action, strlen(action));
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto send_action_cb = [&](CloudWork *work) {
+      return cloud->send_action_async(device_id, action,
+                                      cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncSendAction, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(send_action_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
     artik_error ret = cloud->send_action(device_id, action, &response,
         ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -620,25 +369,22 @@ void CloudWrapper::get_current_user_profile(
 
   /* If callback is provided, make the call asynchronous */
   if (args[1]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto current_user_profile_cb = [&](CloudWork* work) {
+      return cloud->get_current_user_profile_async(
+          cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[1]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncGetCurrentUserProfile, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(current_user_profile_cb, args[1].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
     artik_error ret =
       cloud->get_current_user_profile(&response, ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -680,29 +426,22 @@ void CloudWrapper::get_user_devices(
 
   /* If callback is provided, make the call asynchronous */
   if (args[5]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->user_id = strndup(user_id, strlen(user_id));
-    obj->m_work->properties = properties;
-    obj->m_work->count = count;
-    obj->m_work->offset = offset;
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto get_user_devices_cb = [&](CloudWork *work) {
+      return cloud->get_user_devices_async(count, properties, offset,
+                            user_id, cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[5]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncGetUserDevices, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(get_user_devices_cb, args[5].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
     artik_error ret = cloud->get_user_devices(count, properties, offset,
         user_id, &response, ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -744,29 +483,22 @@ void CloudWrapper::get_user_device_types(
 
   /* If callback is provided, make the call asynchronous */
   if (args[5]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->user_id = strndup(user_id, strlen(user_id));
-    obj->m_work->shared = shared;
-    obj->m_work->count = count;
-    obj->m_work->offset = offset;
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto get_user_device_types_cb = [&](CloudWork* work) {
+      return cloud->get_user_device_types_async(count, shared, offset, user_id,
+                                cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[5]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncGetUserDeviceTypes, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(get_user_device_types_cb, args[5].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
     artik_error ret = cloud->get_user_device_types(count, shared, offset,
         user_id, &response, ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -792,6 +524,8 @@ void CloudWrapper::get_user_application_properties(
 
   v8::String::Utf8Value param0(args[0]->ToString());
   v8::String::Utf8Value param1(args[1]->ToString());
+  const char *device_id = *param0;
+  const char *app_id = *param1;
 
   /* SSL Configuration */
   if (!args[2]->IsUndefined() && args[2]->IsObject()) {
@@ -803,29 +537,22 @@ void CloudWrapper::get_user_application_properties(
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(*param0, strlen(*param0));
-    obj->m_work->app_id = strndup(*param1, strlen(*param1));
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto get_user_application_properties_cb = [&](CloudWork *work) {
+          return cloud->get_user_application_properties_async(device_id, app_id,
+                                    cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncGetUserApplicationProperties, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(get_user_application_properties_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
-    const char *device_id = *param0;
-    const char *app_id = *param1;
     char *response = NULL;
     artik_error ret = cloud->get_user_application_properties(device_id, app_id,
         &response, ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -849,6 +576,7 @@ void CloudWrapper::get_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
   }
 
   v8::String::Utf8Value param0(args[0]->ToString());
+  const char *device_id = *param0;
 
   if (!args[1]->IsUndefined() && args[1]->IsBoolean())
     properties = args[1]->BooleanValue();
@@ -863,28 +591,22 @@ void CloudWrapper::get_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(*param0, strlen(*param0));
-    obj->m_work->properties = properties;
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto get_device_cb = [&](CloudWork* work) {
+      return cloud->get_device_async(device_id, properties,
+                                     cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncGetDevice, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(get_device_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
-    const char *device_id = *param0;
     char *response = NULL;
     artik_error ret = cloud->get_device(device_id, properties, &response,
         ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -908,6 +630,7 @@ void CloudWrapper::get_device_token(
   }
 
   v8::String::Utf8Value param0(args[0]->ToString());
+  const char *device_id = *param0;
 
   /* SSL Configuration */
   if (!args[1]->IsUndefined() && args[1]->IsObject()) {
@@ -919,27 +642,22 @@ void CloudWrapper::get_device_token(
 
   /* If callback is provided, make the call asynchronous */
   if (args[2]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(*param0, strlen(*param0));
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto get_device_token_cb = [&](CloudWork *work) {
+      return cloud->get_device_token_async(device_id,
+                                cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[2]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncGetDeviceToken, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(get_device_token_cb, args[2].As<Function>());
   } else { /* Otherwise make the call directly */
-    const char *device_id = *param0;
     char *response = NULL;
     artik_error ret =
       cloud->get_device_token(device_id, &response, ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -966,6 +684,9 @@ void CloudWrapper::add_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::String::Utf8Value param0(args[0]->ToString());
   v8::String::Utf8Value param1(args[1]->ToString());
   v8::String::Utf8Value param2(args[2]->ToString());
+  const char *user_id = *param0;
+  const char *dt_id = *param1;
+  const char *name = *param2;
 
   /* SSL Configuration */
   if (!args[3]->IsUndefined() && args[3]->IsObject()) {
@@ -977,31 +698,22 @@ void CloudWrapper::add_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   /* If callback is provided, make the call asynchronous */
   if (args[4]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->user_id = strndup(*param0, strlen(*param0));
-    obj->m_work->device_type_id = strndup(*param1, strlen(*param1));
-    obj->m_work->name = strndup(*param2, strlen(*param2));
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto add_device_cb = [&](CloudWork *work) {
+      return cloud->add_device_async(user_id, dt_id, name,
+                                     cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[4]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncAddDevice, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(add_device_cb, args[4].As<Function>());
   } else { /* Otherwise make the call directly */
-    const char *user_id = *param0;
-    const char *dt_id = *param1;
-    const char *name = *param2;
     char *response = NULL;
     artik_error ret = cloud->add_device(user_id, dt_id, name, &response,
         ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -1025,6 +737,7 @@ void CloudWrapper::update_device_token(
   }
 
   v8::String::Utf8Value param0(args[0]->ToString());
+  const char *device_id = *param0;
 
   /* SSL Configuration */
   if (!args[1]->IsUndefined() && args[1]->IsObject()) {
@@ -1036,27 +749,22 @@ void CloudWrapper::update_device_token(
 
   /* If callback is provided, make the call asynchronous */
   if (args[2]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(*param0, strlen(*param0));
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto update_device_token_cb = [&](CloudWork *work) {
+      return cloud->update_device_token_async(device_id,
+                                    cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[2]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncUpdateDeviceToken, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(update_device_token_cb, args[2].As<Function>());
   } else { /* Otherwise make the call directly */
-    const char *device_id = *param0;
     char *response = NULL;
     artik_error ret = cloud->update_device_token(device_id, &response,
         ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -1080,6 +788,7 @@ void CloudWrapper::delete_device_token(
   }
 
   v8::String::Utf8Value param0(args[0]->ToString());
+  const char *device_id = *param0;
 
   /* SSL Configuration */
   if (!args[1]->IsUndefined() && args[1]->IsObject()) {
@@ -1091,27 +800,22 @@ void CloudWrapper::delete_device_token(
 
   /* If callback is provided, make the call asynchronous */
   if (args[2]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(*param0, strlen(*param0));
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto delete_device_token_cb = [&](CloudWork* work) {
+      return cloud->delete_device_token_async(device_id,
+                                    cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[2]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncDeleteDeviceToken, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(delete_device_token_cb, args[2].As<Function>());
   } else { /* Otherwise make the call directly */
-    const char *device_id = *param0;
     char *response = NULL;
     artik_error ret = cloud->delete_device_token(device_id, &response,
         ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -1135,6 +839,7 @@ void CloudWrapper::delete_device(
   }
 
   v8::String::Utf8Value param0(args[0]->ToString());
+  const char *device_id = *param0;
 
   /* SSL Configuration */
   if (!args[1]->IsUndefined() && args[1]->IsObject()) {
@@ -1146,27 +851,22 @@ void CloudWrapper::delete_device(
 
   /* If callback is provided, make the call asynchronous */
   if (args[2]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(*param0, strlen(*param0));
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto delete_device_cb = [&](CloudWork* work) {
+      return cloud->delete_device_async(device_id,
+                                    cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[2]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncDeleteDevice, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(delete_device_cb, args[2].As<Function>());
   } else { /* Otherwise make the call directly */
-    const char *device_id = *param0;
     char *response = NULL;
     artik_error ret =
       cloud->delete_device(device_id, &response, ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -1190,7 +890,7 @@ void CloudWrapper::get_device_properties(
   }
 
   v8::String::Utf8Value param0(args[0]->ToString());
-
+  const char *device_id = *param0;
   if (args[1]->IsUndefined() || !args[1]->IsBoolean()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
@@ -1209,28 +909,22 @@ void CloudWrapper::get_device_properties(
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(*param0, strlen(*param0));
-    obj->m_work->timestamp = timestamp;
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto get_device_properties_cb = [&](CloudWork *work) {
+      return cloud->get_device_properties_async(device_id, timestamp,
+                                cloud_callback, work, ssl_config.get());
+      };
 
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncGetDeviceProps, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(get_device_properties_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
-    const char *device_id = *param0;
     char *response = NULL;
     artik_error ret = cloud->get_device_properties(device_id, timestamp,
                                                   &response, ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -1247,21 +941,16 @@ void CloudWrapper::set_device_server_properties(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
   }
 
   v8::String::Utf8Value param0(args[0]->ToString());
-
-  if (args[1]->IsUndefined() || !args[1]->IsString()) {
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-      isolate, "Wrong arguments")));
-    return;
-  }
-
   v8::String::Utf8Value param1(args[1]->ToString());
+  const char *device_id = *param0;
+  const char *data = *param1;
 
   /* SSL Configuration */
   if (!args[2]->IsUndefined() && args[2]->IsObject()) {
@@ -1273,30 +962,23 @@ void CloudWrapper::set_device_server_properties(
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_id = strndup(*param0, strlen(*param0));
-    obj->m_work->data = strndup(*param1, strlen(*param1));
-    obj->m_work->ssl_config = std::move(ssl_config);
+    auto set_device_server_properties_cb = [&](CloudWork *work) {
+      return cloud->set_device_server_properties_async(device_id, data,
+                                    cloud_callback, work, ssl_config.get());
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncSetDeviceServerProps, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(set_device_server_properties_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
-    const char *device_id = *param0;
-    const char *data = *param1;
     char *response = NULL;
     artik_error ret = cloud->set_device_server_properties(
       device_id, data,
       &response, ssl_config.get());
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -1332,33 +1014,27 @@ void CloudWrapper::sdr_start_registration(
       "Wrong value of cert_id. ")));
     return;
   }
-  const char *device_type_id = *param1;
+  const char *dt_id = *param1;
   const char *vendor_id = *param2;
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->device_type_id = strndup(device_type_id,
-                                          strlen(device_type_id));
-    obj->m_work->vendor_id = strndup(vendor_id, strlen(vendor_id));
-    obj->m_work->cert_id = cert_id.value();
+    auto sdr_start_registration_cb = [&](CloudWork *work) {
+      return cloud->sdr_start_registration_async(cert_id.value(),
+                            dt_id, vendor_id,  cloud_callback, work);
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncSdrStartRegistration, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(sdr_start_registration_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
     artik_error ret = cloud->sdr_start_registration(cert_id.value(),
-        device_type_id, vendor_id, &response);
+        dt_id, vendor_id, &response);
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -1396,26 +1072,22 @@ void CloudWrapper::sdr_registration_status(
 
   /* If callback is provided, make the call asynchronous */
   if (args[2]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->reg_id = strndup(reg_id, strlen(reg_id));
-    obj->m_work->cert_id = cert_id.value();
+    auto sdr_registration_status_cb = [&](CloudWork *work) {
+      return cloud->sdr_registration_status_async(cert_id.value(), reg_id,
+                                cloud_callback, work);
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[2]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncSdrRegistrationStatus, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(sdr_registration_status_cb, args[2].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
     artik_error ret = cloud->sdr_registration_status(cert_id.value(), reg_id,
         &response);
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 
@@ -1456,27 +1128,22 @@ void CloudWrapper::sdr_complete_registration(
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
-    obj->m_work = new CloudAsyncWork();
-    obj->m_work->request.data = obj->m_work;
-    obj->m_work->cloud = cloud;
-    obj->m_work->reg_id = strndup(reg_id, strlen(reg_id));
-    obj->m_work->nonce = strndup(nonce, strlen(nonce));
-    obj->m_work->cert_id = cert_id.value();
+    auto sdr_complete_registration_cb = [&](CloudWork *work) {
+      return cloud->sdr_complete_registration_async(cert_id.value(), reg_id,
+                                                nonce, cloud_callback, work);
+    };
 
-    Local<Function> callback = Local<Function>::Cast(args[3]);
-    obj->m_work->callback.Reset(isolate, callback);
-
-    uv_queue_work(uv_default_loop(), &(obj->m_work->request),
-        CloudWorkAsyncSdrCompleteRegistration, CloudWorkAsyncComplete);
-
-    args.GetReturnValue().Set(Undefined(isolate));
+    async_call(sdr_complete_registration_cb, args[2].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
     artik_error ret = cloud->sdr_complete_registration(cert_id.value(), reg_id,
         nonce, &response);
 
-    if (ret != S_OK && !response)
-      response = strndup(error_msg(ret), MAX_ERRR_MSG_LEN);
+    if (ret != S_OK && !response) {
+      std::string msg = "Error: " + std::string(error_msg(ret));
+      isolate->ThrowException(Nan::New(msg).ToLocalChecked());
+      return;
+    }
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, response));
 

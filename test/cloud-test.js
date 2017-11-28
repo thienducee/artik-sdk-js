@@ -62,9 +62,10 @@ testCase('Cloud', function() {
 			if (!auth_token || !auth_token.length)
 				this.skip();
 
-			cloud.get_current_user_profile(function(response) {
-				console.log(response);
-				assert.notInclude( response, "error");
+			cloud.get_current_user_profile(function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
 				done();
 			}, ssl_config);
 		});
@@ -86,9 +87,10 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.get_device_token(device_id, function(response) {
-				console.log(response);
-				assert.notInclude(response, "error");
+			cloud.get_device_token(device_id, function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
 				done();
 			}, ssl_config);
 		});
@@ -131,9 +133,10 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.get_device(device_id, true, function(response) {
-				console.log(response);
-				assert.notInclude(response, "error");
+			cloud.get_device(device_id, true, function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
 				done();
 			}, ssl_config);
 		});
@@ -156,9 +159,10 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.get_user_device_types(100, false, 0, user_id, function(response) {
-				console.log(response);
-				assert.notInclude(response, "error");
+			cloud.get_user_device_types(100, false, 0, user_id, function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
 				done();
 			}, ssl_config);
 		});
@@ -211,9 +215,10 @@ testCase('Cloud', function() {
 
 			cloud.update_device_token(device_id, ssl_config);
 
-			cloud.delete_device_token(device_id, function(response) {
-				console.log(response);
-				assert.notInclude(response, "error");
+			cloud.delete_device_token(device_id, function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
 				done();
 			}, ssl_config);
 		});
@@ -237,9 +242,10 @@ testCase('Cloud', function() {
 			if (!auth_token || !device_id || !auth_token.length || !device_id.length)
 				this.skip();
 
-			cloud.update_device_token(device_id, function(response) {
-				console.log(response);
-				assert.notInclude(response, "error");
+			cloud.update_device_token(device_id, function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
 				done();
 			}, ssl_config);
 		});
@@ -265,10 +271,11 @@ testCase('Cloud', function() {
 			if (!user_id || !device_type_id || !user_id.length || !device_type_id.length)
 				this.skip();
 
-			cloud.add_device(user_id, device_type_id, "ARTIK_UT_TEST2", function(response) {
-				console.log(response);
-				assert.notInclude(response, "error");
-				device_id_2 = JSON.parse(response).data.id;
+			cloud.add_device(user_id, device_type_id, "ARTIK_UT_TEST2", function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
+				device_id_2 = response.data.id;
 				done();
 			}, ssl_config);
 		});
@@ -292,9 +299,10 @@ testCase('Cloud', function() {
 			if (!device_id_2 || !device_id_2.length)
 				this.skip();
 
-			cloud.delete_device(device_id_2, function(response) {
-				console.log(response);
-				assert.notInclude(response, "error");
+			cloud.delete_device(device_id_2, function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
 				done();
 			}, ssl_config);
 		});
@@ -317,9 +325,10 @@ testCase('Cloud', function() {
 			if (!device_id | !server_props | !device_id.length | !server_props.length)
 				this.skip();
 
-			cloud.set_device_server_properties(device_id, server_props, function(response) {
-				console.log(response);
-				assert.notInclude(response, "error");
+			cloud.set_device_server_properties(device_id, server_props, function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
 				done();
 			}, ssl_config);
 		})
@@ -342,9 +351,10 @@ testCase('Cloud', function() {
 			if (!device_id | !device_id.length)
 				this.skip();
 
-			cloud.get_device_properties(device_id, timestamp, function(response) {
-				console.log(response);
-				assert.notInclude(response, "error");
+			cloud.get_device_properties(device_id, timestamp, function(err, response) {
+				assert.isNull(err);
+				assert.isObject(response);
+				console.log(JSON.stringify(response));
 				done();
 			}, ssl_config);
 		})
