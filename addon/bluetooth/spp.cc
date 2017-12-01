@@ -234,7 +234,7 @@ void SppSocketWrapper::write(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   SppSocketWrapper* obj = ObjectWrap::Unwrap<SppSocketWrapper>(args.Holder());
 
-  if (args.Length() < 1 || args[0]->IsUndefined()) {
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;

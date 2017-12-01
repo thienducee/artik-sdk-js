@@ -91,7 +91,7 @@ void OnOffLightWrapper::Init(Local<Object> exports) {
 void OnOffLightWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -204,7 +204,7 @@ void OnOffLightWrapper::groups_set_local_name_support(
 
   log_dbg("groups_set_local_name_support");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsBoolean()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -300,7 +300,7 @@ void OnOffSwitchWrapper::Init(Local<Object> exports) {
 void OnOffSwitchWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -356,7 +356,7 @@ void OnOffSwitchWrapper::onoff_command(
 
   log_dbg("onoff_command");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -407,7 +407,7 @@ void OnOffSwitchWrapper::identify_request(
 
   log_dbg("identify_request");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -444,7 +444,7 @@ void OnOffSwitchWrapper::identify_get_remaining_time(
 
   log_dbg("identify_get_remaining_time");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsObject()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -545,7 +545,7 @@ void LevelControlSwitchWrapper::Init(Local<Object> exports) {
 void LevelControlSwitchWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -602,7 +602,7 @@ void LevelControlSwitchWrapper::onoff_command(
 
   log_dbg("onoff_command");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -658,7 +658,7 @@ void LevelControlSwitchWrapper::level_control_request(
 
   log_dbg("level_control_request");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsObject()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -701,7 +701,7 @@ void LevelControlSwitchWrapper::identify_request(
 
   log_dbg("identify_request");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -738,7 +738,7 @@ void LevelControlSwitchWrapper::identify_get_remaining_time(
 
   log_dbg("identify_get_remaining_time");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsObject()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -840,7 +840,7 @@ void DimmableLightWrapper::Init(Local<Object> exports) {
 void DimmableLightWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -976,7 +976,7 @@ void DimmableLightWrapper::groups_set_local_name_support(
 
   log_dbg("groups_set_local_name_support");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsBoolean()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1078,7 +1078,7 @@ void LightSensorWrapper::Init(Local<Object> exports) {
 void LightSensorWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1127,7 +1127,7 @@ void LightSensorWrapper::illum_set_measured_value_range(
 
   log_dbg("illum_set_measured_value_range");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsInt32() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1156,7 +1156,7 @@ void LightSensorWrapper::illum_set_measured_value(
 
   log_dbg("illum_set_measured_value");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1213,7 +1213,7 @@ void LightSensorWrapper::identify_request(
 
   log_dbg("identify_request");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1250,7 +1250,7 @@ void LightSensorWrapper::identify_get_remaining_time(
 
   log_dbg("identify_get_remaining_time");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsObject()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1355,7 +1355,7 @@ void RemoteControlWrapper::Init(Local<Object> exports) {
 void RemoteControlWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1411,7 +1411,7 @@ void RemoteControlWrapper::onoff_command(
 
   log_dbg("onoff_command");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1467,7 +1467,7 @@ void RemoteControlWrapper::level_control_request(
 
   log_dbg("level_control_request");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsObject()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1512,9 +1512,9 @@ void RemoteControlWrapper::request_reporting(
 
   log_dbg("request_reporting");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()
-      || args[2]->IsUndefined() || args[3]->IsUndefined()
-      || args[4]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsString()
+      || !args[2]->IsInt32() || !args[3]->IsInt32()
+      || !args[4]->IsNumber()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1573,7 +1573,7 @@ void RemoteControlWrapper::stop_reporting(
 
   log_dbg("stop_reporting");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1628,7 +1628,7 @@ void RemoteControlWrapper::reset_to_factory_default(
 
   log_dbg("reset_to_factory_default");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsObject()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1664,7 +1664,7 @@ void RemoteControlWrapper::identify_request(
 
   log_dbg("identify_request");
 
-  if (args[0]->IsUndefined() || args[1]->IsUndefined()) {
+  if (!args[0]->IsObject() || !args[1]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -1701,7 +1701,7 @@ void RemoteControlWrapper::identify_get_remaining_time(
 
   log_dbg("identify_get_remaining_time");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsObject()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;

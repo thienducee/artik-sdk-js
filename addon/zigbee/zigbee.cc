@@ -137,7 +137,7 @@ void ZigbeeWrapper::initialize(
 
   log_dbg("initialize");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsFunction()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;
@@ -230,10 +230,11 @@ void ZigbeeWrapper::network_form_manually(
 
   log_dbg("network_form_manually");
 
-  if (args[0]->IsUndefined() || args[0]->IsUndefined()
-      || args[0]->IsUndefined()) {
+  if (!args[0]->IsInt32() || !args[1]->IsInt32()
+      || !args[2]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   network_info.channel = args[0]->Int32Value();
@@ -263,9 +264,10 @@ void ZigbeeWrapper::network_permitjoin(
 
   log_dbg("network_permitjoin");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   int duration_sec = args[0]->Int32Value();
@@ -451,9 +453,10 @@ void ZigbeeWrapper::device_find_by_cluster(
 
   log_dbg("device_find_by_cluster");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   int cluster_id = args[0]->Int32Value();
@@ -523,10 +526,11 @@ void ZigbeeWrapper::network_join_manually(
 
   log_dbg("network_join_manually");
 
-  if (args[0]->IsUndefined() || args[0]->IsUndefined()
-      || args[0]->IsUndefined()) {
+  if (!args[0]->IsInt32() || !args[1]->IsInt32()
+      || !args[2]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   network_info.channel = args[0]->Int32Value();
@@ -577,9 +581,10 @@ void ZigbeeWrapper::set_discover_cycle_time(
 
   log_dbg("set_discover_cycle_time");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsInt32()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   int time_minutes = args[0]->Int32Value();
@@ -648,9 +653,10 @@ void ZigbeeWrapper::raw_request(
 
   log_dbg("raw_request");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   v8::String::Utf8Value param0(args[0]->ToString());

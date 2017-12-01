@@ -101,7 +101,7 @@ void MediaWrapper::play_sound_file(const FunctionCallbackInfo<Value>& args) {
   Media* obj = wrap->getObj();
   artik_error ret = S_OK;
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
   }
@@ -115,7 +115,7 @@ void MediaWrapper::play_sound_file(const FunctionCallbackInfo<Value>& args) {
   }
 
   // Register finsihed callback if passed as an argument
-  if (!args[1]->IsUndefined()) {
+  if (args[1]->IsFunction()) {
     wrap->m_finished_cb = new v8::Persistent<v8::Function>();
     wrap->m_finished_cb->Reset(isolate, Local<Function>::Cast(args[1]));
     obj->set_finished_callback(on_finished, reinterpret_cast<void*>(wrap));

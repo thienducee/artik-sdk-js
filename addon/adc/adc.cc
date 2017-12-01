@@ -69,18 +69,26 @@ void AdcWrapper::Init(Local<Object> exports) {
 void AdcWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   int lenArg = 2;
-  if (args.Length() != lenArg && args.Length() != 0)
+  if (args.Length() != lenArg && args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong number of arguments")));
+    return;
+  }
+
   if (args.IsConstructCall()) {
     AdcWrapper* obj = NULL;
 
-    if (args.Length() == lenArg) {
+    if (args[0]->IsUint32() && args[1]->IsString()) {
       obj = new AdcWrapper(args[0]->Uint32Value(),
                            *v8::String::Utf8Value(args[1]->ToString()));
-    } else {
+    } else if (args.Length() == 0) {
       obj = new AdcWrapper();
+    } else {
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+                isolate, "Wrong number of arguments or arguments type")));
+      return;
     }
+
     obj->Wrap(args.This());
     args.GetReturnValue().Set(args.This());
   } else {
@@ -100,9 +108,11 @@ void AdcWrapper::New(const FunctionCallbackInfo<Value>& args) {
 
 void AdcWrapper::request(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong number of arguments")));
+    return;
+  }
 
   Adc* obj = ObjectWrap::Unwrap<AdcWrapper>(args.Holder())->getObj();
 
@@ -111,9 +121,11 @@ void AdcWrapper::request(const FunctionCallbackInfo<Value>& args) {
 
 void AdcWrapper::release(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong number of arguments")));
+    return;
+  }
   Adc* obj = ObjectWrap::Unwrap<AdcWrapper>(args.Holder())->getObj();
 
   args.GetReturnValue().Set(Number::New(isolate, obj->release()));
@@ -121,9 +133,11 @@ void AdcWrapper::release(const FunctionCallbackInfo<Value>& args) {
 
 void AdcWrapper::get_value(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                         isolate, "Wrong number of arguments")));
+    return;
+  }
 
   Adc* obj = ObjectWrap::Unwrap<AdcWrapper>(args.Holder())->getObj();
   int val = -1;
@@ -134,9 +148,11 @@ void AdcWrapper::get_value(const FunctionCallbackInfo<Value>& args) {
 
 void AdcWrapper::get_pin_num(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong number of arguments")));
+    return;
+  }
   Adc* obj = ObjectWrap::Unwrap<AdcWrapper>(args.Holder())->getObj();
 
   args.GetReturnValue().Set(Number::New(isolate,
@@ -145,9 +161,11 @@ void AdcWrapper::get_pin_num(const FunctionCallbackInfo<Value>& args) {
 
 void AdcWrapper::get_name(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong number of arguments")));
+    return;
+  }
   Adc* obj = ObjectWrap::Unwrap<AdcWrapper>(args.Holder())->getObj();
 
   args.GetReturnValue().Set(String::NewFromUtf8(isolate, obj->get_name()));
@@ -155,28 +173,41 @@ void AdcWrapper::get_name(const FunctionCallbackInfo<Value>& args) {
 
 void AdcWrapper::set_pin_num(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 1)
+
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                      isolate, "Wrong number of arguments")));
+        isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (!args[0]->IsNumber()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+                      isolate, "Wrong type arguments")));
+    return;
+  }
   Adc* obj = ObjectWrap::Unwrap<AdcWrapper>(args.Holder())->getObj();
 
-  if (args.Length() != 1)
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                      isolate, "Wrong number of arguments")));
   obj->set_pin_num(static_cast<int>(args[0]->NumberValue()));
 }
 
 void AdcWrapper::set_name(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 1)
+
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                      isolate, "Wrong number of arguments")));
+        isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (!args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+                      isolate, "Wrong type arguments")));
+    return;
+  }
+
   Adc* obj = ObjectWrap::Unwrap<AdcWrapper>(args.Holder())->getObj();
   v8::String::Utf8Value val(args[0]->ToString());
 
-  if (args.Length() != 1)
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                      isolate, "Wrong number of arguments")));
   obj->set_name(*val);
 }
 

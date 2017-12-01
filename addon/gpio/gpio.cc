@@ -101,11 +101,11 @@ void GpioWrapper::New(const FunctionCallbackInfo<Value>& args) {
   log_dbg("");
 
   if (args.IsConstructCall()) {
-    if (args[0]->IsUndefined() ||
-        args[1]->IsUndefined() ||
-        args[2]->IsUndefined() ||
-        args[3]->IsUndefined() ||
-        args[4]->IsUndefined()) {
+    if (!args[0]->IsNumber() &&
+        !args[1]->IsString() &&
+        !args[2]->IsString() &&
+        !args[3]->IsString() &&
+        !args[4]->IsNumber()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
         return;
@@ -142,7 +142,7 @@ void GpioWrapper::New(const FunctionCallbackInfo<Value>& args) {
     else
         edge = GPIO_EDGE_NONE;
 
-    int initial_value = (args[4]->IsUndefined() ? 0 : args[4]->NumberValue());
+    int initial_value = args[4]->NumberValue();
 
     GpioWrapper* obj = new GpioWrapper(id, name, dir, edge, initial_value);
     obj->Wrap(args.This());
@@ -169,7 +169,7 @@ void GpioWrapper::request(const FunctionCallbackInfo<Value>& args) {
   ret = obj->request();
 
   /* If a callback is provided, use it for change notification */
-  if ((ret == S_OK) && !args[0]->IsUndefined() &&
+  if ((ret == S_OK) && args[0]->IsFunction() &&
       (obj->get_direction() == GPIO_IN)) {
     wrap->m_change_cb = new v8::Persistent<v8::Function>();
     wrap->m_change_cb->Reset(isolate, Local<Function>::Cast(args[0]));
@@ -217,7 +217,7 @@ void GpioWrapper::write(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args.Length() < 1 || args[0]->IsUndefined()) {
+  if (args.Length() < 1 || !args[0]->IsNumber()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
             isolate, "Wrong arguments")));
       return;

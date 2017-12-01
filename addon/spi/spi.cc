@@ -75,13 +75,14 @@ void SpiWrapper::New(const FunctionCallbackInfo<Value>& args) {
 
   if (args.IsConstructCall()) {
     if ((args.Length() < 5) ||
-        (args[0]->IsUndefined()) ||
-        (args[1]->IsUndefined()) ||
-        (args[2]->IsUndefined()) ||
-        (args[3]->IsUndefined()) ||
-        (args[4]->IsUndefined())) {
+        !args[0]->IsNumber() ||
+        !args[1]->IsNumber() ||
+        !args[2]->IsNumber() ||
+        !args[3]->IsNumber() ||
+        !args[4]->IsNumber()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
+      return;
     }
 
     unsigned int bus = args[0]->NumberValue();
@@ -125,16 +126,20 @@ void SpiWrapper::read(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   Spi* obj = ObjectWrap::Unwrap<SpiWrapper>(args.Holder())->getObj();
 
-  if (args.Length() < 1 || args[0]->IsUndefined())
+  if (args.Length() < 1 || !args[0]->IsUint32()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
+    return;
+  }
 
   unsigned int length = args[0]->Uint32Value();
-
   char* buffer = reinterpret_cast<char*>(malloc(length));
-  if (!buffer)
+
+  if (!buffer) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-          isolate, "Memory allocation error")));
+        isolate, "Memory allocation error")));
+    return;
+  }
 
   obj->read(buffer, length);
 
@@ -146,13 +151,17 @@ void SpiWrapper::read(const FunctionCallbackInfo<Value>& args) {
 void SpiWrapper::write(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args.Length() < 1 || args[0]->IsUndefined())
+  if (args.Length() < 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
+  }
 
-  if (!node::Buffer::HasInstance(args[0]))
+  if (!node::Buffer::HasInstance(args[0])) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Argument should be a Buffer.")));
+    return;
+  }
 
   char * buffer = node::Buffer::Data(args[0]);
   unsigned int length = node::Buffer::Length(args[0]);
@@ -168,21 +177,27 @@ void SpiWrapper::read_write(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   Spi* obj = ObjectWrap::Unwrap<SpiWrapper>(args.Holder())->getObj();
 
-  if (args.Length() < 1 || args[0]->IsUndefined())
+  if (args.Length() < 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
+  }
 
-  if (!node::Buffer::HasInstance(args[0]))
+  if (!node::Buffer::HasInstance(args[0])) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Argument should be a Buffer.")));
+    return;
+  }
 
   char *tx_buffer = node::Buffer::Data(args[0]);
   unsigned int length = node::Buffer::Length(args[0]);
   char *rx_buffer = reinterpret_cast<char*>(malloc(length));
 
-  if (!rx_buffer)
+  if (!rx_buffer) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Memory allocation error")));
+    return;
+  }
 
   obj->read_write(tx_buffer, rx_buffer, length);
 

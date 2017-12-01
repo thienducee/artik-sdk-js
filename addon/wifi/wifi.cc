@@ -176,7 +176,7 @@ void WifiWrapper::New(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (!args[0]->IsUndefined() && args[0]->IsString()) {
+  if (args[0]->IsString()) {
     auto wifi_type = js_type_to_cpp<std::string>(args[0]);
 
     if (wifi_type.value() == "ap") {
@@ -277,9 +277,10 @@ void WifiWrapper::scan_request(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined()) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+  if (!args[0]->IsFunction()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
   wrap->m_scan_cb = new Persistent<Function>();
@@ -331,13 +332,11 @@ void WifiWrapper::connect(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()
-    || args[1]->IsUndefined() || !args[1]->IsString()
-    || args[2]->IsUndefined() || !args[2]->IsBoolean()
-    || args[3]->IsUndefined()) {
-    isolate->ThrowException(
-        Exception::TypeError(
-            String::NewFromUtf8(isolate, "Wrong arguments")));
+  if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsBoolean()
+      || !args[3]->IsFunction()) {
+    isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value param0(args[0]->ToString());
@@ -468,11 +467,11 @@ void WifiWrapper::start_ap(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args.Length() != 4 ||
-      args[0]->IsUndefined() || !args[0]->IsString() ||
-      args[1]->IsUndefined() || !args[1]->IsString() ||
-      args[2]->IsUndefined() || !args[2]->IsNumber() ||
-      args[3]->IsUndefined() || !args[3]->IsNumber()) {
+  if (args.Length() != 4
+      || !args[0]->IsString()
+      || !args[1]->IsString()
+      || !args[2]->IsNumber()
+      || !args[3]->IsNumber()) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Wrong arguments")));
     return;

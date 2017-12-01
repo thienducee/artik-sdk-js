@@ -50,11 +50,6 @@ using v8::Handle;
 using v8::Array;
 using v8::Context;
 
-#define CHECK_ARGUMENT_STRING(x)  (x->IsUndefined() || !x->IsString())
-#define CHECK_ARGUMENT_NUMBER(x)  (x->IsUndefined() || !x->IsNumber())
-#define CHECK_ARGUMENT_BOOLEAN(x) (x->IsUndefined() || !x->IsBoolean())
-#define CHECK_ARGUMENT_DEFINED(x) (x->IsUndefined())
-
 Persistent<Function> Lwm2mWrapper::constructor;
 
 static void on_error(void *data, void *user_data) {
@@ -183,15 +178,15 @@ void Lwm2mWrapper::client_request(
   log_dbg("");
 
   // Check Arguments
-  if ((args.Length() < 6)          ||
-      CHECK_ARGUMENT_NUMBER(args[0]) ||  // Server ID
-      CHECK_ARGUMENT_STRING(args[1]) ||  // Server URI
-      CHECK_ARGUMENT_STRING(args[2]) ||  // Client Name
-      CHECK_ARGUMENT_NUMBER(args[3]) ||  // lifetime
-      CHECK_ARGUMENT_NUMBER(args[4]) ||  // connect timeout
-      !args[5]->IsObject()) {  // Objects device & conn_monitoring
+  if ((args.Length() < 5)  ||
+      !args[0]->IsNumber() ||  // Server ID
+      !args[1]->IsString() ||  // Server URI
+      !args[2]->IsString() ||  // Client Name
+      !args[3]->IsNumber() ||  // lifetime
+      !args[4]->IsObject()) {  // Objects device & conn_monitoring
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
   // Parse lwm2m object parameter and create appropriate object
   auto deviceobj = js_object_attribute_to_cpp<Local<Value>>(args[5], "device");
@@ -494,16 +489,18 @@ void Lwm2mWrapper::client_write_resource(
   log_dbg("");
 
   // Check Arguments
-  if ((args.Length() < 2)              ||
-      CHECK_ARGUMENT_STRING(args[0])   ||  // Resource URI
-      CHECK_ARGUMENT_DEFINED(args[1])) {   // Data buffer
+  if ((args.Length() < 2) ||
+      !args[0]->IsString()) {  // Resource URI
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
-  if (!node::Buffer::HasInstance(args[1]))
+  if (!node::Buffer::HasInstance(args[1])) {  // Data buffer
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Argument 2 should be a Buffer.")));
+    return;
+  }
 
   v8::String::Utf8Value uri(args[0]->ToString());
   unsigned char *buffer = (unsigned char *)node::Buffer::Data(args[1]);
@@ -529,8 +526,7 @@ void Lwm2mWrapper::client_read_resource(
   log_dbg("");
 
   // Check Arguments
-  if ((args.Length() < 1) ||
-      CHECK_ARGUMENT_STRING(args[0])) {
+  if ((args.Length() < 1) || !args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;
@@ -564,6 +560,7 @@ void Lwm2mWrapper::serialize_tlv_int(
   if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
   v8::Array *data = v8::Array::Cast(*args[0]);
@@ -602,8 +599,9 @@ void Lwm2mWrapper::serialize_tlv_string(
 
   // Check Arguments
   if (args.Length() != 1) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
   v8::Array *data = v8::Array::Cast(*args[0]);

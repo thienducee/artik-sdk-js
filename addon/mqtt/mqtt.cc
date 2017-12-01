@@ -46,12 +46,6 @@ using v8::Value;
 using v8::Handle;
 using v8::Context;
 
-#define CHECK_ARGUMENT_STRING(x)  (x->IsUndefined() || !x->IsString())
-#define CHECK_ARGUMENT_NUMBER(x)  (x->IsUndefined() || !x->IsNumber())
-#define CHECK_ARGUMENT_BOOLEAN(x) (x->IsUndefined() || !x->IsBoolean())
-#define CHECK_ARGUMENT_DEFINED(x) (x->IsUndefined())
-#define CHECK_ARGUMENT_OBJECT(x) (x->IsUndefined() || !x->IsObject())
-
 Persistent<Function> MqttWrapper::constructor;
 
 static void on_mqtt_connect(artik_mqtt_config *client_config, void *user_data,
@@ -188,6 +182,7 @@ MqttWrapper::MqttWrapper(artik_mqtt_config const &config) {
   } catch (artik::ArtikException &e) {
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, e.what())));
+    return;
   }
 
   m_loop = GlibLoop::Instance();
@@ -231,14 +226,15 @@ void MqttWrapper::New(const FunctionCallbackInfo<Value>& args) {
   log_dbg("");
 
   if ((args.Length() < 6 || args.Length() > 13) ||
-      CHECK_ARGUMENT_STRING(args[0])   ||  // Client ID
-      CHECK_ARGUMENT_STRING(args[1])   ||  // User Name
-      CHECK_ARGUMENT_STRING(args[2])   ||  // User Password
-      CHECK_ARGUMENT_BOOLEAN(args[3])  ||  // Clean session flag
-      CHECK_ARGUMENT_NUMBER(args[4])   ||  // Keep-Alive time
-      CHECK_ARGUMENT_BOOLEAN(args[5])) {   // Block flag
+      !args[0]->IsString()   ||  // Client ID
+      !args[1]->IsString()   ||  // User Name
+      !args[2]->IsString()   ||  // User Password
+      !args[3]->IsBoolean()  ||  // Clean session flag
+      !args[4]->IsNumber()   ||  // Keep-Alive time
+      !args[5]->IsBoolean()) {   // Block flag
     isolate->ThrowException(Exception::TypeError(
         String::NewFromUtf8(isolate, "Mqtt Wrong arguments")));
+    return;
   } else if (args.IsConstructCall()) {
     v8::String::Utf8Value client_id(args[0]->ToString());
     v8::String::Utf8Value user_name(args[1]->ToString());
@@ -253,7 +249,7 @@ void MqttWrapper::New(const FunctionCallbackInfo<Value>& args) {
     config.keep_alive_time = args[4]->NumberValue();
     config.block = args[5]->BooleanValue();
 
-    if (!args[6]->IsUndefined() && args[6]->IsObject()) {
+    if (args[6]->IsObject()) {
       ssl_config = SSLConfigConverter::convert(isolate, args[6]);
       config.tls = ssl_config.get();
     }
@@ -261,39 +257,27 @@ void MqttWrapper::New(const FunctionCallbackInfo<Value>& args) {
     obj = new MqttWrapper(config);
     obj->Wrap(args.This());
 
-    if (args.Length() >= 8 &&
-        !args[7]->IsNull() &&
-        !args[7]->IsUndefined()) {
+    if (args[7]->IsFunction()) {
       obj->m_connect_cb = new v8::Persistent<v8::Function>();
       obj->m_connect_cb->Reset(isolate, Local<Function>::Cast(args[7]));
     }
-    if (args.Length() >= 9 &&
-        !args[8]->IsNull() &&
-        !args[8]->IsUndefined()) {
+    if (args[8]->IsFunction()) {
       obj->m_disconnect_cb = new v8::Persistent<v8::Function>();
       obj->m_disconnect_cb->Reset(isolate, Local<Function>::Cast(args[8]));
     }
-    if (args.Length() >= 10 &&
-        !args[9]->IsNull() &&
-        !args[9]->IsUndefined()) {
+    if (args[9]->IsFunction()) {
       obj->m_subscribe_cb = new v8::Persistent<v8::Function>();
       obj->m_subscribe_cb->Reset(isolate, Local<Function>::Cast(args[9]));
     }
-    if (args.Length() >= 11 &&
-        !args[10]->IsNull() &&
-        !args[10]->IsUndefined()) {
+    if (args[10]->IsFunction()) {
       obj->m_unsubscribe_cb = new v8::Persistent<v8::Function>();
       obj->m_unsubscribe_cb->Reset(isolate, Local<Function>::Cast(args[10]));
     }
-    if (args.Length() >= 12 &&
-        !args[11]->IsNull() &&
-        !args[11]->IsUndefined()) {
+    if (args[11]->IsFunction()) {
       obj->m_publish_cb = new v8::Persistent<v8::Function>();
       obj->m_publish_cb->Reset(isolate, Local<Function>::Cast(args[11]));
     }
-    if (args.Length() == 13 &&
-        !args[12]->IsNull() &&
-        !args[12]->IsUndefined()) {
+    if (args[12]->IsFunction()) {
       obj->m_message_cb = new v8::Persistent<v8::Function>();
       obj->m_message_cb->Reset(isolate, Local<Function>::Cast(args[12]));
     }
@@ -322,12 +306,13 @@ void MqttWrapper::set_willmsg(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   // Check Arguments
   if ((args.Length() < 4)              ||
-      CHECK_ARGUMENT_STRING(args[0])   ||  // Will topic
-      CHECK_ARGUMENT_STRING(args[1])   ||  // Will message
-      CHECK_ARGUMENT_NUMBER(args[2])   ||  // QoS
-      CHECK_ARGUMENT_BOOLEAN(args[3])) {   // Retain flag
+      !args[0]->IsString()   ||  // Will topic
+      !args[1]->IsString()   ||  // Will message
+      !args[2]->IsNumber()   ||  // QoS
+      !args[3]->IsBoolean()) {   // Retain flag
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong arguments")));
+    return;
   }
 
   v8::String::Utf8Value will_topic(args[0]->ToString());
@@ -377,14 +362,15 @@ void MqttWrapper::connect(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   // Check Arguments
   if ((args.Length() < 2 || args.Length() > 3) ||
-      CHECK_ARGUMENT_STRING(args[0])   ||  // Host
-      CHECK_ARGUMENT_NUMBER(args[1])) {    // Port
+      !args[0]->IsString() ||  // Host
+      !args[1]->IsNumber()) {    // Port
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong arguments")));
+    return;
   }
 
   v8::String::Utf8Value host(args[0]->ToString());
-  if (args.Length() == 3 && !args[3]->IsNull() && !args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     wrap->m_connect_cb = new v8::Persistent<v8::Function>();
     wrap->m_connect_cb->Reset(isolate, Local<Function>::Cast(args[2]));
   }
@@ -401,7 +387,7 @@ void MqttWrapper::disconnect(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   log_dbg("");
 
-  if (args.Length() == 1 && !args[0]->IsNull() && !args[0]->IsUndefined()) {
+  if (args[0]->IsFunction()) {
     wrap->m_disconnect_cb = new v8::Persistent<v8::Function>();
     wrap->m_disconnect_cb->Reset(isolate, Local<Function>::Cast(args[0]));
   }
@@ -421,19 +407,20 @@ void MqttWrapper::subscribe(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   // Check Arguments
   if ((args.Length() < 2 || args.Length() > 4) ||
-      CHECK_ARGUMENT_NUMBER(args[0])   ||  // QoS
-      CHECK_ARGUMENT_STRING(args[1])) {    // Message topic
+      !args[0]->IsNumber() ||  // QoS
+      !args[1]->IsString()) {  // Message topic
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong arguments")));
+    return;
   }
 
   v8::String::Utf8Value msg_topic(args[1]->ToString());
 
-  if (args.Length() >= 3 && !args[2]->IsNull() && !args[2]->IsUndefined()) {
+  if (args[2]->IsFunction()) {
     wrap->m_subscribe_cb = new v8::Persistent<v8::Function>();
     wrap->m_subscribe_cb->Reset(isolate, Local<Function>::Cast(args[2]));
   }
-  if (args.Length() == 4 && !args[3]->IsNull() && !args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     wrap->m_message_cb = new v8::Persistent<v8::Function>();
     wrap->m_message_cb->Reset(isolate, Local<Function>::Cast(args[3]));
   }
@@ -453,12 +440,13 @@ void MqttWrapper::unsubscribe(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   // Check Arguments
   if ((args.Length() < 1 || args.Length() > 2) ||
-      CHECK_ARGUMENT_STRING(args[0])) {  // Message topic
+      !args[0]->IsString()) {  // Message topic
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong arguments")));
+    return;
   }
 
-  if (args.Length() == 2 && !args[1]->IsNull() && !args[1]->IsUndefined()) {
+  if (args[1]->IsFunction()) {
     wrap->m_unsubscribe_cb = new v8::Persistent<v8::Function>();
     wrap->m_unsubscribe_cb->Reset(isolate, Local<Function>::Cast(args[1]));
   }
@@ -480,24 +468,27 @@ void MqttWrapper::publish(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   // Check Arguments
   if ((args.Length() < 4 || args.Length() > 5) ||
-      CHECK_ARGUMENT_NUMBER(args[0])   ||  // QoS
-      CHECK_ARGUMENT_BOOLEAN(args[1])  ||  // Retain flag
-      CHECK_ARGUMENT_STRING(args[2])   ||  // Message topic
-      CHECK_ARGUMENT_OBJECT(args[3])) {
+      !args[0]->IsNumber()   ||  // QoS
+      !args[1]->IsBoolean()  ||  // Retain flag
+      !args[2]->IsString()   ||  // Message topic
+      !args[3]->IsObject()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Wrong arguments")));
+    return;
   }
 
-  if (!node::Buffer::HasInstance(args[3]))
+  if (!node::Buffer::HasInstance(args[3])) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                       isolate, "Argument should be a Buffer.")));
+    return;
+  }
 
   v8::String::Utf8Value msg_topic(args[2]->ToString());
 
   char *buffer = node::Buffer::Data(args[3]);
   size_t length = node::Buffer::Length(args[3]);
 
-  if (args.Length() == 5 && !args[4]->IsNull() && !args[4]->IsUndefined()) {
+  if (args[4]->IsFunction()) {
     wrap->m_publish_cb = new v8::Persistent<v8::Function>();
     wrap->m_publish_cb->Reset(isolate, Local<Function>::Cast(args[4]));
   }

@@ -151,7 +151,7 @@ void WebsocketWrapper::New(const FunctionCallbackInfo<Value>& args) {
     WebsocketWrapper* obj = NULL;
     char* uri = NULL;
 
-    if (!args[0]->IsUndefined() && args[0]->IsString()) {
+    if (args[0]->IsString()) {
       String::Utf8Value param0(args[0]->ToString());
       uri = strndup(*param0, strlen(*param0));
     } else {
@@ -160,7 +160,7 @@ void WebsocketWrapper::New(const FunctionCallbackInfo<Value>& args) {
       return;
     }
 
-    if (!args[1]->IsUndefined() && args[1]->IsObject())
+    if (args[1]->IsObject())
       ssl_config = SSLConfigConverter::convert(isolate, args[1]);
 
     obj = new WebsocketWrapper(uri, ssl_config.get());
@@ -198,13 +198,13 @@ void WebsocketWrapper::open_stream(const FunctionCallbackInfo<Value>& args) {
   }
 
   // If callback is provided, run a work for waiting on connection complete
-  if (!args[0]->IsUndefined()) {
+  if (args[0]->IsFunction()) {
     wrap->m_connection_cb = new Persistent<Function>();
     wrap->m_connection_cb->Reset(isolate, Local<Function>::Cast(args[0]));
     obj->set_connection_callback(websocket_connection_callback,
         reinterpret_cast<void *>(wrap));
   }
-  if (!args[1]->IsUndefined()) {
+  if (args[1]->IsFunction()) {
     wrap->m_receive_cb = new Persistent<Function>();
     wrap->m_receive_cb->Reset(isolate, Local<Function>::Cast(args[1]));
     obj->set_receive_callback(websocket_receive_callback,

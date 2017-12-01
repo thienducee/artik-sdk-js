@@ -75,33 +75,35 @@ void I2cWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
   if (args.IsConstructCall()) {
-  if (args[0]->IsUndefined() || args[1]->IsUndefined() || args[2]->IsUndefined()
-      || args[3]->IsUndefined()) {
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-        isolate, "Wrong arguments")));
-  }
-
-  artik_i2c_id id = args[0]->NumberValue();
-  int frequency = args[1]->NumberValue();
-
-  artik_i2c_wordsize_t wordsize = artik_i2c_wordsize_t::I2C_WORDSIZE_INVALID;
-  v8::String::Utf8Value param2(args[2]->ToString());
-  char* word_str = *param2;
-
-  if (!strncmp(word_str, "8", MAX_ARG_STR_LEN)) {
-      wordsize = artik_i2c_wordsize_t::I2C_8BIT;
-  } else if (!strncmp(word_str, "16", MAX_ARG_STR_LEN)) {
-      wordsize = artik_i2c_wordsize_t::I2C_16BIT;
-  } else {
+    if (!args[0]->IsNumber() || !args[1]->IsNumber() || !args[2]->IsString()
+        || !args[3]->IsNumber()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
-  }
+      return;
+    }
 
-  unsigned char address = args[3]->NumberValue();
+    artik_i2c_id id = args[0]->NumberValue();
+    int frequency = args[1]->NumberValue();
 
-  I2cWrapper* obj = new I2cWrapper(id, frequency, wordsize, address);
-    obj->Wrap(args.This());
-    args.GetReturnValue().Set(args.This());
+    artik_i2c_wordsize_t wordsize = artik_i2c_wordsize_t::I2C_WORDSIZE_INVALID;
+    v8::String::Utf8Value param2(args[2]->ToString());
+    char* word_str = *param2;
+
+    if (!strncmp(word_str, "8", MAX_ARG_STR_LEN)) {
+      wordsize = artik_i2c_wordsize_t::I2C_8BIT;
+    } else if (!strncmp(word_str, "16", MAX_ARG_STR_LEN)) {
+      wordsize = artik_i2c_wordsize_t::I2C_16BIT;
+    } else {
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+          isolate, "Wrong arguments")));
+      return;
+    }
+
+    unsigned char address = args[3]->NumberValue();
+
+    I2cWrapper* obj = new I2cWrapper(id, frequency, wordsize, address);
+      obj->Wrap(args.This());
+      args.GetReturnValue().Set(args.This());
   } else {
     const int argc = 4;
     Local<Value> argv[argc] = { args[0], args[1], args[2], args[3] };
@@ -134,16 +136,20 @@ void I2cWrapper::read(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   I2c* obj = ObjectWrap::Unwrap<I2cWrapper>(args.Holder())->getObj();
 
-  if (args.Length() != 1 || args[0]->IsUndefined())
+  if (args.Length() != 1 || !args[0]->IsNumber()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
+    return;
+  }
 
   int length = args[0]->NumberValue();
 
   char* buffer = reinterpret_cast<char*>(malloc(length));
-  if (!buffer)
+  if (!buffer) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Memory allocation error")));
+    return;
+  }
 
   obj->read(buffer, length);
 
@@ -155,13 +161,17 @@ void I2cWrapper::read(const FunctionCallbackInfo<Value>& args) {
 void I2cWrapper::write(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args.Length() != 1 || args[0]->IsUndefined())
+  if (args.Length() != 1) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
             isolate, "Wrong arguments")));
+      return;
+  }
 
-  if (!node::Buffer::HasInstance(args[0]))
+  if (!node::Buffer::HasInstance(args[0])) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                 isolate, "Argument should be a Buffer.")));
+      return;
+  }
 
   char * buffer = node::Buffer::Data(args[0]);
   size_t length = node::Buffer::Length(args[0]);
@@ -177,17 +187,21 @@ void I2cWrapper::read_register(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   I2c* obj = ObjectWrap::Unwrap<I2cWrapper>(args.Holder())->getObj();
 
-  if (args.Length() != 2 || args[0]->IsUndefined() || args[1]->IsUndefined())
+  if (args.Length() != 2 || !args[0]->IsNumber() || !args[1]->IsNumber()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
+    return;
+  }
 
   unsigned int address = args[0]->NumberValue();
   int length = args[1]->NumberValue();
 
   char* buffer = reinterpret_cast<char*>(malloc(length));
-  if (!buffer)
+  if (!buffer) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Memory allocation error")));
+    return;
+  }
 
   obj->read_register(address, buffer, length);
 
@@ -200,13 +214,17 @@ void I2cWrapper::write_register(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   I2c* obj = ObjectWrap::Unwrap<I2cWrapper>(args.Holder())->getObj();
 
-  if (args.Length() != 2 || args[0]->IsUndefined() || args[1]->IsUndefined())
+  if (args.Length() != 2 || !args[0]->IsNumber()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
+    return;
+  }
 
-  if (!node::Buffer::HasInstance(args[1]))
+  if (!node::Buffer::HasInstance(args[1])) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                 isolate, "Argument should be a Buffer.")));
+      return;
+  }
 
   unsigned int address = args[0]->NumberValue();
   char * buffer = node::Buffer::Data(args[1]);

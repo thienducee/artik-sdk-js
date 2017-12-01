@@ -852,7 +852,7 @@ int convert_jsobject_levelcontrol(Isolate* isolate, const Local<Object>& in,
 
   Local<Value> js_auto_onoff = in->Get(
       String::NewFromUtf8(isolate, "auto_onoff"));
-  if (!js_auto_onoff->IsUndefined())
+  if (js_auto_onoff->IsBoolean())
     onoff = js_auto_onoff->BooleanValue();
 
   if (!g_strcmp0(type, "stop")) {
@@ -865,14 +865,14 @@ int convert_jsobject_levelcontrol(Isolate* isolate, const Local<Object>& in,
 
   Local<Value> js_value = in->Get(
       String::NewFromUtf8(isolate, "value"));
-  if (js_value->IsUndefined()) {
+  if (!js_value->IsInt32()) {
     log_err("missing 'value' field");
     return -1;
   }
 
   Local<Value> js_transition_time = in->Get(
       String::NewFromUtf8(isolate, "transition_time"));
-  if (!js_transition_time->IsUndefined())
+  if (js_transition_time->IsInt32())
     transition_time = js_transition_time->Int32Value();
 
   log_dbg("type:'%s', onoff: %d, time: %d", type, onoff, transition_time);

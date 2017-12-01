@@ -495,9 +495,10 @@ void BluetoothWrapper::start_scan(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined()) {
+  if (!args[0]->IsFunction()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+      return;
   }
 
   wrap->m_scan_cb = new Persistent<Function>();
@@ -557,9 +558,7 @@ void BluetoothWrapper::get_devices(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined()
-    || !args[0]->IsString()
-    || args[1]->IsUndefined()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
   }
@@ -599,11 +598,11 @@ void BluetoothWrapper::start_bond(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() ||
-     !args[0]->IsString() ||
-      args[1]->IsUndefined()) {
+  if (!args[0]->IsString() ||
+      !args[1]->IsFunction()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value param0(args[0]->ToString());
@@ -641,9 +640,10 @@ void BluetoothWrapper::stop_bond(const FunctionCallbackInfo<Value>& args) {
   if (!wrap->m_bond_cb)
     return;
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+      return;
   }
 
   String::Utf8Value param0(args[0]->ToString());
@@ -674,11 +674,10 @@ void BluetoothWrapper::connect(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() ||
-     !args[0]->IsString() ||
-      args[1]->IsUndefined()) {
+  if (!args[0]->IsString() || !args[1]->IsFunction()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value param0(args[0]->ToString());
@@ -717,7 +716,7 @@ void BluetoothWrapper::disconnect(const FunctionCallbackInfo<Value>& args) {
   if (!wrap->m_connect_cb)
     return;
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;
@@ -767,9 +766,10 @@ void BluetoothWrapper::remove_device(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+      return;
   }
 
   String::Utf8Value param0(args[0]->ToString());
@@ -873,9 +873,10 @@ void BluetoothWrapper::set_alias(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+      return;
   }
 
   String::Utf8Value param0(args[0]->ToString());
@@ -903,9 +904,10 @@ void BluetoothWrapper::set_discoverable(
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsBoolean()) {
+  if (!args[0]->IsBoolean()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+      return;
   }
 
   artik_error err = bt->set_discoverable(Boolean::Cast(*args[0])->Value());
@@ -930,9 +932,10 @@ void BluetoothWrapper::set_pairable(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsBoolean()) {
+  if (!args[0]->IsBoolean()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+      return;
   }
 
   artik_error err = bt->set_pairable(Boolean::Cast(*args[0])->Value());
@@ -958,9 +961,10 @@ void BluetoothWrapper::set_pairableTimeout(
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsUint32()) {
+  if (!args[0]->IsUint32()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+      return;
   }
 
   artik_error err = bt->set_pairableTimeout(Uint32::Cast(*args[0])->Value());
@@ -986,9 +990,10 @@ void BluetoothWrapper::set_discoverableTimeout(
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsUint32()) {
+  if (!args[0]->IsUint32()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
   artik_error err = bt->set_discoverableTimeout(
@@ -1138,15 +1143,12 @@ void BluetoothWrapper::connect_profile(
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+  if (!args[0]->IsString() || !args[1]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
-  if (args[1]->IsUndefined() || !args[1]->IsString()) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-        isolate, "Wrong arguments")));
-  }
   String::Utf8Value param0(args[0]->ToString());
   char* addr = *param0;
   String::Utf8Value param1(args[1]->ToString());
@@ -1173,8 +1175,8 @@ void BluetoothWrapper::set_trust(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+  if (!args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
   }
 
@@ -1203,9 +1205,10 @@ void BluetoothWrapper::unset_trust(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+  if (!args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value param0(args[0]->ToString());
@@ -1233,9 +1236,10 @@ void BluetoothWrapper::set_block(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+  if (!args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value param0(args[0]->ToString());
@@ -1263,7 +1267,7 @@ void BluetoothWrapper::unset_block(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;
@@ -1294,7 +1298,7 @@ void BluetoothWrapper::is_paired(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;
@@ -1319,7 +1323,7 @@ void BluetoothWrapper::is_connected(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;
@@ -1337,13 +1341,14 @@ void BluetoothWrapper::is_trusted(const FunctionCallbackInfo<Value>& args) {
   Bluetooth* bt = ObjectWrap::Unwrap<BluetoothWrapper>(args.Holder())->getObj();
 
   log_dbg("");
+
   if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;
@@ -1367,7 +1372,7 @@ void BluetoothWrapper::is_blocked(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;

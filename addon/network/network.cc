@@ -324,7 +324,7 @@ void NetworkWrapper::New(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args.Length() == 2 && (!args[1]->IsUndefined() && args[1]->IsBoolean()))
+  if (args[1]->IsBoolean())
         enable_watch_online_status = args[1]->BooleanValue();
 
   if (args.IsConstructCall()) {
@@ -363,12 +363,12 @@ void NetworkWrapper::set_network_config(
 
   memset(&config, 0, sizeof(config));
 
-  if (!args[0]->IsUndefined() && args[0]->IsObject()) {
+  if (args[0]->IsObject()) {
     if (!updateNetworkConfig(isolate, args[0], &config))
       return;
   }
 
-  if (!args[1]->IsUndefined() && args[1]->IsString()) {
+  if (args[1]->IsString()) {
     auto connection_type = js_type_to_cpp<std::string>(args[1]);
 
     if (connection_type.value() == "wifi") {
@@ -407,7 +407,7 @@ void NetworkWrapper::get_network_config(
     return;
   }
 
-  if (!args[0]->IsUndefined() && args[0]->IsString()) {
+  if (args[0]->IsString()) {
     auto connection_type = js_type_to_cpp<std::string>(args[0]);
 
     if (connection_type.value() == "wifi") {
@@ -469,7 +469,7 @@ void NetworkWrapper::dhcp_client_start(
     return;
   }
 
-  if (!args[0]->IsUndefined() && args[0]->IsString()) {
+  if (args[0]->IsString()) {
     auto connection_type = js_type_to_cpp<std::string>(args[0]);
 
     if (connection_type.value() == "wifi") {
@@ -512,7 +512,7 @@ void NetworkWrapper::dhcp_client_stop(
   if (ret != S_OK) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Failed to stop DHCP client")));
-      return;
+    return;
   }
 
   args.GetReturnValue().Set(Number::New(isolate, ret));
@@ -533,7 +533,7 @@ void NetworkWrapper::dhcp_server_start(
     return;
   }
 
-  if (!args[0]->IsUndefined() && args[0]->IsObject()) {
+  if (args[0]->IsObject()) {
     if (!updateDHCPServerConfig(isolate, args[0], &dhcp_server_config))
       return;
   }
@@ -543,7 +543,7 @@ void NetworkWrapper::dhcp_server_start(
   if (ret != S_OK) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Failed to start DHCP server")));
-      return;
+    return;
   }
 
   args.GetReturnValue().Set(Number::New(isolate, ret));
@@ -566,7 +566,7 @@ void NetworkWrapper::dhcp_server_stop(
   if (ret != S_OK) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Failed to stop DHCP server")));
-      return;
+    return;
   }
 
   args.GetReturnValue().Set(Number::New(isolate, ret));

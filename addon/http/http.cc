@@ -225,7 +225,7 @@ void HttpWrapper::get_stream(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -268,7 +268,7 @@ void HttpWrapper::get_stream(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -276,13 +276,13 @@ void HttpWrapper::get_stream(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* Data Callback */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_data_cb = new v8::Persistent<v8::Function>();
     obj->m_data_cb->Reset(isolate, Local<Function>::Cast(args[3]));
   }
 
   /* Error Callback */
-  if (!args[4]->IsUndefined()) {
+  if (args[4]->IsFunction()) {
     obj->m_error_cb = new v8::Persistent<v8::Function>();
     obj->m_error_cb->Reset(isolate, Local<Function>::Cast(args[4]));
   }
@@ -306,7 +306,7 @@ void HttpWrapper::get(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -349,7 +349,7 @@ void HttpWrapper::get(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -357,7 +357,7 @@ void HttpWrapper::get(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_response_get_cb = new v8::Persistent<v8::Function>();
     obj->m_response_get_cb->Reset(isolate, Local<Function>::Cast(args[3]));
 
@@ -394,7 +394,7 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -437,7 +437,7 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[3]->IsUndefined() && args[3]->IsObject()) {
+  if (args[3]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[3]);
     if (!ssl_config) {
       return;
@@ -445,7 +445,7 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[4]->IsUndefined()) {
+  if (args[4]->IsFunction()) {
     obj->m_response_post_cb = new v8::Persistent<v8::Function>();
     obj->m_response_post_cb->Reset(isolate, Local<Function>::Cast(args[4]));
 
@@ -454,7 +454,7 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
     const char *body = NULL;
 
     /* copy body data if provided */
-    if (!args[2]->IsUndefined() && args[2]->IsString()) {
+    if (args[2]->IsString()) {
       v8::String::Utf8Value param2(args[2]->ToString());
       body = strndup(*param2, strlen(*param2));
     }
@@ -474,7 +474,7 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
     artik_error ret = S_OK;
 
     /* copy body data if provided */
-    if (!args[2]->IsUndefined() && args[2]->IsString()) {
+    if (args[2]->IsString()) {
       v8::String::Utf8Value param2(args[2]->ToString());
       body = strndup(*param2, strlen(*param2));
     }
@@ -499,7 +499,7 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -542,7 +542,7 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[3]->IsUndefined() && args[3]->IsObject()) {
+  if (args[3]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[3]);
     if (!ssl_config) {
       return;
@@ -550,7 +550,7 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[4]->IsUndefined()) {
+  if (!args[4]->IsFunction()) {
     obj->m_response_put_cb = new v8::Persistent<v8::Function>();
     obj->m_response_put_cb->Reset(isolate, Local<Function>::Cast(args[4]));
 
@@ -559,7 +559,7 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
     const char *body = NULL;
 
     /* copy body data if provided */
-    if (!args[2]->IsUndefined() && args[2]->IsString()) {
+    if (args[2]->IsString()) {
       v8::String::Utf8Value param2(args[2]->ToString());
       body = strndup(*param2, strlen(*param2));
     }
@@ -579,7 +579,7 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
     artik_error ret = S_OK;
 
     /* copy body data if provided */
-    if (!args[2]->IsUndefined() && args[2]->IsString()) {
+    if (args[2]->IsString()) {
       v8::String::Utf8Value param2(args[2]->ToString());
       body = strndup(*param2, strlen(*param2));
     }
@@ -604,7 +604,7 @@ void HttpWrapper::del(const FunctionCallbackInfo<Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -647,7 +647,7 @@ void HttpWrapper::del(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -655,7 +655,7 @@ void HttpWrapper::del(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[3]->IsUndefined()) {
+  if (args[3]->IsFunction()) {
     obj->m_response_del_cb = new v8::Persistent<v8::Function>();
     obj->m_response_del_cb->Reset(isolate, Local<Function>::Cast(args[3]));
 

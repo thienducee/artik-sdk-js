@@ -70,9 +70,11 @@ void SecurityWrapper::Init(Local<Object> exports) {
 void SecurityWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args.Length() != 0)
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                      isolate, "Wrong number of arguments")));
+    return;
+  }
   if (args.IsConstructCall()) {
     SecurityWrapper* obj = NULL;
 
@@ -81,6 +83,7 @@ void SecurityWrapper::New(const FunctionCallbackInfo<Value>& args) {
     } catch (artik::ArtikException &e) {
       isolate->ThrowException(Exception::TypeError(
           String::NewFromUtf8(isolate, e.what())));
+      return;
     }
     obj->Wrap(args.This());
     args.GetReturnValue().Set(args.This());
@@ -104,7 +107,7 @@ void SecurityWrapper::get_certificate(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -132,6 +135,7 @@ void SecurityWrapper::get_certificate(const FunctionCallbackInfo<Value>& args) {
   } catch (artik::ArtikException &e) {
     isolate->ThrowException(Exception::TypeError(
           String::NewFromUtf8(isolate, e.what())));
+    return;
   }
 }
 
@@ -144,7 +148,7 @@ void SecurityWrapper::get_ca_chain(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -174,6 +178,7 @@ void SecurityWrapper::get_ca_chain(const FunctionCallbackInfo<Value>& args) {
   } catch (artik::ArtikException &e) {
     isolate->ThrowException(Exception::TypeError(
           String::NewFromUtf8(isolate, e.what())));
+    return;
   }
 }
 
@@ -181,9 +186,11 @@ void SecurityWrapper::get_key_from_cert(
     const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args.Length() != 1)
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                      isolate, "Wrong number of arguments")));
+    return;
+  }
 
   Security *obj = ObjectWrap::Unwrap<SecurityWrapper>(args.Holder())->getObj();
   v8::String::Utf8Value param0(args[0]->ToString());
@@ -193,14 +200,17 @@ void SecurityWrapper::get_key_from_cert(
 
   try {
     res = obj->get_key_from_cert(cert, &key);
-    if (res != S_OK)
+    if (res != S_OK) {
       isolate->ThrowException(Exception::TypeError(
             String::NewFromUtf8(isolate, error_msg(res))));
+      return;
+    }
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, key));
     free(key);
   } catch (artik::ArtikException &e) {
     isolate->ThrowException(Exception::TypeError(
           String::NewFromUtf8(isolate, e.what())));
+    return;
   }
 }
 
@@ -208,9 +218,11 @@ void SecurityWrapper::get_random_bytes(
     const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args.Length() != 1)
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
                      isolate, "Wrong number of arguments")));
+    return;
+  }
 
   Security *obj = ObjectWrap::Unwrap<SecurityWrapper>(args.Holder())->getObj();
 
@@ -220,9 +232,11 @@ void SecurityWrapper::get_random_bytes(
 
   try {
     res = obj->get_random_bytes(rand, len);
-    if (res != S_OK)
+    if (res != S_OK) {
       isolate->ThrowException(Exception::TypeError(
             String::NewFromUtf8(isolate, error_msg(res))));
+      return;
+    }
     args.GetReturnValue().Set(
         Nan::CopyBuffer((const char*)rand, len).ToLocalChecked());
   } catch (artik::ArtikException &e) {
@@ -241,7 +255,7 @@ void SecurityWrapper::get_certificate_sn(
     return;
   }
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -264,9 +278,11 @@ void SecurityWrapper::get_certificate_sn(
 
   try {
     res = obj->get_certificate_sn(cert_id.value(), sn, &len);
-    if (res != S_OK)
+    if (res != S_OK) {
       isolate->ThrowException(Exception::TypeError(
             String::NewFromUtf8(isolate, error_msg(res))));
+      return;
+    }
     args.GetReturnValue().Set(
         Nan::CopyBuffer(reinterpret_cast<char*>(sn), len).ToLocalChecked());
   } catch (artik::ArtikException &e) {

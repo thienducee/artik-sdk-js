@@ -143,9 +143,12 @@ void SerialWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate *isolate = args.GetIsolate();
   SerialWrapper* obj = NULL;
   int lenArg = 7;
-  if (args.Length() != lenArg && args.Length() != 0)
+
+  if (args.Length() != lenArg && args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
   if (args.IsConstructCall()) {
     if (args.Length() == lenArg) {
         v8::String::Utf8Value param1(args[1]->ToString());
@@ -234,14 +237,17 @@ void SerialWrapper::New(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::request(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() > 1)
+
+  if (args.Length() > 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
 
   SerialWrapper *wrap = ObjectWrap::Unwrap<SerialWrapper>(args.Holder());
   Serial* obj = wrap->getObj();
   artik_error ret = obj->request();
-  if ((ret == S_OK) && !args[0]->IsUndefined()) {
+  if ((ret == S_OK) && args[0]->IsFunction()) {
     wrap->m_change_cb = new v8::Persistent<v8::Function>();
     wrap->m_change_cb->Reset(isolate, Local<Function>::Cast(args[0]));
     obj->set_received_callback(serial_change_callback,
@@ -252,9 +258,13 @@ void SerialWrapper::request(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::release(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   SerialWrapper* wrap = ObjectWrap::Unwrap<SerialWrapper>(args.Holder());
   Serial* obj = wrap->getObj();
   if (wrap->m_change_cb) {
@@ -269,13 +279,17 @@ void SerialWrapper::write(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
-  if ((args.Length() < 1) || args[0]->IsUndefined())
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-          isolate, "Wrong arguments")));
+  if ((args.Length() < 1)) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+    return;
+  }
 
-  if (!node::Buffer::HasInstance(args[0]))
-      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-          isolate, "Argument should be a Buffer.")));
+  if (!node::Buffer::HasInstance(args[0])) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Argument should be a Buffer.")));
+    return;
+  }
 
   unsigned char *buffer = (unsigned char*)node::Buffer::Data(args[0]);
   int length = static_cast<int>(node::Buffer::Length(args[0]));
@@ -298,9 +312,13 @@ void SerialWrapper::get_port_num(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::get_name(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
   args.GetReturnValue().Set(String::NewFromUtf8(isolate, obj->get_name()));
@@ -308,9 +326,13 @@ void SerialWrapper::get_name(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::get_baudrate(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
   int baudrate = s_baudrates[obj->get_baudrate()];
@@ -319,9 +341,13 @@ void SerialWrapper::get_baudrate(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::get_parity(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
   const char* parity = s_parities[obj->get_parity()];
 
@@ -330,9 +356,13 @@ void SerialWrapper::get_parity(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::get_data_bits(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
   int data_bits = s_data_bits[obj->get_data_bits()];
@@ -341,9 +371,13 @@ void SerialWrapper::get_data_bits(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::get_stop_bits(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
   int stop_bit = s_stop_bits[obj->get_stop_bits()];
@@ -352,9 +386,13 @@ void SerialWrapper::get_stop_bits(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::get_flowctrl(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 0)
+
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
   const char * flowcontrol = s_flowcontrols[obj->get_flowctrl()];
   args.GetReturnValue().Set(String::NewFromUtf8(isolate, flowcontrol));
@@ -362,36 +400,54 @@ void SerialWrapper::get_flowctrl(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::set_port_num(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 1)
+
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
-  if (args.Length() != 1)
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   obj->set_port_num(static_cast<int>(args[0]->NumberValue()));
 }
 
 void SerialWrapper::set_name(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 1)
+
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
   v8::String::Utf8Value val(args[0]->ToString());
 
-  if (args.Length() != 1)
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   obj->set_name(*val);
 }
 
 void SerialWrapper::set_baudrate(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 1)
+
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
   auto baudrate = to_artik_parameter<artik_serial_baudrate_t>(s_baudrates,
@@ -408,9 +464,12 @@ void SerialWrapper::set_baudrate(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::set_parity(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 1)
+
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
 
   v8::String::Utf8Value param0(args[0]->ToString());
   auto parity = to_artik_parameter<artik_serial_parity_t>(s_parities, *param0);
@@ -427,9 +486,13 @@ void SerialWrapper::set_parity(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::set_data_bits(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 1)
+
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
   auto data_bits = to_artik_parameter<artik_serial_data_bits_t>(s_data_bits,
@@ -446,9 +509,13 @@ void SerialWrapper::set_data_bits(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::set_stop_bits(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 1)
+
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
   auto stop_bit = to_artik_parameter<artik_serial_stop_bits_t>(s_stop_bits,
@@ -466,9 +533,13 @@ void SerialWrapper::set_stop_bits(const FunctionCallbackInfo<Value>& args) {
 
 void SerialWrapper::set_flowctrl(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  if (args.Length() != 1)
+
+  if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
+    return;
+  }
+
   Serial* obj = ObjectWrap::Unwrap<SerialWrapper>(args.Holder())->getObj();
 
   v8::String::Utf8Value param0(args[0]->ToString());

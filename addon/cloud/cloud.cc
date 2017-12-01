@@ -203,7 +203,7 @@ void CloudWrapper::New(const FunctionCallbackInfo<Value>& args) {
   CloudWrapper* obj = NULL;
 
   if (args.IsConstructCall()) {
-    if (!args[0]->IsUndefined() && args[0]->IsString()) {
+    if (args[0]->IsString()) {
         v8::String::Utf8Value param0(args[0]->ToString());
         token = *param0;
         obj = new CloudWrapper(token);
@@ -251,8 +251,7 @@ void CloudWrapper::send_message(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()  ||
-    args[1]->IsUndefined() || !args[1]->IsString() ) {
+  if (!args[0]->IsString()  || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;
@@ -264,7 +263,7 @@ void CloudWrapper::send_message(
   char *message = *param1;
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -305,8 +304,7 @@ void CloudWrapper::send_action(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()  ||
-    args[1]->IsUndefined() || !args[1]->IsString() ) {
+  if (!args[0]->IsString()  || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -318,7 +316,7 @@ void CloudWrapper::send_action(
   char *action = *param1;
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -360,7 +358,7 @@ void CloudWrapper::get_current_user_profile(
   log_dbg("");
 
   /* SSL Configuration */
-  if (!args[0]->IsUndefined() && args[0]->IsObject()) {
+  if (args[0]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[0]);
     if (!ssl_config) {
       return;
@@ -401,13 +399,11 @@ void CloudWrapper::get_user_devices(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsNumber()  ||
-    args[1]->IsUndefined() || !args[1]->IsBoolean() ||
-    args[2]->IsUndefined() || !args[2]->IsNumber()  ||
-    args[3]->IsUndefined() || !args[3]->IsString()  ) {
+  if (!args[0]->IsNumber() || !args[1]->IsBoolean()
+      || !args[2]->IsNumber() || !args[3]->IsString() ) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-      isolate, "Wrong arguments")));
-        return;
+        isolate, "Wrong arguments")));
+    return;
   }
 
   int count = args[0]->IntegerValue();
@@ -417,7 +413,7 @@ void CloudWrapper::get_user_devices(
   char *user_id = *param3;
 
   /* SSL Configuration */
-  if (!args[4]->IsUndefined() && args[4]->IsObject()) {
+  if (args[4]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[4]);
     if (!ssl_config) {
       return;
@@ -458,10 +454,8 @@ void CloudWrapper::get_user_device_types(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsNumber()  ||
-    args[1]->IsUndefined() || !args[1]->IsBoolean() ||
-    args[2]->IsUndefined() || !args[2]->IsNumber()  ||
-    args[3]->IsUndefined() || !args[3]->IsString()  ) {
+  if (!args[0]->IsNumber() || !args[1]->IsBoolean()
+      || !args[2]->IsNumber() || !args[3]->IsString()  ) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -474,7 +468,7 @@ void CloudWrapper::get_user_device_types(
   char *user_id = *param3;
 
   /* SSL Configuration */
-  if (!args[4]->IsUndefined() && args[4]->IsObject()) {
+  if (args[4]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[4]);
     if (!ssl_config) {
       return;
@@ -515,8 +509,7 @@ void CloudWrapper::get_user_application_properties(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString() ||
-    args[1]->IsUndefined() || !args[1]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -528,7 +521,7 @@ void CloudWrapper::get_user_application_properties(
   const char *app_id = *param1;
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -569,7 +562,7 @@ void CloudWrapper::get_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -578,11 +571,11 @@ void CloudWrapper::get_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::String::Utf8Value param0(args[0]->ToString());
   const char *device_id = *param0;
 
-  if (!args[1]->IsUndefined() && args[1]->IsBoolean())
+  if (args[1]->IsBoolean())
     properties = args[1]->BooleanValue();
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -623,7 +616,7 @@ void CloudWrapper::get_device_token(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -633,7 +626,7 @@ void CloudWrapper::get_device_token(
   const char *device_id = *param0;
 
   /* SSL Configuration */
-  if (!args[1]->IsUndefined() && args[1]->IsObject()) {
+  if (args[1]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[1]);
     if (!ssl_config) {
       return;
@@ -673,9 +666,7 @@ void CloudWrapper::add_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString() ||
-    args[1]->IsUndefined() || !args[1]->IsString() ||
-    args[2]->IsUndefined() || !args[2]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -689,7 +680,7 @@ void CloudWrapper::add_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
   const char *name = *param2;
 
   /* SSL Configuration */
-  if (!args[3]->IsUndefined() && args[3]->IsObject()) {
+  if (args[3]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[3]);
     if (!ssl_config) {
       return;
@@ -730,7 +721,7 @@ void CloudWrapper::update_device_token(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -740,7 +731,7 @@ void CloudWrapper::update_device_token(
   const char *device_id = *param0;
 
   /* SSL Configuration */
-  if (!args[1]->IsUndefined() && args[1]->IsObject()) {
+  if (args[1]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[1]);
     if (!ssl_config) {
       return;
@@ -781,7 +772,7 @@ void CloudWrapper::delete_device_token(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -791,7 +782,7 @@ void CloudWrapper::delete_device_token(
   const char *device_id = *param0;
 
   /* SSL Configuration */
-  if (!args[1]->IsUndefined() && args[1]->IsObject()) {
+  if (args[1]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[1]);
     if (!ssl_config) {
       return;
@@ -832,7 +823,7 @@ void CloudWrapper::delete_device(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -842,7 +833,7 @@ void CloudWrapper::delete_device(
   const char *device_id = *param0;
 
   /* SSL Configuration */
-  if (!args[1]->IsUndefined() && args[1]->IsObject()) {
+  if (args[1]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[1]);
     if (!ssl_config) {
       return;
@@ -883,7 +874,7 @@ void CloudWrapper::get_device_properties(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -891,7 +882,7 @@ void CloudWrapper::get_device_properties(
 
   v8::String::Utf8Value param0(args[0]->ToString());
   const char *device_id = *param0;
-  if (args[1]->IsUndefined() || !args[1]->IsBoolean()) {
+  if (!args[1]->IsBoolean()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -900,7 +891,7 @@ void CloudWrapper::get_device_properties(
   bool timestamp = args[1]->BooleanValue();
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -953,7 +944,7 @@ void CloudWrapper::set_device_server_properties(
   const char *data = *param1;
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -994,9 +985,7 @@ void CloudWrapper::sdr_start_registration(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString() ||
-      args[1]->IsUndefined() || !args[1]->IsString() ||
-      args[2]->IsUndefined() || !args[2]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -1050,8 +1039,7 @@ void CloudWrapper::sdr_registration_status(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString() ||
-      args[1]->IsUndefined() || !args[1]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -1103,9 +1091,7 @@ void CloudWrapper::sdr_complete_registration(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString() ||
-      args[1]->IsUndefined() || !args[1]->IsString() ||
-      args[2]->IsUndefined() || !args[2]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -1161,8 +1147,7 @@ void CloudWrapper::websocket_open_stream(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString() ||
-    args[1]->IsUndefined() || !args[1]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -1175,7 +1160,7 @@ void CloudWrapper::websocket_open_stream(
   char *device_id = *param1;
 
   /* SSL Configuration */
-  if (!args[2]->IsUndefined() && args[2]->IsObject()) {
+  if (args[2]->IsObject()) {
     ssl_config = SSLConfigConverter::convert(isolate, args[2]);
     if (!ssl_config) {
       return;
@@ -1185,14 +1170,14 @@ void CloudWrapper::websocket_open_stream(
   ret = cloud->websocket_open_stream(token, device_id, ssl_config.get());
 
   /* If a callback is provided, use it for notification */
-  if (ret == S_OK && !args[3]->IsUndefined()) {
+  if (ret == S_OK && args[3]->IsFunction()) {
     obj->m_receive_cb = new v8::Persistent<v8::Function>();
     obj->m_receive_cb->Reset(isolate, Local<Function>::Cast(args[3]));
     cloud->websocket_set_receive_callback(on_receive_callback,
         reinterpret_cast<void*>(obj));
   }
 
-  if (ret == S_OK && !args[4]->IsUndefined()) {
+  if (ret == S_OK && args[4]->IsFunction()) {
     obj->m_connection_cb = new v8::Persistent<v8::Function>();
     obj->m_connection_cb->Reset(isolate, Local<Function>::Cast(args[4]));
     cloud->websocket_set_connection_callback(on_connection_callback,
@@ -1211,7 +1196,7 @@ void CloudWrapper::websocket_send_message(
 
   log_dbg("");
 
-  if (args[0]->IsUndefined() || !args[0]->IsString()) {
+  if (!args[0]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;

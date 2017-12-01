@@ -70,11 +70,7 @@ js_object_attribute_to_cpp<v8::Local<v8::Value>>(v8::Local<v8::Value> obj,
     return Optional<v8::Local<v8::Value>>();
   }
 
-  if (val->IsNull()) {
-    return Optional<v8::Local<v8::Value>>();
-  }
-
-  if (val->IsUndefined()) {
+  if (val->IsNull() || val->IsUndefined()) {
     return Optional<v8::Local<v8::Value>>();
   }
 
