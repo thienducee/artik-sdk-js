@@ -567,8 +567,8 @@ ServiceWrapper::~ServiceWrapper() {
     }
     m_bt->gatt_remove_characteristic(m_service_id, chr->GetCharacteristicId());
   }
-  m_bt->gatt_remove_service(m_service_id);
   m_bt->gatt_unregister_service(m_service_id);
+  m_bt->gatt_remove_service(m_service_id);
   delete m_bt;
 }
 
