@@ -88,6 +88,8 @@ bt.on('started', function() {
 			char_battery_level.on("data", function(buffer) {
 				console.log("received " + buffer.length + " bytes from characteristic " + char_battery_level.uuid + ":");
 				console.log("  - " + buffer.toString("hex"))
+				if (buffer[0] == 0)
+					process.exit(0);
 			});
 			char_battery_level.subscribe();
 			process.on('SIGINT', function() {

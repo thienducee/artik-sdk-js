@@ -1,19 +1,25 @@
 var GattServer = require("../src/bluetooth").GattServer;
 
-var gatt_server = new GattServer();
+/*
++ * Make the GATT server object global to prevent it
++ * from being garbage collected when running in the
++ * background.
++ */
+global. gatt_server = new GattServer();
 var val = 100;
 
 var refId = null;
 var countDown = function(updateValueCallback)
 {
 	val--;
-	if (val <= 0) {
+	if (val < 0) {
 		clearInterval(refId);
+		process.exit(1);
 	}
 	updateValueCallback(new Buffer([val]));
 }
 
-gatt_server.start_advertising({
+global.gatt_server.start_advertising({
 	type: "peripheral",
 	serviceUuids: [ "00001802-0000-1000-8000-00805f9b34fb", "0000180f-0000-1000-8000-00805f9b34fb" ],
 });
@@ -40,7 +46,7 @@ var characteristic = new GattServer.Characteristic({
 	}
 });
 
-var service = new GattServer.Service({
+global.gatt_server.add_service({
 	uuid: "0000180f-0000-1000-8000-00805f9b34fb",
 	characteristics: [
 		characteristic

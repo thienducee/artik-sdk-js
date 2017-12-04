@@ -44,6 +44,8 @@ function Characteristic(options) {
 	this.on("writeRequest", this.onWriteRequest.bind(this));
 	this.on("subscribe", this.onSubscribe.bind(this));
 	this.on("unsubscribe", this.onUnsubscribe.bind(this));
+
+	this.gatt_server = new artik.GattServer();
 }
 
 util.inherits(Characteristic, events.EventEmitter);
@@ -69,13 +71,12 @@ Characteristic.prototype.onUnsubscribe = function() {
 };
 
 Characteristic.prototype.onReadRequestInternal = function(request) {
+	var _ = this;
 	var callback = function(result, value) {
-		var gatt_server = new artik.GattServer();
-
 		if (result == "ok")
-			gatt_server.request_send_value(request, value);
+			_.gatt_server.request_send_value(request, value);
 		else
-			gatt_server.request_send_result(request, result, null);
+			_.gatt_server.request_send_result(request, result, null);
 	}
 	this.emit("readRequest", callback);
 }
@@ -83,11 +84,9 @@ Characteristic.prototype.onReadRequestInternal = function(request) {
 Characteristic.prototype.onWriteRequestInternal = function(request, buffer) {
 	var _ = this;
 	var callback = function(result) {
-		var gatt_server = new artik.GattServer();
-		if (result = "ok") {
+		if (result == "ok")
 			_.value = buffer;
-		}
-		gatt_server.request_send_result(request, result, null);
+		_.gatt_server.request_send_result(request, result, null);
 	}
 
 	this.emit("writeRequest", buffer, callback);
@@ -96,19 +95,15 @@ Characteristic.prototype.onWriteRequestInternal = function(request, buffer) {
 Characteristic.prototype.onNotifyInternal = function(service_id, characteristic_id, state) {
 	var _ = this;
 	var callback = function(value) {
-	console.log("update value");
-		var gatt_server = new artik.GattServer();
+		console.log("update value");
 		_.value = value;
-
-		gatt_server.notify(service_id, characteristic_id, value);
+		_.gatt_server.notify(service_id, characteristic_id, value);
 	}
 
-	if (state) {
+	if (state)
 		this.emit("subscribe", callback);
-	}
-	else {
+	else
 		this.emit("unsubscribe");
-	}
 }
 
 var Descriptor = function(options) {
@@ -130,18 +125,19 @@ var Descriptor = function(options) {
 
 	this.on("readRequest", this.onReadRequest.bind(this));
 	this.on("writeRequest", this.onWriteRequest.bind(this));
+
+	this.gatt_server = new artik.GattServer();
 }
 
 util.inherits(Descriptor, events.EventEmitter);
 
 Descriptor.prototype.onReadRequestInternal = function(request) {
+	var _ = this;
 	var callback = function(result, value) {
-		var gatt_server = new artik.GattServer();
-
 		if (result == "ok")
-			gatt_server.request_send_value(request, value);
-	else
-		gatt_server.request_send_result(request, result, null);
+			_.gatt_server.request_send_value(request, value);
+		else
+			_.gatt_server.request_send_result(request, result, null);
 	}
 
 	this.emit("readRequest", callback);
@@ -150,12 +146,11 @@ Descriptor.prototype.onReadRequestInternal = function(request) {
 Descriptor.prototype.onWriteRequestInternal = function(request, buffer) {
 	var _ = this;
 	var callback = function(result) {
-		var gatt_server = new artik.GattServer();
 		if (result == "ok")
 		{
 			_.value = buffer;
 		}
-		gatt_server.request_send_result(request, result, null);
+		_.gatt_server.request_send_result(request, result, null);
 	}
 
 	this.emit("writeRequest", buffer, callback);
@@ -175,6 +170,7 @@ Descriptor.prototype.onWriteRequest = function(data, callback) {
 var GattServer = function()
 {
 	this.gattserver = new artik.GattServer();
+	this.services = [];
 }
 
 GattServer.prototype.start_advertising = function(options)
@@ -187,10 +183,14 @@ GattServer.prototype.stop_advertising = function(advertising_id)
 	return this.gattserver.stop_advertising(advertising_id);
 }
 
+GattServer.prototype.add_service = function(options)
+{
+	this.services.push(new Service(options));
+}
+
 artik.Characteristic.prototype.__proto__ = events.EventEmitter.prototype;
 artik.Descriptor.prototype.__proto__ = events.EventEmitter.prototype;
 
 module.exports = GattServer;
-module.exports.Service = Service;
 module.exports.Characteristic = Characteristic;
 module.exports.Descriptor = Descriptor;
