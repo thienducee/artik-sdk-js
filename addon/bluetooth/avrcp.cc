@@ -293,7 +293,7 @@ void AvrcpWrapper::avrcp_controller_list_item(
     item = item->next_item;
     i++;
   }
-
+  obj->avrcp_controller_free_items(&items);
   args.GetReturnValue().Set(js_items);
 }
 
