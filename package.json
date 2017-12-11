@@ -1,6 +1,6 @@
 {
   "name": "artik-sdk",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "SDK for developing applications for Samsung's ARTIK platform",
   "main": "src/index.js",
   "scripts": {
