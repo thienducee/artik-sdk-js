@@ -8,6 +8,21 @@ This package only works with node.js version 4.6.x or newer. It is tested on
 
 ## Installation
 
+The ARTIK SDK libraries must be installed prior to installing this node.js
+module:
+
+**Ubuntu:**
+```bash
+# apt install libartik-sdk
+```
+
+**Fedora:**
+```bash
+# dnf install libartik-sdk
+```
+
+Then install the node.js module:
+
 ```bash
 # npm install artik-sdk
 ```
