@@ -235,11 +235,6 @@ void SecurityWrapper::get_certificate_sn(
     const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
-  if (args.Length() != 0)
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
-                     isolate, "Wrong number of arguments")));
-
-
   if (args.Length() != 1) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
