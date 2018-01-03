@@ -57,7 +57,7 @@ opt.getopt(function (o, p){
 		enable_set_config = true;
 		break;
 	case 'e':
-		dhcp_server_config.iface = "ethernet";
+		interface = "ethernet";
 		break;
 	default:
 		console.log("Usage: node network-example.js [-i IP address of server] " +
