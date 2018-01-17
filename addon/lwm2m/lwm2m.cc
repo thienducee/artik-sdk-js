@@ -376,21 +376,21 @@ void Lwm2mWrapper::client_request(
   }
 
   /* Set callbacks if passed as parameters */
-  if (args.Length() > 7) {
+  if (args.Length() > 8) {
     wrap->m_error_cb = new v8::Persistent<v8::Function>();
-    wrap->m_error_cb->Reset(isolate, Local<Function>::Cast(args[7]));
+    wrap->m_error_cb->Reset(isolate, Local<Function>::Cast(args[8]));
     obj->set_callback(ARTIK_LWM2M_EVENT_ERROR, on_error,
         reinterpret_cast<void*>(wrap));
   }
-  if (args.Length() > 8) {
+  if (args.Length() > 9) {
     wrap->m_execute_cb = new v8::Persistent<v8::Function>();
-    wrap->m_execute_cb->Reset(isolate, Local<Function>::Cast(args[8]));
+    wrap->m_execute_cb->Reset(isolate, Local<Function>::Cast(args[9]));
     obj->set_callback(ARTIK_LWM2M_EVENT_RESOURCE_EXECUTE, on_execute_resource,
         reinterpret_cast<void*>(wrap));
   }
-  if (args.Length() > 9) {
+  if (args.Length() > 10) {
     wrap->m_changed_cb = new v8::Persistent<v8::Function>();
-    wrap->m_changed_cb->Reset(isolate, Local<Function>::Cast(args[9]));
+    wrap->m_changed_cb->Reset(isolate, Local<Function>::Cast(args[10]));
     obj->set_callback(ARTIK_LWM2M_EVENT_RESOURCE_CHANGED, on_changed_resource,
         reinterpret_cast<void*>(wrap));
   }
