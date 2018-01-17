@@ -25,7 +25,7 @@ See [full example](#full-example)
 ## client_request
 ```javascript
 String client_request(Integer id, String uri, String name,
-				      Number lifetime, String json_objects,
+				      Number lifetime, Number connect_timeout, String json_objects,
 				      String psk_id, String psk_key, certificate_mode_config)
 ```
 
@@ -39,6 +39,7 @@ Create an LWM2M client.
  - *String*: uri of the server.
  - *String*: name of the client.
  - *Number*: lifetime of the client.
+ - *Number*: connect_timeout Connection timeout of the client in milliseconds.
  - *String*: json_objects LWM2M objects to expose.
  - *String*: psk_id is the public identity for PSK based DTLS/TLS connection.
  - *String*: psk_key is the secret for PSK based DTLS/TLS connection.

@@ -5,6 +5,7 @@ var fs = require('fs');
 var server_id = 123;
 var server_uri = 'coaps://coaps-api.artik.cloud:5686';
 var lifetime = 30;
+var connect_timeout = 1000;
 var dtls_psk_id = '< DM enabled ARTIK Cloud Device ID >';
 var dtls_psk_key = '< DM enabled ARTIK Cloud Device Token >';
 var certificate_mode_config = null; // Certificate mode: disable
@@ -84,8 +85,9 @@ rl.on('line', function(line) {
 
 lwm2m.on('started', function() {
     console.log("start lwm2m connection");
-    lwm2m.client_request(server_id, server_uri, dtls_psk_id, lifetime, objects,
-        dtls_psk_id, dtls_psk_key, certificate_mode_config);
+    lwm2m.client_request(server_id, server_uri, dtls_psk_id, lifetime,
+						connect_timeout, objects,
+						dtls_psk_id, dtls_psk_key, certificate_mode_config);
     lwm2m.client_connect();
 });
 

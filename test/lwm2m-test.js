@@ -16,6 +16,7 @@ var lwm2m = new artik.lwm2m();
 var server_id = 123;
 var server_uri = 'coaps://coaps-api.artik.cloud:5686';
 var lifetime = 30;
+var connect_timeout = 1000;
 var dtls_psk_id = process.env.LWM2M_DEVICE_ID;
 var dtls_psk_key = process.env.LWM2M_DEVICE_TOKEN;
 
@@ -70,7 +71,8 @@ testCase('Lwm2m', function() {
 			if (!dtls_psk_id || !dtls_psk_key || !dtls_psk_id.length || !dtls_psk_key.length)
 				this.skip();
 
-			lwm2m.client_request(server_id, server_uri, dtls_psk_id, lifetime, objects, dtls_psk_id, dtls_psk_key);
+			lwm2m.client_request(server_id, server_uri, dtls_psk_id, lifetime, connect_timeout,
+								 objects, dtls_psk_id, dtls_psk_key);
 			lwm2m.client_connect();
 			done();
 		});

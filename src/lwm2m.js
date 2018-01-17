@@ -14,9 +14,10 @@ util.inherits(Lwm2m, events.EventEmitter);
 
 module.exports = Lwm2m;
 
-Lwm2m.prototype.client_request = function(id, uri, name, lifetime, objects, psk_id, psk_key, certificate_mode_config) {
+Lwm2m.prototype.client_request = function(id, uri, name, lifetime, connect_timeout, objects,
+                                          psk_id, psk_key, certificate_mode_config) {
     var _ = this;
-    return this.lwm2m.client_request(id, uri, name, lifetime,
+    return this.lwm2m.client_request(id, uri, name, lifetime, connect_timeout,
             objects, psk_id, psk_key, certificate_mode_config,
             function(err) {
                 _.emit('error', err);

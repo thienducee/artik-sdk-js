@@ -183,19 +183,20 @@ void Lwm2mWrapper::client_request(
   log_dbg("");
 
   // Check Arguments
-  if ((args.Length() < 5)          ||
+  if ((args.Length() < 6)          ||
       CHECK_ARGUMENT_NUMBER(args[0]) ||  // Server ID
       CHECK_ARGUMENT_STRING(args[1]) ||  // Server URI
       CHECK_ARGUMENT_STRING(args[2]) ||  // Client Name
       CHECK_ARGUMENT_NUMBER(args[3]) ||  // lifetime
-      !args[4]->IsObject()) {  // Objects device & conn_monitoring
+      CHECK_ARGUMENT_NUMBER(args[4]) ||  // connect timeout
+      !args[5]->IsObject()) {  // Objects device & conn_monitoring
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
   }
   // Parse lwm2m object parameter and create appropriate object
-  auto deviceobj = js_object_attribute_to_cpp<Local<Value>>(args[4], "device");
+  auto deviceobj = js_object_attribute_to_cpp<Local<Value>>(args[5], "device");
   auto connobj = js_object_attribute_to_cpp<Local<Value>>(
-      args[4], "conn_monitoring");
+      args[5], "conn_monitoring");
 
   if (!deviceobj) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
@@ -270,25 +271,26 @@ void Lwm2mWrapper::client_request(
   wrap->m_config.server_uri = strndup(*server_uri, strlen(*server_uri));
   wrap->m_config.name = strndup(*client_name, strlen(*client_name));
   wrap->m_config.lifetime = args[3]->NumberValue();
+  wrap->m_config.connect_timeout = args[4]->NumberValue();;
 
   // If TLS PSK or TLS CERT parameters are passed
-  if ((args.Length() > 6) &&
-       args[5]->IsString() &&
-       args[6]->IsString()) {
-    v8::String::Utf8Value identity(args[5]->ToString());
-    v8::String::Utf8Value secret_key(args[6]->ToString());
+  if ((args.Length() > 7) &&
+       args[6]->IsString() &&
+       args[7]->IsString()) {
+    v8::String::Utf8Value identity(args[6]->ToString());
+    v8::String::Utf8Value secret_key(args[7]->ToString());
 
     wrap->m_config.tls_psk_identity = strndup(*identity, strlen(*identity));
     wrap->m_config.tls_psk_key = strndup(*secret_key, strlen(*secret_key));
 
-    if (args.Length() > 7 && args[7]->IsObject()) {
+    if (args.Length() > 8 && args[8]->IsObject()) {
       wrap->m_config.ssl_config = new artik_ssl_config;
       auto se_cert_id_str =
-        js_object_attribute_to_cpp<std::string>(args[7], "se_cert_id");
+        js_object_attribute_to_cpp<std::string>(args[8], "se_cert_id");
       auto client_cert =
-        js_object_attribute_to_cpp<std::string>(args[7], "client_cert");
+        js_object_attribute_to_cpp<std::string>(args[8], "client_cert");
       auto client_private_key =
-        js_object_attribute_to_cpp<std::string>(args[7],
+        js_object_attribute_to_cpp<std::string>(args[8],
                                                 "client_private_key");
 
       if (se_cert_id_str) {
@@ -317,7 +319,7 @@ void Lwm2mWrapper::client_request(
       }
 
       auto server_cert =
-        js_object_attribute_to_cpp<std::string>(args[7],
+        js_object_attribute_to_cpp<std::string>(args[8],
             "server_or_root_cert");
       if (server_cert) {
         wrap->m_config.ssl_config->ca_cert.data =
@@ -326,7 +328,7 @@ void Lwm2mWrapper::client_request(
       }
 
       auto verify_cert =
-        js_object_attribute_to_cpp<std::string>(args[7], "verify_cert");
+        js_object_attribute_to_cpp<std::string>(args[8], "verify_cert");
       if (verify_cert) {
         if (verify_cert.value() == "none") {
           wrap->m_config.ssl_config->verify_cert = ARTIK_SSL_VERIFY_NONE;
@@ -376,21 +378,21 @@ void Lwm2mWrapper::client_request(
   }
 
   /* Set callbacks if passed as parameters */
-  if (args.Length() > 8) {
+  if (args.Length() > 9) {
     wrap->m_error_cb = new v8::Persistent<v8::Function>();
-    wrap->m_error_cb->Reset(isolate, Local<Function>::Cast(args[8]));
+    wrap->m_error_cb->Reset(isolate, Local<Function>::Cast(args[9]));
     obj->set_callback(ARTIK_LWM2M_EVENT_ERROR, on_error,
         reinterpret_cast<void*>(wrap));
   }
-  if (args.Length() > 9) {
+  if (args.Length() > 10) {
     wrap->m_execute_cb = new v8::Persistent<v8::Function>();
-    wrap->m_execute_cb->Reset(isolate, Local<Function>::Cast(args[9]));
+    wrap->m_execute_cb->Reset(isolate, Local<Function>::Cast(args[10]));
     obj->set_callback(ARTIK_LWM2M_EVENT_RESOURCE_EXECUTE, on_execute_resource,
         reinterpret_cast<void*>(wrap));
   }
-  if (args.Length() > 10) {
+  if (args.Length() > 11) {
     wrap->m_changed_cb = new v8::Persistent<v8::Function>();
-    wrap->m_changed_cb->Reset(isolate, Local<Function>::Cast(args[10]));
+    wrap->m_changed_cb->Reset(isolate, Local<Function>::Cast(args[11]));
     obj->set_callback(ARTIK_LWM2M_EVENT_RESOURCE_CHANGED, on_changed_resource,
         reinterpret_cast<void*>(wrap));
   }
