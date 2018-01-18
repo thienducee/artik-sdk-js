@@ -25,8 +25,8 @@ Lwm2m.prototype.client_request = function(id, uri, name, lifetime, connect_timeo
             function(uri) {
                 _.emit('execute', uri);
             },
-            function(uri) {
-                _.emit('changed', uri);
+            function(uri, buffer) {
+                _.emit('changed', uri, buffer);
             });
 }
 

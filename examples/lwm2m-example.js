@@ -41,7 +41,11 @@ var objects = {
         timeZone: 'Europe/Paris',
         utcOffset: '+01:00',
         bindingModes: 'U'
-    }
+    },
+	firmware : {
+		pkgName : 'artik-sdk',
+		pkgVersion : '1.8.0'
+	}
 };
 
 rl = readline.createInterface(process.stdin, process.stdout);
@@ -101,8 +105,9 @@ lwm2m.on('execute', function(uri) {
     rl.prompt();
 });
 
-lwm2m.on('changed', function(uri) {
+lwm2m.on('changed', function(uri, buffer) {
     console.log('\r\nLWM2M changed: ' + uri);
+    console.log('with buffer: ' + buffer.toString('utf8'));
     rl.prompt();
 });
 

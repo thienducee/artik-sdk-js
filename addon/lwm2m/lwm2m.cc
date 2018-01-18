@@ -81,8 +81,11 @@ static void on_execute_resource(void *data, void *user_data) {
   if (!wrap->getExecuteCb())
     return;
 
+  artik_lwm2m_resource_t *res =
+                          reinterpret_cast<artik_lwm2m_resource_t *>(data);
+
   Handle<Value> argv[] = {
-    Handle<Value>(String::NewFromUtf8(isolate, reinterpret_cast<char *>(data)))
+    Handle<Value>(String::NewFromUtf8(isolate, res->uri))
   };
 
   Local<Function>::New(isolate, *wrap->getExecuteCb())->Call(
@@ -99,12 +102,18 @@ static void on_changed_resource(void *data, void *user_data) {
   if (!wrap->getChangedCb())
     return;
 
+  artik_lwm2m_resource_t *res =
+                          reinterpret_cast<artik_lwm2m_resource_t *>(data);
+  Local<Object> buffer = Nan::CopyBuffer((
+        const char*)res->buffer, res->length).ToLocalChecked();
+
   Handle<Value> argv[] = {
-    Handle<Value>(String::NewFromUtf8(isolate, reinterpret_cast<char *>(data)))
+    Handle<Value>(String::NewFromUtf8(isolate, res->uri)),
+    buffer
   };
 
   Local<Function>::New(isolate, *wrap->getChangedCb())->Call(
-      isolate->GetCurrentContext()->Global(), 1, argv);
+      isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
 Lwm2mWrapper::Lwm2mWrapper() {
@@ -192,6 +201,8 @@ void Lwm2mWrapper::client_request(
   auto deviceobj = js_object_attribute_to_cpp<Local<Value>>(args[5], "device");
   auto connobj = js_object_attribute_to_cpp<Local<Value>>(
       args[5], "conn_monitoring");
+  auto firmwareobj = js_object_attribute_to_cpp<Local<Value>>(
+      args[5], "firmware");
 
   if (!deviceobj) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
@@ -231,6 +242,10 @@ void Lwm2mWrapper::client_request(
       "", "smnc",
       "", "smcc"};
 
+  std::vector<std::string> check_firmwareobj = {
+      "", "pkgName",
+      "", "pkgVersion"};
+
   for (unsigned int i = 0; i < check_deviceobj.size(); i += 2) {
     auto tmpDevObjVal = js_object_attribute_to_cpp<std::string>(
         deviceobj.value(), check_deviceobj[i+1]);
@@ -252,6 +267,18 @@ void Lwm2mWrapper::client_request(
         return;
       }
       check_connobj[i] = tmpConnObjVal.value();
+    }
+    if (firmwareobj && i < check_firmwareobj.size()) {
+      auto tmpFirmObjVal = js_object_attribute_to_cpp<std::string>(
+          firmwareobj.value(), check_firmwareobj[i+1]);
+      if (!tmpFirmObjVal ||
+          (tmpFirmObjVal.value().empty())) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+            isolate, ("Missing entry in firmware object: " +
+            check_firmwareobj[i+1]).c_str())));
+        return;
+      }
+      check_firmwareobj[i] = tmpFirmObjVal.value();
     }
   }
 
@@ -362,6 +389,15 @@ void Lwm2mWrapper::client_request(
             2, ips, 2, routes, atoi(check_connobj[16].c_str()),
             check_connobj[18].c_str(), atoi(check_connobj[20].c_str()),
             atoi(check_connobj[22].c_str()), atoi(check_connobj[24].c_str()));
+  }
+
+  if (firmwareobj) {
+    char *pkgName = strdup(check_firmwareobj[0].c_str());
+    char *pkgVersion = strdup(check_firmwareobj[2].c_str());
+    wrap->m_config.objects[ARTIK_LWM2M_OBJECT_FIRMWARE] =
+        obj->create_firmware_object(true, pkgName, pkgVersion);
+    free(pkgName);
+    free(pkgVersion);
   }
 
   ret = obj->client_request(&wrap->m_config);
