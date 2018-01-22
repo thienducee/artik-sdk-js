@@ -15,16 +15,16 @@ module.exports.get_device_info = artik.get_device_info;
 module.exports.destroy = artik.destroy;
 
 module.exports.adc = artik.adc;
-module.exports.http = artik.http;
 module.exports.i2c = artik.i2c;
 module.exports.media = artik.media;
 module.exports.pwm = artik.pwm;
 module.exports.security = artik.security;
 module.exports.sensor = artik.sensor;
 module.exports.spi = artik.spi;
-module.exports.time = artik.time;
 
 /* Other exports */
+module.exports.time = require('./time');
+module.exports.http = require('./http');
 module.exports.bluetooth = require('./bluetooth');
 module.exports.wifi = require('./wifi');
 module.exports.zigbee = require('./zigbee');
