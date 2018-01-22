@@ -19,7 +19,7 @@ var certificate_mode_config = { // Certificate mode: external client certificate
 
 var certificate_mode_config = { // Certificate mode: client certificate stored in the SE
     'se_cert_id': 'artik',
-    'server_cert_or_root_cert': fs.readFileSync('path server cert.cert')
+    'server_or_root_cert': fs.readFileSync('path server cert.cert')
 };
 */
 
