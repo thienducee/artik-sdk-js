@@ -86,12 +86,11 @@ rl.on('line', function(line) {
     rl.prompt();
 });
 
-
 lwm2m.on('started', function() {
     console.log("start lwm2m connection");
     lwm2m.client_request(server_id, server_uri, dtls_psk_id, lifetime,
-						connect_timeout, objects,
-						dtls_psk_id, dtls_psk_key, certificate_mode_config);
+            connect_timeout, objects, dtls_psk_id, dtls_psk_key,
+            certificate_mode_config);
     lwm2m.client_connect();
 });
 
@@ -101,7 +100,23 @@ lwm2m.on('error', function(err) {
 });
 
 lwm2m.on('execute', function(uri) {
-    console.log('\r\nLWM2M execute: ' + uri);
+    var exe_uri = uri;
+
+    switch (uri) {
+    case lwm2m.LWM2M_URI_DEVICE_REBOOT:
+        exe_uri = "Reboot";
+        break;
+    case lwm2m.LWM2M_URI_DEVICE_FACTORY_RESET:
+        exe_uri = "Factory Reset";
+        break;
+    case lwm2m.LWM2M_URI_DEVICE_RESET_ERROR_CODE:
+        exe_uri = "Reset Error code";
+        break;
+    default:
+        break;
+    }
+
+    console.log('\r\nLWM2M execute: ' + exe_uri);
     rl.prompt();
 });
 
