@@ -67,13 +67,14 @@ testCase('HTTP', function() {
 
 				stream.on('end', function() {
 					console.log("Stream finished");
-					done();
+				    ws.close();
 				})
 
 				stream.pipe(ws);
 
-				ws.on('end', function() {
-				    ws.end();
+				ws.on('close', function() {
+					console.log("Write finished");
+					done();
 				});
 
 			} catch(err) {
@@ -92,12 +93,13 @@ testCase('HTTP', function() {
 
 				stream.on('end', function() {
 					console.log("Stream finished");
+				    ws.close();
 				})
 
 				stream.pipe(ws);
 
-				ws.on('end', function() {
-				    ws.end();
+				ws.on('close', function() {
+					console.log("Write finished");
 				});
 
 			} catch(err) {
@@ -122,13 +124,14 @@ testCase('HTTP', function() {
 
 				stream.on('end', function() {
 					console.log("Stream finished");
-					done();
+				    ws.close();
 				})
 
 				stream.pipe(ws);
 
-				ws.on('end', function() {
-				    ws.end();
+				ws.on('close', function() {
+					console.log("Write finished");
+					done();
 				});
 
 			} catch(err) {
@@ -147,12 +150,13 @@ testCase('HTTP', function() {
 
 				stream.on('end', function() {
 					console.log("Stream finished");
+				    ws.close();
 				})
 
 				stream.pipe(ws);
 
-				ws.on('end', function() {
-				    ws.end();
+				ws.on('close', function() {
+					console.log("Write finished");
 				});
 
 			} catch(err) {

@@ -43,12 +43,13 @@ try {
 
 	stream.on('end', function() {
 		console.log("GET STREAM - Stream finished");
+	    ws.close();
 	})
 
 	stream.pipe(ws);
 
-	ws.on('end', function() {
-	    ws.end();
+	ws.on('close', function() {
+		console.log("Write Stream finished");
 	});
 
 } catch(err) {
