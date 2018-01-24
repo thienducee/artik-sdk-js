@@ -192,7 +192,8 @@ void Lwm2mWrapper::client_request(
       !args[1]->IsString() ||  // Server URI
       !args[2]->IsString() ||  // Client Name
       !args[3]->IsNumber() ||  // lifetime
-      !args[4]->IsObject()) {  // Objects device & conn_monitoring
+      !args[4]->IsNumber() ||  // connect_timeout
+      !args[5]->IsObject()) {  // Objects device & conn_monitoring
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong arguments")));
     return;
