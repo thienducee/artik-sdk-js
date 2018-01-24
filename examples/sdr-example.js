@@ -40,27 +40,40 @@ opt.getopt(function (o, p){
 var regId = '';
 var regNonce = '';
 
-function getRegistrationStatus(response) {
-	var regStatus = JSON.parse(response).data.status;
-	if (regStatus == "PENDING_USER_CONFIRMATION") {
-		setTimeout(function () {
-			artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
-		}, 1000);
-	} else if (regStatus == "PENDING_DEVICE_COMPLETION") {
-		artik_cloud.sdr_complete_registration('artik', regId, regNonce, function(response) {
-			console.log('Response: ' + response);
-			process.exit(0);
-		});
-	}
+function getRegistrationStatus(err, response) {
+    if (err) {
+        console.log("Error: " + err);
+        process.exit(-1);
+    }
+
+    var regStatus = response.data.status;
+    if (regStatus == "PENDING_USER_CONFIRMATION") {
+        setTimeout(function () {
+            artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
+        }, 1000);
+    } else if (regStatus == "PENDING_DEVICE_COMPLETION") {
+        artik_cloud.sdr_complete_registration('artik', regId, regNonce, function(err, response) {
+            if (err) {
+                console.log("Error: " + err);
+                process.exit(-1);
+            }
+
+            console.log('Response: ' + JSON.stringify(response));
+            process.exit(0);
+        });
+    }
 }
 
-artik_cloud.sdr_start_registration('artik', dtid, vid, function(response) {
-	var json = JSON.parse(response);
+artik_cloud.sdr_start_registration('artik', dtid, vid, function(err, response) {
+    if (err) {
+        console.log("Error: " + err);
+        process.exit(-1);
+    }
 
-	regId = json.data.rid;
-	regNonce = json.data.nonce;
+    regId = response.data.rid;
+    regNonce = response.data.nonce;
 
-	console.log('Enter pin ' + json.data.pin + ' in the ARTIK Cloud portal');
+    console.log('Enter pin ' + response.data.pin + ' in the ARTIK Cloud portal');
 
-	artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
+    artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
 });

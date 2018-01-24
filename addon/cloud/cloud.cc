@@ -1119,7 +1119,7 @@ void CloudWrapper::sdr_complete_registration(
                                                 nonce, cloud_callback, work);
     };
 
-    async_call(sdr_complete_registration_cb, args[2].As<Function>());
+    async_call(sdr_complete_registration_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
     artik_error ret = cloud->sdr_complete_registration(cert_id.value(), reg_id,
