@@ -307,7 +307,16 @@ void Lwm2mWrapper::client_request(
     wrap->m_config.tls_psk_key = strndup(*secret_key, strlen(*secret_key));
 
     if (args.Length() > 8 && args[8]->IsObject()) {
-      wrap->m_config.ssl_config = new artik_ssl_config;
+      wrap->m_config.ssl_config = (artik_ssl_config *)malloc(
+          sizeof(artik_ssl_config));
+      if (!wrap->m_config.ssl_config) {
+          isolate->ThrowException(
+                Exception::TypeError(String::NewFromUtf8(isolate,
+                    "Failed to allocate memory for SSL config")));
+          return;
+      }
+      memset(wrap->m_config.ssl_config, 0, sizeof(artik_ssl_config));
+
       auto se_cert_id_str =
         js_object_attribute_to_cpp<std::string>(args[8], "se_cert_id");
       auto client_cert =

@@ -3,14 +3,19 @@ var lwm2m = new(require('../src/lwm2m.js'))();
 var fs = require('fs');
 
 var server_id = 123;
-var server_uri = 'coaps://coaps-api.artik.cloud:5686';
+var server_uri = 'coaps+tcp://coaps-api.artik.cloud:5689';
 var lifetime = 30;
 var connect_timeout = 1000;
 var dtls_psk_id = '< DM enabled ARTIK Cloud Device ID >';
 var dtls_psk_key = '< DM enabled ARTIK Cloud Device Token >';
-var certificate_mode_config = null; // Certificate mode: disable
+
+var certificate_mode_config = { // Certificate mode: no client certificate, no verify
+    'verify_cert': 'none'
+};
 
 /*
+var certificate_mode_config = null; // Certificate mode: disable
+
 var certificate_mode_config = { // Certificate mode: external client certificate
     'client_cert': fs.readFileSync('path client cert.pem'),
     'client_private_key': fs.readFileSync('path private key.pem'),
@@ -42,10 +47,10 @@ var objects = {
         utcOffset: '+01:00',
         bindingModes: 'U'
     },
-	firmware : {
-		pkgName : 'artik-sdk',
-		pkgVersion : '1.8.0'
-	}
+    firmware : {
+        pkgName : 'artik-sdk',
+        pkgVersion : '1.8.0'
+    }
 };
 
 rl = readline.createInterface(process.stdin, process.stdout);
