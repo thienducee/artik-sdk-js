@@ -86,21 +86,74 @@ namespace artik {
   void GetDeviceInfo(const v8::FunctionCallbackInfo<v8::Value>& args) {
     v8::Isolate* isolate = args.GetIsolate();
     char* json = artik_get_device_info();
-    
+
     args.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, json));
     free(json);
+  }
+
+  void GetBtMacAddress(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = args.GetIsolate();
+    char addr[MAX_BT_ADDR+1] = "";
+
+    artik_get_bt_mac_address(addr);
+    args.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, addr));
+  }
+
+  void GetWifiMacAddress(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = args.GetIsolate();
+    char addr[MAX_WIFI_ADDR+1] = "";
+
+    artik_get_wifi_mac_address(addr);
+    args.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, addr));
+  }
+
+  void GetPlatformSN(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = args.GetIsolate();
+    char sn[MAX_PLATFORM_SN+1] = "";
+
+    artik_get_platform_serial_number(sn);
+    args.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, sn));
+  }
+
+  void GetPlatformManufacturer(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = args.GetIsolate();
+    char manu[MAX_PLATFORM_MANUFACT+1] = "";
+
+    artik_get_platform_manufacturer(manu);
+    args.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, manu));
+  }
+
+  void GetPlatformUptime(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = args.GetIsolate();
+    int64_t uptime = 0;
+
+    artik_get_platform_uptime(&uptime);
+    args.GetReturnValue().Set(Number::New(isolate, uptime));
+  }
+
+  void GetPlatformModelNumber(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = args.GetIsolate();
+    char modelnum[MAX_PLATFORM_MODELNUM+1] = "";
+
+    artik_get_platform_model_number(modelnum);
+    args.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, modelnum));
   }
 
   void DestroyAll(const v8::FunctionCallbackInfo<v8::Value>& args) {
   }
 
   void InitAll(Local<Object> exports) {
-
     /* Register own methods */
     NODE_SET_METHOD(exports, "get_modules", GetModules);
     NODE_SET_METHOD(exports, "get_platform", GetPlatform);
     NODE_SET_METHOD(exports, "get_platform_name", GetPlatformName);
     NODE_SET_METHOD(exports, "get_device_info", GetDeviceInfo);
+    NODE_SET_METHOD(exports, "get_bt_mac_address", GetBtMacAddress);
+    NODE_SET_METHOD(exports, "get_wifi_mac_address", GetWifiMacAddress);
+    NODE_SET_METHOD(exports, "get_platform_serial_number", GetPlatformSN);
+    NODE_SET_METHOD(exports, "get_platform_manufacturer", GetPlatformManufacturer);
+    NODE_SET_METHOD(exports, "get_platform_uptime", GetPlatformUptime);
+    NODE_SET_METHOD(exports, "get_platform_model_number", GetPlatformModelNumber);
     NODE_SET_METHOD(exports, "destroy", DestroyAll);
 
     /* Register all modules */

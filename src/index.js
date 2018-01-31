@@ -13,6 +13,12 @@ module.exports.get_modules = artik.get_modules;
 module.exports.get_platform = artik.get_platform;
 module.exports.get_platform_name = artik.get_platform_name;
 module.exports.get_device_info = artik.get_device_info;
+module.exports.get_bt_mac_address = artik.get_bt_mac_address;
+module.exports.get_wifi_mac_address = artik.get_wifi_mac_address;
+module.exports.get_platform_serial_number = artik.get_platform_serial_number;
+module.exports.get_platform_manufacturer = artik.get_platform_manufacturer;
+module.exports.get_platform_uptime = artik.get_platform_uptime;
+module.exports.get_platform_model_number = artik.get_platform_model_number;
 module.exports.destroy = artik.destroy;
 
 module.exports.adc = artik.adc;
