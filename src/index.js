@@ -4,6 +4,7 @@ module.exports.artik710 = require('./platform/artik710');
 module.exports.artik1020 = require('./platform/artik1020');
 module.exports.artik530 = require('./platform/artik530');
 module.exports.artik305 = require('./platform/artik305');
+module.exports.evergreeen = require('./platform/evergreeen');
 
 /* Addon exports */
 var artik = require('../build/Release/artik-sdk.node');

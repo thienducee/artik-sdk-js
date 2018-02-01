@@ -42,6 +42,14 @@ if(name == 'ARTIK 520') {
 						  a305.ARTIK_A305_SPI.MODE.MODE0,
 						  a305.ARTIK_A305_SPI.BITS.BITS8,
 						  500000);
+} else if(name == 'Evergreeen') {
+	console.log('Running SPI test on Evergreeen');
+	const eg = require('../src/platform/evergreeen.js');
+	var spi = artik.spi(eg.ARTIK_EVERGREEEN_SPI.BUS.BUS0,
+						eg.ARTIK_EVERGREEEN_SPI.CS.CS0,
+						eg.ARTIK_EVERGREEEN_SPI.MODE.MODE0,
+						eg.ARTIK_EVERGREEEN_SPI.BITS.BITS8,
+						500000);
 } else {
 	console.log('Unrecognized platform');
 	process.exit(-1);

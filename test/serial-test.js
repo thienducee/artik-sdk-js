@@ -38,7 +38,10 @@ testCase('Serial', function() {
 			console.log("Running SERIAL test on ARTIK 305");
 			const a305 = require('../src/platform/artik305');
 			port = a305.ARTIK_A305_SERIAL.UART.UART2;
-
+		} else if(name == 'Evergreeen') {
+			console.log("Running SERIAL test on Evergreeen");
+			const eg = require('../src/platform/evergreeen');
+			port = eg.ARTIK_EVERGREEEN_SERIAL.UART.UART4;
 		}
 
 		loopback = new artik.serial(port,
