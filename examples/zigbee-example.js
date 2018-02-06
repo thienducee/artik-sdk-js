@@ -141,7 +141,7 @@ cli.push({
   help: 'network_permitjoin(60)',
   func: function (args) {
     try {
-      znode.network_permitjoin(args[1] ? args[1] : 60)
+      znode.network_permitjoin(args[1] ? +args[1] : 60)
     } catch (e) {
       console.log(colors.red(e))
     }
@@ -273,7 +273,7 @@ cli.push({
   args: '{N:cluster_id}',
   help: 'device_find_by_cluster()',
   func: function (args) {
-    var dev = znode.device_find_by_cluster(args[1])
+    var dev = znode.device_find_by_cluster(+args[1])
     console.log('device ='.blue, dev)
   }
 })
@@ -375,9 +375,9 @@ cli.push({
           console.log('try endpoint -', ep.endpoint_id)
           dev.level_control_request(ep, {
             type: args[1],
-            value: args[2],
+            value: +args[2],
             auto_onoff: true,
-            transition_time: (args[3] === undefined) ? 10 : args[3] /* default 1 sec */
+            transition_time: (args[3] === undefined) ? 10 : +args[3] /* default 1 sec */
           })
         })
       })
@@ -409,7 +409,7 @@ cli.push({
   func: function (args) {
     try {
       devices.forEach(function (dev) {
-        dev.illum_set_measured_value_range(args[1], args[2])
+        dev.illum_set_measured_value_range(+args[1], +args[2])
       })
     } catch (e) {
       console.log(colors.red(e))
@@ -424,7 +424,7 @@ cli.push({
   func: function (args) {
     try {
       devices.forEach(function (dev) {
-        dev.illum_set_measured_value(args[1])
+        dev.illum_set_measured_value(+args[1])
       })
     } catch (e) {
       console.log(colors.red(e))
@@ -462,7 +462,7 @@ cli.push({
       devices.forEach(function (dev) {
         remoteEndpoints.forEach(function (ep) {
           console.log('try endpoint -', ep.endpoint_id)
-          dev.request_reporting(ep, args[1], args[2], args[3], args[4])
+          dev.request_reporting(ep, args[1], +args[2], +args[3], +args[4])
         })
       })
     } catch (e) {
@@ -516,7 +516,7 @@ cli.push({
       devices.forEach(function (dev) {
         remoteEndpoints.forEach(function (ep) {
           console.log('try endpoint -', ep.endpoint_id)
-          dev.identify_request(ep, args[1])
+          dev.identify_request(ep, +args[1])
         })
       })
     } catch (e) {
