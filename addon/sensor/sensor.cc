@@ -1141,14 +1141,20 @@ void SensorWrapper::New(const FunctionCallbackInfo<Value>& args) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
   if (args.IsConstructCall()) {
-    SensorWrapper* obj = new SensorWrapper();
-    obj->Wrap(args.This());
-    args.GetReturnValue().Set(args.This());
+    try {
+      SensorWrapper* obj = new SensorWrapper();
+      obj->Wrap(args.This());
+      args.GetReturnValue().Set(args.This());
+    } catch(artik::ArtikException& e) {
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, e.what())));
+    }
   } else {
     Local<Context> context = isolate->GetCurrentContext();
     Local<Function> cons = Local<Function>::New(isolate, constructor);
-    args.GetReturnValue().Set(
-        cons->NewInstance(context, 0, NULL).ToLocalChecked());
+    v8::MaybeLocal<Object> maybeObject = cons->NewInstance(context, 0, NULL);
+    if (!maybeObject.IsEmpty())
+      args.GetReturnValue().Set(maybeObject.ToLocalChecked());
   }
 }
 

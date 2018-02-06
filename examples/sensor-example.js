@@ -1,7 +1,12 @@
 const artik = require('../src');
 
-var module_sensor = artik.sensor();
-var  list_of_device_sensor = module_sensor.list();
+try {
+  var module_sensor = artik.sensor();
+  var  list_of_device_sensor = module_sensor.list();
+} catch (err) {
+  console.log('Ex: ' + err);
+  process.exit(-1);
+}
 
 for (var i = 0; i < list_of_device_sensor.length; ++i)
     console.log("sensor[%s] of type(%s):index(%d)\n", list_of_device_sensor[i].get_name(), list_of_device_sensor[i].get_type(), list_of_device_sensor[i].get_index());
