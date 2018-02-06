@@ -22,6 +22,10 @@ if(name == 'ARTIK 520') {
 	console.log("Running SERIAL test on ARTIK 305");
 	const a305 = require('../src/platform/artik305');
 	var port = a305.ARTIK_A305_SERIAL.UART.UART2;
+} else if(name == 'Evergreeen') {
+	console.log("Running SERIAL test on Evergreeen");
+	const a530 = require('../src/platform/evergreeen');
+	var port = a530.ARTIK_EVERGREEEN_SERIAL.UART.UART4;
 } else {
 	console.log('Unrecognized platform');
 	process.exit(-1);
@@ -40,8 +44,16 @@ var buf = new Buffer('aabbccddeeff');
 loopback.request();
 
 loopback.on('read', function(data) {
-    if (data)
+    if (data) {
+		console.log("Tx Data: " + buf);
 		console.log("Rx Data: " + data);
+		if (Buffer.compare(data, buf))
+			console.log('Loopback test failed: data mismatch');
+		else
+			console.log('Loopback test succeeded');
+	}
+	loopback.release();
+	process.exit(0);
 });
 
 var written = loopback.write(buf);
