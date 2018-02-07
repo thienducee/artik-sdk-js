@@ -48,8 +48,14 @@ class SecurityWrapper : public node::ObjectWrap {
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void get_certificate_sn(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void verify_signature_init(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void verify_signature_update(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void verify_signature_final(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  Security* m_security;
+  Security * m_security;
 };
 
 }  // namespace artik
