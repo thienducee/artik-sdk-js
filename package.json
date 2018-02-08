@@ -109,7 +109,7 @@
     "src/platform/artik710.js",
     "src/platform/artik530.js",
     "src/platform/artik305.js",
-    "src/platform/evergreeen.js",
+    "src/platform/eagleye530.js",
     "src/gpio.js",
     "src/wifi.js",
     "src/zigbee.js",

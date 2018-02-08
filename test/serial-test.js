@@ -38,10 +38,10 @@ testCase('Serial', function() {
 			console.log("Running SERIAL test on ARTIK 305");
 			const a305 = require('../src/platform/artik305');
 			port = a305.ARTIK_A305_SERIAL.UART.UART2;
-		} else if(name == 'Evergreeen') {
-			console.log("Running SERIAL test on Evergreeen");
-			const eg = require('../src/platform/evergreeen');
-			port = eg.ARTIK_EVERGREEEN_SERIAL.UART.UART4;
+		} else if(name == 'Eagleye530') {
+			console.log("Running SERIAL test on Eagleye530");
+			const ee530 = require('../src/platform/eagleye530');
+			port = ee530.ARTIK_EAGLEYE530_SERIAL.UART.UART4;
 		}
 
 		loopback = new artik.serial(port,

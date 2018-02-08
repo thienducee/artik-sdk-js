@@ -22,10 +22,10 @@ if(name == 'ARTIK 520') {
 	console.log("Running SERIAL test on ARTIK 305");
 	const a305 = require('../src/platform/artik305');
 	var port = a305.ARTIK_A305_SERIAL.UART.UART2;
-} else if(name == 'Evergreeen') {
-	console.log("Running SERIAL test on Evergreeen");
-	const a530 = require('../src/platform/evergreeen');
-	var port = a530.ARTIK_EVERGREEEN_SERIAL.UART.UART4;
+} else if(name == 'Eagleye530') {
+	console.log("Running SERIAL test on Eagleye530");
+	const a530 = require('../src/platform/eagleye530');
+	var port = a530.ARTIK_EAGLEYE530_SERIAL.UART.UART4;
 } else {
 	console.log('Unrecognized platform');
 	process.exit(-1);

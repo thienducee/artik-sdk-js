@@ -50,17 +50,17 @@ if(name == 'ARTIK 520') {
 	sw403 = new artik.gpio(a305.ARTIK_A305_GPIO_SW403, 'sw403', 'in', 'both', 0);
 	sw404 = new artik.gpio(a305.ARTIK_A305_GPIO_SW404, 'sw404', 'in', 'both', 0);
 	button = new artik.gpio(a305.ARTIK_A305_GPIO_GPIO4, 'button', 'in', 'both', 0);
-} else if(name == 'Evergreeen') {
-	console.log('Running GPIO test on Evergreeen');
-	const eg = require('../src/platform/evergreeen');
-	red = new artik.gpio(eg.ARTIK_EVERGREEEN_GPIO_GPIO0, 'red', 'out', 'none', 0);
-	green = new artik.gpio(eg.ARTIK_EVERGREEEN_GPIO_GPIO1, 'green', 'out', 'none', 0);
-	blue = new artik.gpio(eg.ARTIK_EVERGREEEN_GPIO_GPIO2, 'blue', 'out', 'none', 0);
-	led400 = new artik.gpio(eg.ARTIK_EVERGREEEN_GPIO_LED1, 'led1', 'out', 'none', 0);
-	led401 = new artik.gpio(eg.ARTIK_EVERGREEEN_GPIO_LED2, 'led2', 'out', 'none', 0);
-	sw403 = new artik.gpio(eg.ARTIK_EVERGREEEN_GPIO_SW1, 'sw1', 'in', 'both', 0);
-	sw404 = new artik.gpio(eg.ARTIK_EVERGREEEN_GPIO_SW2, 'sw2', 'in', 'both', 0);
-	button = new artik.gpio(eg.ARTIK_EVERGREEEN_GPIO_GPIO4, 'button', 'in' , 'both', 0);
+} else if(name == 'Eagleye530') {
+	console.log('Running GPIO test on Eagleye530');
+	const ee530 = require('../src/platform/eagleye530');
+	red = new artik.gpio(ee530.ARTIK_EAGLEYE530_GPIO_GPIO0, 'red', 'out', 'none', 0);
+	green = new artik.gpio(ee530.ARTIK_EAGLEYE530_GPIO_GPIO1, 'green', 'out', 'none', 0);
+	blue = new artik.gpio(ee530.ARTIK_EAGLEYE530_GPIO_GPIO2, 'blue', 'out', 'none', 0);
+	led400 = new artik.gpio(ee530.ARTIK_EAGLEYE530_GPIO_LED1, 'led1', 'out', 'none', 0);
+	led401 = new artik.gpio(ee530.ARTIK_EAGLEYE530_GPIO_LED2, 'led2', 'out', 'none', 0);
+	sw403 = new artik.gpio(ee530.ARTIK_EAGLEYE530_GPIO_SW1, 'sw1', 'in', 'both', 0);
+	sw404 = new artik.gpio(ee530.ARTIK_EAGLEYE530_GPIO_SW2, 'sw2', 'in', 'both', 0);
+	button = new artik.gpio(ee530.ARTIK_EAGLEYE530_GPIO_GPIO4, 'button', 'in' , 'both', 0);
 } else {
     console.log('Unrecognized platform');
     process.exit(-1);
@@ -72,7 +72,7 @@ button.on('changed', function(val) {
 
 button.request();
 
-if (name == 'ARTIK 530' || name == 'ARTIK 710' || name == 'ARTIK 305' || name == 'Evergreeen') {
+if (name == 'ARTIK 530' || name == 'ARTIK 710' || name == 'ARTIK 305' || name == 'Eagleye530') {
 	led400.request();
 	led400.write(1);
 	led401.request();

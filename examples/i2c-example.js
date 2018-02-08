@@ -4,7 +4,7 @@
  * artik1020: $ echo 0-0062 > /sys/bus/i2c/drivers/cw201x/unbind
  * artik710 : $ echo 8-0062 > /sys/bus/i2c/drivers/cw201x/unbind
  * artik530 : $ echo 8-0062 > /sys/bus/i2c/drivers/cw201x/unbind
- * Evergreeen: $ echo 6-001a > /sys/bus/i2c/drivers/rt5659/unbind
+ * Eagleye530: $ echo 6-001a > /sys/bus/i2c/drivers/rt5659/unbind
  */
 
 const artik = require('../src');
@@ -25,8 +25,8 @@ if(name == 'ARTIK 520') {
 } else if(name == 'ARTIK 305') {
   console.log('Running I2C test on ARTIK 305');
   test_cw2015(artik.i2c(8, 2000, '8', 0x62));
-} else if (name == 'Evergreeen') {
-  console.log('Running I2C test on Evergreeen');
+} else if (name == 'Eagleye530') {
+  console.log('Running I2C test on Eagleye530');
   test_rtc5659(artik.i2c(6, 2000, '16', 0x1a));
 } else {
   console.log('Unrecognized platform');

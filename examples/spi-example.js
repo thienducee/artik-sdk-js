@@ -42,13 +42,13 @@ if(name == 'ARTIK 520') {
 						  a305.ARTIK_A305_SPI.MODE.MODE0,
 						  a305.ARTIK_A305_SPI.BITS.BITS8,
 						  500000);
-} else if(name == 'Evergreeen') {
-	console.log('Running SPI test on Evergreeen');
-	const eg = require('../src/platform/evergreeen.js');
-	var spi = artik.spi(eg.ARTIK_EVERGREEEN_SPI.BUS.BUS0,
-						eg.ARTIK_EVERGREEEN_SPI.CS.CS0,
-						eg.ARTIK_EVERGREEEN_SPI.MODE.MODE0,
-						eg.ARTIK_EVERGREEEN_SPI.BITS.BITS8,
+} else if(name == 'Eagleye530') {
+	console.log('Running SPI test on Eagleye530');
+	const ee530 = require('../src/platform/eagleye530.js');
+	var spi = artik.spi(ee530.ARTIK_EAGLEYE530_SPI.BUS.BUS0,
+						ee530.ARTIK_EAGLEYE530_SPI.CS.CS0,
+						ee530.ARTIK_EAGLEYE530_SPI.MODE.MODE0,
+						ee530.ARTIK_EAGLEYE530_SPI.BITS.BITS8,
 						500000);
 } else {
 	console.log('Unrecognized platform');
