@@ -164,7 +164,8 @@
     "examples/zigbee-switch-example.js",
     "examples/sdr-example.js",
     "examples/mqtt-example.js",
-    "examples/lwm2m-example.js"
+    "examples/lwm2m-example.js",
+    "examples/pkcs7-sig-verify.js"
   ],
   "dependencies": {
     "colors": "^1.1.2",
