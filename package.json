@@ -119,6 +119,7 @@
     "src/lwm2m.js",
     "src/mqtt.js",
     "src/network.js",
+    "src/security.js",
     "src/time.js",
     "src/http.js",
     "src/bluetooth/agent.js",

@@ -207,6 +207,7 @@ void SecurityWrapper::get_ca_chain(const FunctionCallbackInfo<Value>& args) {
   char *chain = NULL;
   artik_error res = S_OK;
   String::Utf8Value param0(args[0]->ToString());
+
   auto cert_id =
     to_artik_parameter<artik_security_certificate_id>(
       SSLConfigConverter::security_certificate_ids, *param0);
@@ -216,18 +217,16 @@ void SecurityWrapper::get_ca_chain(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  try {
-    res = obj->get_ca_chain(cert_id.value(), &chain);
-    if (res != S_OK)
-      isolate->ThrowException(Exception::TypeError(
-          String::NewFromUtf8(isolate, error_msg(res))));
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, chain));
-    free(chain);
-  } catch (artik::ArtikException &e) {
+  res = obj->get_ca_chain(cert_id.value(), &chain);
+
+  if (res != S_OK) {
     isolate->ThrowException(Exception::TypeError(
-          String::NewFromUtf8(isolate, e.what())));
+      String::NewFromUtf8(isolate, error_msg(res))));
     return;
   }
+
+  args.GetReturnValue().Set(String::NewFromUtf8(isolate, chain));
+  free(chain);
 }
 
 void SecurityWrapper::get_key_from_cert(

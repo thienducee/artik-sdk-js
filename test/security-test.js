@@ -19,7 +19,7 @@ testCase('Security', function() {
     pre(function(done) {
 	this.timeout(10000);
 	try {
-	    security = artik.security();
+	    security = new artik.security();
 	    done();
 	} catch (err) {
 	    console.log("[Exception] : " + err.message);

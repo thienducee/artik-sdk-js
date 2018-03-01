@@ -1,32 +1,31 @@
 var artik = require('../src');
-const fs = require('fs');
-var security = artik.security();
+var opt = require('getopt');
+
+var security = new artik.security();
 
 /* Get path */
-var path_signature_pem = process.argv[2];
-var path_root_ca = process.argv[3];
-var path_signed_data = process.argv[4];
+var path_signature_pem = "";
+var path_root_ca = "";
+var path_signed_data = "";
+var se_id = "";
 var date = null;
 
-const error_code = {
-	"0": 0,
-	"-1": -1,
-	"-7001": -2,
-	"-7002": -3,
-	"-7003": -4,
-	"-7004": -5,
-	"-7005": -6,
-	"-7006": -7,
-}
+Date.prototype.isValid = function () {
+    /* An invalid date object returns NaN for getTime() and NaN is the only */
+    /* object not strictly equal to itself. */
+    return 	this.getTime() === this.getTime();
+};
 
-if(process.argv.length <= 4)
-{
-	process.stdout.write("Usage: pkcs7-sig-verify <signature> <root CA> <signed data> [signing date]\n\n");
-	process.stdout.write("signature - PKCS7 signature in PEM format\n");
-	process.stdout.write("root CA - X509 root CA certificate in PEM format\n");
-	process.stdout.write("signed data - file containing the signed data\n");
-	process.stdout.write("signing date (optional) - current signing date for rollback detection\n");
+usage = function () {
+	process.stdout.write("Usage: pkcs7-sig-verify <signature> <root CA> <signed data> [signing date] ");
+	process.stdout.write("-d [signing date] -u [artik/manufacturer]\n\n");
+	process.stdout.write("-s: signature - PKCS7 signature in PEM format\n");
+	process.stdout.write("-r: root CA - X509 root CA certificate in PEM format\n");
+	process.stdout.write("-b: signed data - file containing the signed data\n");
+	process.stdout.write("-d: signing date (optional) - current signing date for rollback detection\n");
+	process.stdout.write("\tJS date format YYYY-MM-DDTHH:mm:SS.XXXZ");
 	process.stdout.write("\tIf not provided, rollback detection is not performed\n");
+	process.stdout.write("-u: use secure element artik/manufacturer\n");
 	process.stdout.write("\nA JSON formatted string with verification result and error information is output on stdout\n");
 	process.stdout.write("Return value contains an error code among the following ones\n");
 	process.stdout.write("\t0: success\n");
@@ -38,73 +37,59 @@ if(process.argv.length <= 4)
 	process.stdout.write("\t-6: signature verification failed\n");
 	process.stdout.write("\t-7: signing time rollback detected\n");
 	process.exit();
-}
-
-Date.prototype.isValid = function () {
-    /* An invalid date object returns NaN for getTime() and NaN is the only */
-    /* object not strictly equal to itself. */
-    return 	this.getTime() === this.getTime();
 };
 
-jsonReturn = function (err, reason, pkcs7_signing_time) {
-	var json = {
-		error: (err != 0),
-		reason: reason,
-		error_code: error_code[String(err)],
-		signing_time: pkcs7_signing_time,
-	}
-	process.stdout.write(JSON.stringify(json) + "\n");
-	process.exit((err != 0 ) ? -1 : 0);
+if(process.argv.length <= 7) {
+	usage();
 }
 
-if(process.argv[5] != undefined)
-{
-	date = new Date(process.argv[5]);
-	if(date.isValid() == false)
-		jsonReturn(-1, "Invalid signing time", undefined);
-}
-
-/* Get content of the pem signature file */
-try {
-	/* Read file signature_pem */
-	var signature_pem = String(fs.readFileSync(path_signature_pem));
-} catch (err) {
-	jsonReturn(-1, "Cannot read PKCS7 signature file", undefined);
-}
-
-/* Get content of the root_ca file */
 try{
-	/* Read file root_ca */
-	var root_ca = String(fs.readFileSync(path_root_ca));
-} catch (err) {
-	jsonReturn(err, "Cannot read root CA file", undefined);
+    opt.setopt("s:r:u:b:d::");
+} catch (e){
+   switch (e.type) {
+        case "unknown":
+			console.log("Unknown option: -%s", e.opt);
+			break;
+		case "required":
+			console.log("Required parameter for option: -%s",  e.opt);
+			break;
+		default:
+            console.dir(e);
+            break;
+	}
+	process.exit(0);
 }
 
-/* Get pkcs7_signing_time with verify_signature_init */
-security.verify_signature_init(signature_pem, root_ca, date, function(err, reason, pkcs7_signing_time) {
-	if (err != 0)
-		jsonReturn(err, reason, pkcs7_signing_time);
+opt.getopt(function (o, p){
+	switch(o){
+	case 's':
+		path_signature_pem = String(p);
+		break;
+	case 'r':
+		path_root_ca = String(p);
+		break;
+	case 'd':
+		date = new Date(p);
+		if(date.isValid() == false)
+			console.log("Invalid signing time");
+			process.exit(-1);
+		break;
+	case 'b':
+		path_signed_data = String(p);
+		break;
+	case 'u':
+		se_id = String(p);
+		if (se_id != "artik" && se_id != "manufacturer") {
+			console.log("Invalid secure element id");
+			process.exit(-1);
+		}
+		break;
+	default:
+		usage();
+		process.exit();
+	}
+});
 
-	var readStream = fs.createReadStream(path_signed_data);
-
-	readStream.on('data', function (buffer) {
-		security.verify_signature_update(buffer, function(err, reason) {
-			if (err)
-				jsonReturn(err, reason, pkcs7_signing_time);
-		});
-	});
-
-	readStream.on('end', function () {
-		/* Use verify_signature_final to check package signature */
-		security.verify_signature_final(function(err, reason) {
-			if (err)
-				jsonReturn(err, reason, pkcs7_signing_time);
-
-			jsonReturn(err, "Verification successful", pkcs7_signing_time);
-		});
-	});
-
-	readStream.on('error', function (err) {
-		jsonReturn(err, "readstream failed", pkcs7_signing_time);
-	});
+security.pkcs7_sig_verify(path_signature_pem, path_root_ca, path_signed_data, se_id, date, function(jsonReturn) {
+	console.log(JSON.stringify(jsonReturn));
 });

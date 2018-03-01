@@ -25,7 +25,6 @@ module.exports.adc = artik.adc;
 module.exports.i2c = artik.i2c;
 module.exports.media = artik.media;
 module.exports.pwm = artik.pwm;
-module.exports.security = artik.security;
 module.exports.sensor = artik.sensor;
 module.exports.spi = artik.spi;
 
@@ -42,3 +41,4 @@ module.exports.lwm2m = require('./lwm2m');
 module.exports.mqtt = require('./mqtt');
 module.exports.cloud = require('./cloud');
 module.exports.network = require('./network');
+module.exports.security = require('./security');
