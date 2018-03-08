@@ -192,7 +192,7 @@ DescriptorWrapper::~DescriptorWrapper() {
 
 void DescriptorWrapper::Emit(int argc, Local<Value> argv[]) {
   Local<Function> emit_f = Nan::New<Function>(*m_emit);
-  Nan::MakeCallback(this->handle(), emit_f, argc, argv);
+  emit_f->Call(this->handle(), argc, argv);
 }
 
 void DescriptorWrapper::SetId(int desc_id) {
@@ -359,7 +359,7 @@ CharacteristicWrapper::~CharacteristicWrapper() {
 
 void CharacteristicWrapper::Emit(int argc, Local<Value> argv[]) {
   Local<Function> emit_f = Nan::New<Function>(*m_emit);
-  Nan::MakeCallback(this->handle(), emit_f, argc, argv);
+  emit_f->Call(this->handle(), argc, argv);
 }
 
 void CharacteristicWrapper::SetIds(int service_id, int char_id) {
@@ -869,4 +869,3 @@ void GattServerWrapper::notify(const FunctionCallbackInfo<Value>& args) {
 }
 
 }  // namespace artik
-

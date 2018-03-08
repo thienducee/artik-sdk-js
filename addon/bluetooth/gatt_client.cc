@@ -219,7 +219,7 @@ RemoteCharacteristicWrapper::~RemoteCharacteristicWrapper() {
 
 void RemoteCharacteristicWrapper::emit(int argc, Local<Value> argv[]) {
   Local<Function> emit_f = Nan::New<Function>(*m_emit);
-  Nan::MakeCallback(this->handle(), emit_f, argc, argv);
+  emit_f->Call(this->handle(), argc, argv);
 }
 
 void RemoteCharacteristicWrapper::Init(Local<Object> exports) {
@@ -713,7 +713,7 @@ GattClientWrapper::~GattClientWrapper() {
 
 void GattClientWrapper::emit(int argc, v8::Local<v8::Value> argv[]) {
   Local<Function> emit_f = Nan::New<Function>(*m_emit);
-  Nan::MakeCallback(this->handle(), emit_f, argc, argv);
+  emit_f->Call(this->handle(), argc, argv);
 }
 
 void GattClientWrapper::Init(v8::Local<v8::Object> exports) {
@@ -797,4 +797,3 @@ void GattClientWrapper::discover_services(
 }
 
 }  // namespace artik
-
