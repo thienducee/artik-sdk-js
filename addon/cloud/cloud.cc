@@ -79,7 +79,7 @@ static void cloud_callback(artik_error ret, char *response, void *user_data) {
     val
   };
 
-  work->callback.Call(2, argv);
+  Nan::Call(work->callback, 2, argv);
 
   delete work;
 }
@@ -237,7 +237,7 @@ static void async_call(const Func& func, const Local<Function> &callback) {
       Nan::Null()
     };
 
-    work->callback.Call(2, argv);
+    Nan::Call(work->callback, 2, argv);
     delete work;
   }
 }
