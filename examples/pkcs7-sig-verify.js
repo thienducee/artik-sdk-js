@@ -11,9 +11,9 @@ var se_id = "";
 var date = null;
 
 Date.prototype.isValid = function () {
-    /* An invalid date object returns NaN for getTime() and NaN is the only */
-    /* object not strictly equal to itself. */
-    return 	this.getTime() === this.getTime();
+	/* An invalid date object returns NaN for getTime() and NaN is the only */
+	/* object not strictly equal to itself. */
+	return 	this.getTime() === this.getTime();
 };
 
 usage = function () {
@@ -43,24 +43,24 @@ if(process.argv.length <= 7) {
 	usage();
 }
 
-try{
-    opt.setopt("s:r:u:b:d::");
-} catch (e){
-   switch (e.type) {
-        case "unknown":
+try {
+	opt.setopt("s:r:u:b:d::");
+} catch (e) {
+	switch (e.type) {
+		case "unknown":
 			console.log("Unknown option: -%s", e.opt);
 			break;
 		case "required":
 			console.log("Required parameter for option: -%s",  e.opt);
 			break;
 		default:
-            console.dir(e);
-            break;
+			console.dir(e);
+			break;
 	}
 	process.exit(0);
 }
 
-opt.getopt(function (o, p){
+opt.getopt(function (o, p) {
 	switch(o){
 	case 's':
 		path_signature_pem = String(p);
@@ -70,9 +70,10 @@ opt.getopt(function (o, p){
 		break;
 	case 'd':
 		date = new Date(p);
-		if(date.isValid() == false)
+		if (date.isValid() == false) {
 			console.log("Invalid signing time");
 			process.exit(-1);
+		}
 		break;
 	case 'b':
 		path_signed_data = String(p);
