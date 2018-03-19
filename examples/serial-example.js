@@ -24,8 +24,8 @@ if(name == 'ARTIK 520') {
 	var port = a305.ARTIK_A305_SERIAL.UART.UART2;
 } else if(name == 'Eagleye530') {
 	console.log("Running SERIAL test on Eagleye530");
-	const a530 = require('../src/platform/eagleye530');
-	var port = a530.ARTIK_EAGLEYE530_SERIAL.UART.UART4;
+	const ee530 = require('../src/platform/eagleye530');
+	var port = ee530.ARTIK_EAGLEYE530_SERIAL.UART.UART4;
 } else {
 	console.log('Unrecognized platform');
 	process.exit(-1);
