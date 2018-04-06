@@ -25,7 +25,11 @@ wifi_station.on('scan', function(list) {
 	if (ap.length > 0) {
 		console.log('Found SSID ' + ssid + ', connecting...');
 		wifi_station.disconnect();
-		wifi_station.connect(ssid, pwd, false);
+		var ret = wifi_station.connect(ssid, pwd, false);
+		if (ret != 'OK') {
+			console.log('Failed to connect to SSID ' + ssid + ' - ' + ret);
+			process.exit(-1);
+		}
 	}
 });
 
