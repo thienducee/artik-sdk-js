@@ -29,6 +29,7 @@ try{
 var ssl_config = {
     ca_cert: Buffer.from(""),
     verify_cert: "none",
+    se_config: undefined
 }
 
 opt.getopt(function (o, p){
@@ -47,7 +48,9 @@ opt.getopt(function (o, p){
         ssl_config.ca_cert = Buffer.from(data);
         break;
     case 's':
-        ssl_config.se_config.certificate_identifier = 'artik';
+        ssl_config.se_config = {
+            certificate_identifier: 'artik'
+        }
         break;
     case 'v':
         ssl_config.verify_cert = "required";
