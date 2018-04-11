@@ -33,7 +33,7 @@ var echo_websocket_ca_root =
 try{
     opt.setopt("m:tv");
 } catch (e){
-   switch (e.type) {
+    switch (e.type) {
         case "unknown":
             console.log("Unknown option: -%s", e.opt);
             console.log("Usage: node websocket-example.js [-m <test message>] [-t for enabling TLS] [-v for verifying CA certificate]");
@@ -49,18 +49,18 @@ try{
 
 opt.getopt(function (o, p){
     switch(o){
-    case 'm':
-        test_message = String(p);
-        break;
-    case 't':
-        uri = "wss://echo.websocket.org/";
-        break;
-    case 'v':
-        verify = true;
-        break;
-    default:
-        console.log("Usage: node websocket-example.js [-m <test message>] [-t for enabling TLS] [-v for verifying CA certificate]");
-        process.exit(0);
+        case 'm':
+            test_message = String(p);
+            break;
+        case 't':
+            uri = "wss://echo.websocket.org/";
+            break;
+        case 'v':
+            verify = true;
+            break;
+        default:
+            console.log("Usage: node websocket-example.js [-m <test message>] [-t for enabling TLS] [-v for verifying CA certificate]");
+            process.exit(0);
     }
 });
 
@@ -74,11 +74,11 @@ var conn = new artik.websocket(uri, ssl_config);
 conn.open_stream();
 
 conn.on('connected', function(result) {
-	console.log("Connect result: " + result);
+    console.log("Connect result: " + result);
 
     if (result == "CONNECTED"){
         console.log("Sending: " + test_message)
-    	conn.write_stream(test_message);
+        conn.write_stream(test_message);
     }
     else
         process.exit(0);
