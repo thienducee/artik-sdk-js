@@ -42,7 +42,7 @@ var httpbin_ca_root =
 	"R8srzJmwN0jP41ZL9c8PDHIyh8bwRLtTcm1D9SZImlJnt1ir/md2cXjbDaJWFBM5\r\n" +
 	"JDGFoqgCWjBH4d1QB7wCCZAA62RjYJsWvIjJEubSfZGL+T0yjWW06XyxV3bqxbYo\r\n" +
 	"Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ\r\n" +
-	"-----END CERTIFICATE-----";
+	"-----END CERTIFICATE-----\n";
 
 var ssl_config = {
 	ca_cert: Buffer.from(httpbin_ca_root), // CA root certificate of httpbin.org
