@@ -28,7 +28,7 @@ var echo_websocket_ca_root =
     "2GTzLH4U/ALqn83/B2gX2yKQOC16jdFU8WnjXzPKej17CuPKf1855eJ1usV2GDPO\r\n" +
     "LPAvTK33sefOT6jEm0pUBsV/fdUID+Ic/n4XuKxe9tQWskMJDE32p2u0mYRlynqI\r\n" +
     "4uJEvlz36hz1\r\n" +
-    "-----END CERTIFICATE-----";
+    "-----END CERTIFICATE-----\n";
 
 try{
     opt.setopt("m:tv");
