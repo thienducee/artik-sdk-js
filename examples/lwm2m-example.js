@@ -48,8 +48,8 @@ var objects = {
         bindingModes: 'U'
     },
     firmware : {
-        pkgName : 'artik-sdk',
-        pkgVersion : '1.8.0'
+        pkgName : 'ota-sample-app',
+        pkgVersion : '1.0-0'
     }
 };
 
