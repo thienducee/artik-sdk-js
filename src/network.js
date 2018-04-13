@@ -1,21 +1,31 @@
 var events = require('events');
 var util = require('util');
 var network = require('../build/Release/artik-sdk.node').network;
-
-var Network = function(enable_watch_online_status) {
-    events.EventEmitter.call(this);
-    var _ = this;
-
-    if (enable_watch_online_status == undefined)
-        enable_watch_online_status = false;
-
-    this.network = new network(function(val) {
-        _.emit('connectivity-change', val);
-    }, enable_watch_online_status);
+var Network = function() {
+    this.network = new network();
 }
 
-util.inherits(Network, events.EventEmitter);
+var NetworkWatcher = function(addr, interval, timeout) {
+    events.EventEmitter.call(this);
+    this.addr = addr;
+    this.interval = interval;
+    this.timeout = timeout;
+}
+
+util.inherits(NetworkWatcher, events.EventEmitter);
 module.exports = Network;
+module.exports.network_watcher = NetworkWatcher;
+
+Network.prototype.add_watch_online_status = function(network_watcher) {
+    this.network.add_watch_online_status(
+        network_watcher,
+        function(val) { network_watcher.emit('connectivity-change', val); });
+    return network_watcher;
+}
+
+Network.prototype.remove_watch_online_status = function(watcher) {
+    return this.network.remove_watch_online_status(watcher);
+}
 
 Network.prototype.set_network_config = function set_network_config(net_config, interface) {
     return this.network.set_network_config(net_config, interface);
@@ -45,6 +55,6 @@ Network.prototype.dhcp_server_stop = function dhcp_server_stop() {
     return this.network.dhcp_server_stop();
 }
 
-Network.prototype.get_online_status = function get_online_status() {
-    return this.network.get_online_status();
+Network.prototype.get_online_status = function get_online_status(addr, timeout) {
+    return this.network.get_online_status(addr, timeout);
 }

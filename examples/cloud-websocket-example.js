@@ -32,6 +32,9 @@ var ssl_config = {
     se_config: undefined
 }
 
+var ping_period = 20000;
+var pong_timeout = 5000;
+
 opt.getopt(function (o, p){
     switch(o){
         case 't':
@@ -74,7 +77,7 @@ conn.on('receive', function(message) {
     console.log("Received: " + message);
 });
 
-conn.websocket_open_stream(access_token, device_id, ssl_config);
+conn.websocket_open_stream(access_token, device_id, ping_period, pong_timeout, ssl_config);
 
 process.on('SIGINT', function () {
     console.log("Close stream");

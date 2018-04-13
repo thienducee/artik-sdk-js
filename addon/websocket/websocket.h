@@ -40,7 +40,8 @@ class WebsocketWrapper : public node::ObjectWrap {
 
  private:
   WebsocketWrapper();
-  explicit WebsocketWrapper(char* uri, artik_ssl_config *ssl_config);
+  explicit WebsocketWrapper(char* uri, unsigned int ping_period,
+    unsigned int pong_timeout, artik_ssl_config *ssl_config);
   ~WebsocketWrapper();
 
   static void New(const v8::FunctionCallbackInfo<v8::Value>& args);

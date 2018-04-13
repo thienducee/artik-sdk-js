@@ -16,6 +16,8 @@ var use_tls 	= process.env.WEBSOCKET_ENABLE_TLS == 1 ? true : false;
 var verify		= process.env.WEBSOCKET_VERIFY_CA == 1 ? true : false;
 var uri 		= use_tls ? "wss://echo.websocket.org/" : "ws://echo.websocket.org/";
 var test_message 	= "ping";
+var ping_period = 10000;
+var pong_timeout = 5000;
 
 var echo_websocket_ca_root =
     "-----BEGIN CERTIFICATE-----\n" +
@@ -46,7 +48,9 @@ var ssl_config = {
     ca_cert: Buffer.from(echo_websocket_ca_root), // CA root certificate of echo.websocket.org
     verify_cert: verify ? "required" : "none"
 }
+
 var conn;
+
 /* Test Case Module */
 testCase('Websockets', function() {
 
@@ -54,7 +58,7 @@ testCase('Websockets', function() {
 
 	pre(function() {
 
-		conn = new artik.websocket(uri, ssl_config);
+		conn = new artik.websocket(uri, ping_period, pong_timeout, ssl_config);
 
 	});
 
@@ -62,9 +66,9 @@ testCase('Websockets', function() {
 
 		assertions('Return callback event when the websocket is connected', function(done) {
 
-			conn.on('connected', function(result) {
+			conn.on('status', function(result) {
 				console.log("Connect result: " + result);
-				assert.equal(result, "CONNECTED");
+				assert.equal(result, "connected");
 				done();
 			});
 
@@ -78,8 +82,8 @@ testCase('Websockets', function() {
 
 		assertions('Return callback event when the echo is received', function(done) {
 
-			conn.on('receive', function(message) {
-				console.log("received: " + message);
+			conn.on('data', function(message) {
+				console.log("data: " + message);
 				assert.isNotNull(message);
 				assert.equal(message, "ping");
 				done();

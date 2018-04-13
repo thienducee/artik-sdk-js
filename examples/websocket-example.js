@@ -1,11 +1,11 @@
 var artik = require('../src');
-var opt = require('getopt'); 
+var opt = require('getopt');
 
 var uri = "ws://echo.websocket.org/";
 var test_message = 'ping';
 var verify = false;
 
-var echo_websocket_ca_root = 
+var echo_websocket_ca_root =
     "-----BEGIN CERTIFICATE-----\n" +
     "MIIDxTCCAq2gAwIBAgIBADANBgkqhkiG9w0BAQsFADCBgzELMAkGA1UEBhMCVVMx\r\n" +
     "EDAOBgNVBAgTB0FyaXpvbmExEzARBgNVBAcTClNjb3R0c2RhbGUxGjAYBgNVBAoT\r\n" +
@@ -69,14 +69,16 @@ var ssl_config = {
     verify_cert: verify ? "required" : "none"
 }
 
-var conn = new artik.websocket(uri, ssl_config);
+var ping_period = 10000
+var pong_timeout = 5000
+var conn = new artik.websocket(uri, ping_period, pong_timeout, ssl_config);
 
 conn.open_stream();
 
-conn.on('connected', function(result) {
-    console.log("Connect result: " + result);
+conn.on('status', function(result) {
+	console.log("Connect result: " + result);
 
-    if (result == "CONNECTED"){
+    if (result == "connected"){
         console.log("Sending: " + test_message)
         conn.write_stream(test_message);
     }
@@ -84,9 +86,10 @@ conn.on('connected', function(result) {
         process.exit(0);
 });
 
-conn.on('receive', function(message) {
+conn.on('data', function(message) {
     console.log("Received: " + message);
 });
+
 
 process.on('SIGINT', function () {
     console.log("Close stream");
@@ -98,4 +101,4 @@ setTimeout(function () {
     console.log("Time out, close stream");
     conn.close_stream();
     process.exit(0);
-}, 5500);
+}, 15500);

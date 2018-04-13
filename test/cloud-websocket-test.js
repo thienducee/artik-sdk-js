@@ -30,6 +30,9 @@ var ssl_config = {
 	se_config:  (process.env.WEBSOCKET_ENABLE_SDR == 1 ? { certificate_identifier: 'artik' }: undefined )
 }
 
+var ping_period = 10000;
+var pong_timeout = 5000;
+
 /* Test Case Module */
 testCase('Cloud-Websockets', function() {
 
@@ -57,7 +60,7 @@ testCase('Cloud-Websockets', function() {
 
 			conn.on('receive', on_received);
 
-			conn.websocket_open_stream(auth_token, device_id, ssl_config);
+			conn.websocket_open_stream(auth_token, device_id, ping_period, pong_timeout, ssl_config);
 		});
 
 	});

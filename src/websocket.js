@@ -2,9 +2,9 @@ var events = require('events');
 var util = require('util');
 var websocket = require('../build/Release/artik-sdk.node').websocket;
 
-var Websocket = function(uri, ssl_config) {
+var Websocket = function(uri, ping_period, pong_timeout, ssl_config) {
 	events.EventEmitter.call(this);
-	this.websocket = websocket(uri, ssl_config);
+	this.websocket = websocket(uri, ping_period, pong_timeout, ssl_config);
 }
 
 util.inherits(Websocket, events.EventEmitter);
@@ -15,10 +15,10 @@ Websocket.prototype.open_stream = function open_stream() {
 	var _ = this;
 	return this.websocket.open_stream(
 		function(status) {
-			_.emit('connected', status);
-		}, 
+			_.emit('status', status);
+		},
 		function(message) {
-			_.emit('receive', message);
+			_.emit('data', message);
 		});
 };
 

@@ -1,9 +1,48 @@
-# Network API
-
-## Constructor
+# NetworkWatcher
+## constructor
 
 ```javascript
-var network = new network(Boolean enable_watch_online_status = false);
+var watcher = new network.network_watcher(String addr, Integer interval, Integer timeout);
+```
+
+**Description**
+
+Create a new network watcher object.
+
+**Parameters**
+
+- *addr*: The host name or IP address to ping to detect connectivity change
+- *interval*: Wait interval between sending each ping (in milliseconds)
+- *timeout*: Max time to wait for a ping response (in milliseconds)
+
+# Events
+
+## connectivity-change
+
+```javascript
+watcher.on("connectivity-change", function(Boolean))
+```
+
+**Description**
+
+Get notified of web connectivity changes.
+
+**Parameters**
+ - *Boolean* containing the web connectivity status.
+
+**Example**
+
+```javascript
+watcher.on("connectivity-change", function(status) {
+	console.log('New connectivity status: ' + status);
+});
+```
+
+# Network API
+## constructor
+
+```javascript
+var network = new network();
 ```
 
 **Description**
@@ -12,7 +51,8 @@ Create a new network object.
 
 **Parameters**
 
- - *Boolean*: Enable to call callback function when online status change.
+None.
+
 
 ## set_network_config
 
@@ -307,7 +347,7 @@ Stop the DHCP server
 ## get_online_status
 
 ```javascript
-Boolean get_online_status()
+Boolean get_online_status(String addr, Integer timeout)
 ```
 
 **Description**
@@ -316,7 +356,8 @@ Get the web connectivity status.
 
 **Parameters**
 
-None.
+- *addr*: The host name or IP address to ping to detect connectivity change
+- *timeout*: Max time to wait for a ping response (in milliseconds)
 
 **Return value**
 
@@ -325,30 +366,58 @@ None.
 **Example**
 
 ```javascript
-console.log('Connectivity status: ' + network.get_online_status());
+console.log('Connectivity status: ' + network.get_online_status("artik.cloud", 500));
 ```
-# Events
 
-## connectivity-change
+## add_watch_online_status
 
 ```javascript
-network.on("connectivity-change", function(Boolean))
+Undefined add_watch_online_status(NetworkWatcher watcher)
 ```
-
 **Description**
 
-Get notified of web connectivity changes.
+Register a watcher
 
 **Parameters**
- - *Boolean* containing the web connectivity status.
+
+- *watcher*: Watcher to be registred
+
+**Return value**
+
+None
 
 **Example**
 
 ```javascript
-network.on("connectivity-change", function(status) {
-	console.log('New connectivity status: ' + status);
-});
+var watcher = new net.network_watcher("artik.cloud", 5000, 500);
+network.add_watch_online_status(watcher);
 ```
+
+## remove_watch_online_status
+
+```javascript
+Undefined remove_watch_online_status(NetworkWatcher watcher)
+```
+**Description**
+
+Unregister a watcher
+
+**Parameters**
+
+- *watcher*: Watcher to be unregistred
+
+**Return value**
+
+None
+
+**Example**
+
+```javascript
+var watcher = new net.network_watcher("artik.cloud", 5000, 500);
+network.add_watch_online_status(watcher);
+network.remove_watch_online_status(watcher);
+```
+
 
 # Full example
 

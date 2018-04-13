@@ -24,6 +24,7 @@
 
 #include <string>
 #include <vector>
+#include <utility>
 
 namespace artik {
 
@@ -250,42 +251,55 @@ static bool updateDHCPServerConfig(Isolate *isolate, Local<Value> val,
   return true;
 }
 
-static void watch_online_status_callback(bool network_status,
+static void watch_online_status_cb(bool network_status, const char *addr,
     void *user_data) {
   Isolate *isolate = Isolate::GetCurrent();
   v8::HandleScope handleScope(isolate);
-  NetworkWrapper *wrap = reinterpret_cast<NetworkWrapper*>(user_data);
-  Handle<Value> argv[] = { Boolean::New(isolate, network_status) };
+  NetworkWrapper *wrap = reinterpret_cast<NetworkWrapper *>(user_data);
 
-  Local<Function>::New(isolate,
-      *wrap->getWatchOnlineStatusCb())->Call(
-          isolate->GetCurrentContext()->Global(), 1, argv);
+  auto watcher = wrap->findWatcher(std::string(addr));
+
+  if (watcher) {
+    Handle<Value> argv[] = { Boolean::New(isolate, network_status) };
+    watcher.value().get().getCallback(isolate)->Call(
+        isolate->GetCurrentContext()->Global(), 1, argv);
+  }
 }
 
-NetworkWrapper::NetworkWrapper(v8::Persistent<v8::Function> *callback,
-    bool enable_watch_online_status) {
-  m_handle = NULL;
-  m_network = new Network();
-  m_loop = GlibLoop::Instance();
+NetworkWrapper::NetworkWrapper()
+  : m_network(new Network),
+    m_loop(GlibLoop::Instance()) {
   m_loop->attach();
-
-  if (enable_watch_online_status) {
-    m_watch_online_status_cb = callback;
-    m_network->add_watch_online_status(&m_handle,
-        watch_online_status_callback, this);
-  }
 }
 
 NetworkWrapper::~NetworkWrapper() {
-  if (m_handle != NULL && m_watch_online_status_cb != NULL) {
-    m_network->remove_watch_online_status(m_handle);
-  }
-
-  delete m_network;
-  if (m_watch_online_status_cb != NULL)
-    delete m_watch_online_status_cb;
-
   m_loop->detach();
+  delete m_network;
+}
+
+Optional<std::reference_wrapper<NetworkWatcher>> NetworkWrapper::findWatcher(
+    const std::string& addr) {
+  auto it = m_watchers.find(addr);
+  if (it != m_watchers.end()) {
+    return Optional<std::reference_wrapper<NetworkWatcher>>(
+        std::reference_wrapper<NetworkWatcher>(it->second));
+  } else {
+    return Optional<std::reference_wrapper<NetworkWatcher>>();
+  }
+}
+
+void NetworkWrapper::addWatcher(
+    std::string&& addr,
+    artik_watch_online_status_handle handle,
+    Isolate *isolate,
+    Local<Value> val) {
+    m_watchers.emplace(
+        std::move(addr),
+        std::move(NetworkWatcher{isolate, handle, val}));
+}
+
+void NetworkWrapper::removeWatcher(const std::string& addr) {
+  m_watchers.erase(addr);
 }
 
 void NetworkWrapper::Init(Local<Object> exports) {
@@ -308,6 +322,10 @@ void NetworkWrapper::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "dhcp_server_start", dhcp_server_start);
   NODE_SET_PROTOTYPE_METHOD(tpl, "dhcp_server_stop", dhcp_server_stop);
   NODE_SET_PROTOTYPE_METHOD(tpl, "get_online_status", get_online_status);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "add_watch_online_status",
+                            add_watch_online_status);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "remove_watch_online_status",
+                            remove_watch_online_status);
 
   constructor.Reset(isolate, tpl->GetFunction());
   exports->Set(String::NewFromUtf8(isolate, "network"),
@@ -316,21 +334,15 @@ void NetworkWrapper::Init(Local<Object> exports) {
 
 void NetworkWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  bool enable_watch_online_status = false;
 
-  if (args.Length() > 3 || args.Length() < 1) {
+  if (args.Length() != 0) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
         isolate, "Wrong number of arguments")));
     return;
   }
 
-  if (args[1]->IsBoolean())
-        enable_watch_online_status = args[1]->BooleanValue();
-
   if (args.IsConstructCall()) {
-    NetworkWrapper* obj = new NetworkWrapper(
-        new v8::Persistent<v8::Function>(isolate,
-            Local<Function>::Cast(args[0])), enable_watch_online_status);
+    NetworkWrapper* obj = new NetworkWrapper();
     obj->Wrap(args.This());
     args.GetReturnValue().Set(args.This());
   } else {
@@ -578,16 +590,121 @@ void NetworkWrapper::get_online_status(
   NetworkWrapper* wrap = ObjectWrap::Unwrap<NetworkWrapper>(args.Holder());
   Network* obj = wrap->getObj();
 
-  if (args.Length() != 0) {
+  if (args.Length() != 2) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong number of arguments")));
     return;
   }
 
-  bool online_status = false;
-  obj->get_online_status(&online_status);
+  if (!args[0]->IsString() || !args[1]->IsInt32()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments type")));
+    return;
+  }
 
+  v8::String::Utf8Value addr(args[0]->ToString());
+
+  bool online_status = false;
+  obj->get_online_status(*addr, args[1]->Int32Value(), &online_status);
   args.GetReturnValue().Set(Boolean::New(isolate, online_status));
+}
+
+void NetworkWrapper::add_watch_online_status(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  NetworkWrapper* wrap = ObjectWrap::Unwrap<NetworkWrapper>(args.Holder());
+  Network* obj = wrap->getObj();
+  artik_error ret;
+  artik_watch_online_status_handle handle;
+
+  if (args.Length() != 2) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (!args[0]->IsObject() || !args[1]->IsFunction()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments type")));
+    return;
+  }
+
+  auto addr = js_object_attribute_to_cpp<std::string>(args[0], "addr");
+  auto interval = js_object_attribute_to_cpp<int>(args[0], "interval");
+  auto timeout = js_object_attribute_to_cpp<int>(args[0], "timeout");
+
+  if (!addr || !interval || !timeout) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Argument 0 must be type NetworkWatcher")));
+    return;
+  }
+
+  log_dbg("Add watcher for %s", addr.value().c_str());
+  ret = obj->add_watch_online_status(
+      &handle,
+      addr.value().c_str(),
+      interval.value(),
+      timeout.value(),
+      watch_online_status_cb,
+      wrap);
+  if (ret != S_OK) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Failed to add watcher")));
+    return;
+  }
+
+  wrap->addWatcher(std::move(addr.value()), handle, isolate, args[1]);
+}
+
+void NetworkWrapper::remove_watch_online_status(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  NetworkWrapper* wrap = ObjectWrap::Unwrap<NetworkWrapper>(args.Holder());
+  Network* obj = wrap->getObj();
+  artik_error ret;
+
+  log_dbg("");
+
+  if (args.Length() != 1) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong number of arguments")));
+    return;
+  }
+
+  if (!args[0]->IsObject()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+      isolate, "Wrong arguments type")));
+    return;
+  }
+
+  auto addr = js_object_attribute_to_cpp<std::string>(args[0], "addr");
+
+
+  if (!addr) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Argument 0 must be of type NetworkWatcher")));
+    return;
+  }
+
+  auto watcher = wrap->findWatcher(addr.value());
+
+  if (!watcher) {
+    std::string msg = std::string("Watcher for address ")
+                    + addr.value()
+                    + std::string(" not found");
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, msg.c_str())));
+    return;
+  }
+
+  ret = obj->remove_watch_online_status(watcher.value().get().getHandle());
+  if (ret != S_OK) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Failed to remove watcher")));
+    return;
+  }
+
+  wrap->removeWatcher(addr.value());
 }
 
 }  // namespace artik

@@ -1147,7 +1147,8 @@ void CloudWrapper::websocket_open_stream(
 
   log_dbg("");
 
-  if (!args[0]->IsString() || !args[1]->IsString()) {
+  if (!args[0]->IsString() || !args[1]->IsString() || args[2]->IsNumber() ||
+    args[3]->IsNumber()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
@@ -1158,28 +1159,31 @@ void CloudWrapper::websocket_open_stream(
 
   char *token = *param0;
   char *device_id = *param1;
+  unsigned int ping_period = args[2]->IntegerValue();
+  unsigned int pong_timeout = args[3]->IntegerValue();
 
   /* SSL Configuration */
-  if (args[2]->IsObject()) {
-    ssl_config = SSLConfigConverter::convert(isolate, args[2]);
+  if (args[4]->IsObject()) {
+    ssl_config = SSLConfigConverter::convert(isolate, args[4]);
     if (!ssl_config) {
       return;
     }
   }
 
-  ret = cloud->websocket_open_stream(token, device_id, ssl_config.get());
+  ret = cloud->websocket_open_stream(token, device_id, ping_period,
+    pong_timeout, ssl_config.get());
 
   /* If a callback is provided, use it for notification */
-  if (ret == S_OK && args[3]->IsFunction()) {
+  if (ret == S_OK && args[5]->IsFunction()) {
     obj->m_receive_cb = new v8::Persistent<v8::Function>();
-    obj->m_receive_cb->Reset(isolate, Local<Function>::Cast(args[3]));
+    obj->m_receive_cb->Reset(isolate, Local<Function>::Cast(args[5]));
     cloud->websocket_set_receive_callback(on_receive_callback,
         reinterpret_cast<void*>(obj));
   }
 
-  if (ret == S_OK && args[4]->IsFunction()) {
+  if (ret == S_OK && args[6]->IsFunction()) {
     obj->m_connection_cb = new v8::Persistent<v8::Function>();
-    obj->m_connection_cb->Reset(isolate, Local<Function>::Cast(args[4]));
+    obj->m_connection_cb->Reset(isolate, Local<Function>::Cast(args[6]));
     cloud->websocket_set_connection_callback(on_connection_callback,
         reinterpret_cast<void*>(obj));
   }

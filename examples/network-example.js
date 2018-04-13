@@ -1,7 +1,8 @@
 const artik = require('../src')
 var opt = require('getopt');
 
-const network = new artik.network(true);
+const net = artik.network;
+const network = new net();
 
 var net_config = {
 	ip_addr: "",
@@ -81,11 +82,18 @@ if (config) {
 
 console.log("Your IP is " + network.get_current_public_ip());
 
-var online_status = network.get_online_status();
+var online_status = network.get_online_status("artik.cloud", 1000);
 console.log("Status : " + online_status);
 
-network.on("connectivity-change", function(status) {
+var watcher = new net.network_watcher("artik.cloud", 5000, 500);
+watcher.on("connectivity-change", function(status) {
     console.log("Status change : " + status);
+});
+
+network.add_watch_online_status(watcher);
+process.on('SIGINT', function () {
+    network.remove_watch_online_status(watcher);
+    process.exit(0);
 });
 
 if (enable_set_config) {

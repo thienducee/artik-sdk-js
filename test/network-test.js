@@ -27,7 +27,7 @@ var net_config = {
 testCase('Network', function() {
 
 	pre(function() {
-		network = new artik.network(true);
+		network = new artik.network();
 	});
 
 	testCase('#get_network_config()', function() {
@@ -70,7 +70,7 @@ testCase('Network', function() {
 
 		assertions('Online Status - Should return true when it is online', function(done) {
 			this.timeout(2000);
-			var online_status = network.get_online_status();
+			var online_status = network.get_online_status("artik.cloud", 500);
 			console.log('Status ' + online_status);
 			assert.equal(online_status, true);
 			done();
@@ -81,7 +81,7 @@ testCase('Network', function() {
 			console.log("Disabling WIFI Adapter");
 			exec("ifconfig wlan0 down; sleep 1");
 			console.log("Check Online Status")
-			var online_status = network.get_online_status();
+			var online_status = network.get_online_status("artik.cloud", 500);
 			assert.equal(online_status, false);
 			done();
 		});
@@ -125,28 +125,30 @@ testCase('Network', function() {
 			exec("ifconfig wlan0 up; pkill dhclient; dhclient wlan0");
 		});
 
-		postEach('Enabling Wifi', function(done){
-			this.timeout(10000);
-			network.removeAllListeners("connectivity-change");
-			done();
-		});
-
 		assertions('Event network-status-change - Should raise this event when deconnection occurs', function(done) {
 			this.timeout(10000);
-			network.on("connectivity-change", function(status) {
-				assert.equal(status, false);
-				done();
+			var net_watcher = new artik.network.network_watcher("artik.cloud", 5000, 500);
+			net_watcher.on("connectivity-change", function(status) {
+				if (!status) {
+					network.remove_watch_online_status(net_watcher);
+					done();
+				}
 			});
+			network.add_watch_online_status(net_watcher)
 			exec("ifconfig wlan0 down;");
 		});
 
 		assertions('Event network-status-change - Should raise this event when reconnection occurs', function(done) {
-			this.timeout(10000);
-			exec("ifconfig wlan0 up; pkill dhclient; dhclient wlan0");
-			network.on("connectivity-change", function(status){
-				assert.equal(status, true);
-				done();
+			this.timeout(20000);
+			var net_watcher = new artik.network.network_watcher("artik.cloud", 5000, 500);
+			net_watcher.on("connectivity-change", function(status){
+				if (status) {
+					network.remove_watch_online_status(net_watcher);
+					done();
+				}
 			});
+			network.add_watch_online_status(net_watcher)
+			exec("ifconfig wlan0 up; pkill dhclient; dhclient wlan0");
 		});
 	});
 

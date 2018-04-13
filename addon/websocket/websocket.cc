@@ -60,21 +60,28 @@ static void websocket_connection_callback(void* user_data, void* result) {
 
   if (ret == ARTIK_WEBSOCKET_CLOSED) {
     Handle<Value> argv[] = {
-      Handle<Value>(String::NewFromUtf8(isolate, "CLOSED")),
+      Handle<Value>(String::NewFromUtf8(isolate, "close")),
     };
     Local<Function>::New(isolate, *wrap->getConnectionCb())->Call(
         isolate->GetCurrentContext()->Global(), 1, argv);
     return;
   } else if (ret == ARTIK_WEBSOCKET_CONNECTED) {
     Handle<Value> argv[] = {
-      Handle<Value>(String::NewFromUtf8(isolate, "CONNECTED")),
+      Handle<Value>(String::NewFromUtf8(isolate, "connected")),
     };
     Local<Function>::New(isolate, *wrap->getConnectionCb())->Call(
         isolate->GetCurrentContext()->Global(), 1, argv);
     return;
   } else if (ret == ARTIK_WEBSOCKET_HANDSHAKE_ERROR) {
     Handle<Value> argv[] = {
-      Handle<Value>(String::NewFromUtf8(isolate, "HANDSHAKE ERROR")),
+      Handle<Value>(String::NewFromUtf8(isolate, "handshake error")),
+    };
+    Local<Function>::New(isolate, *wrap->getConnectionCb())->Call(
+        isolate->GetCurrentContext()->Global(), 1, argv);
+    return;
+  } else if (ret == ARTIK_WEBSOCKET_CONNECTION_ERROR) {
+    Handle<Value> argv[] = {
+      Handle<Value>(String::NewFromUtf8(isolate, "connection error")),
     };
     Local<Function>::New(isolate, *wrap->getConnectionCb())->Call(
         isolate->GetCurrentContext()->Global(), 1, argv);
@@ -111,8 +118,9 @@ WebsocketWrapper::WebsocketWrapper() {
   m_loop->attach();
 }
 
-WebsocketWrapper::WebsocketWrapper(char* uri, artik_ssl_config *ssl_config) {
-  m_websocket = new Websocket(uri, ssl_config);
+WebsocketWrapper::WebsocketWrapper(char* uri, unsigned int ping_period,
+  unsigned int ping_timeout, artik_ssl_config *ssl_config) {
+  m_websocket = new Websocket(uri, ping_period, ping_timeout, ssl_config);
   m_loop = GlibLoop::Instance();
   m_loop->attach();
 }
@@ -141,7 +149,7 @@ void WebsocketWrapper::Init(Local<Object> exports) {
 
 void WebsocketWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  int lenArg = 2;
+  int lenArg = 4;
   std::unique_ptr<artik_ssl_config> ssl_config;
 
   if (args.Length() != lenArg) {
@@ -151,6 +159,8 @@ void WebsocketWrapper::New(const FunctionCallbackInfo<Value>& args) {
   } else if (args.IsConstructCall()) {
     WebsocketWrapper* obj = NULL;
     char* uri = NULL;
+    unsigned int ping_period = 0;
+    unsigned int pong_timeout = 0;
 
     if (args[0]->IsString()) {
       String::Utf8Value param0(args[0]->ToString());
@@ -161,10 +171,27 @@ void WebsocketWrapper::New(const FunctionCallbackInfo<Value>& args) {
       return;
     }
 
-    if (args[1]->IsObject())
-      ssl_config = SSLConfigConverter::convert(isolate, args[1]);
+    if (args[1]->IsNumber()) {
+      ping_period = args[1]->IntegerValue();
+    } else {
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+      return;
+    }
 
-    obj = new WebsocketWrapper(uri, ssl_config.get());
+    if (args[2]->IsNumber()) {
+      pong_timeout = args[2]->IntegerValue();
+    } else {
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Wrong arguments")));
+      return;
+    }
+
+    if (args[3]->IsObject())
+      ssl_config = SSLConfigConverter::convert(isolate, args[3]);
+
+    obj = new WebsocketWrapper(uri, ping_period, pong_timeout,
+      ssl_config.get());
     obj->Wrap(args.This());
     args.GetReturnValue().Set(args.This());
   } else {
