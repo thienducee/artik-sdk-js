@@ -209,6 +209,12 @@ void GpioWrapper::read(const FunctionCallbackInfo<Value>& args) {
 
   val = obj->read();
 
+  if (val < 0) {
+    isolate->ThrowException(Exception::TypeError(
+      String::NewFromUtf8(isolate, error_msg(val))));
+    return;
+  }
+
   args.GetReturnValue().Set(Number::New(isolate, val));
 }
 
