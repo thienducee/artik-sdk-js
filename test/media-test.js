@@ -22,7 +22,7 @@ testCase('Media', function() {
 	});
 
 	testCase('#play_sound_file', function() {
-		this.timeout(5000);
+		this.timeout(10000);
 		start = new Date();
 
 		assertions('Play the sound file', function(done) {
