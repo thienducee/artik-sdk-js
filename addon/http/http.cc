@@ -67,7 +67,8 @@ static int on_http_data(char *data, unsigned int len, void *user_data) {
   return len;
 }
 
-static void on_http_error(artik_error result, void *user_data) {
+static void on_http_error(artik_error result, int status, char * response,
+  void *user_data) {
   Isolate * isolate = Isolate::GetCurrent();
   v8::HandleScope handleScope(isolate);
   HttpWrapper* wrap = reinterpret_cast<HttpWrapper*>(user_data);
@@ -79,10 +80,11 @@ static void on_http_error(artik_error result, void *user_data) {
 
   Handle<Value> argv[] = {
     Handle<Value>(String::NewFromUtf8(isolate, error_msg(result))),
+    Handle<Value>(v8::Integer::New(isolate, status)),
   };
 
   Local<Function>::New(isolate, *wrap->getErrorCb())->Call(
-    isolate->GetCurrentContext()->Global(), 1, argv);
+    isolate->GetCurrentContext()->Global(), 2, argv);
 }
 
 static void http_response_get_callback(artik_error result, int status,
@@ -289,10 +291,8 @@ void HttpWrapper::get_stream(const FunctionCallbackInfo<Value>& args) {
 
   v8::String::Utf8Value param0(args[0]->ToString());
   const char *url = *param0;
-  artik_error ret = http->get_stream(url, headers, NULL, on_http_data,
-    reinterpret_cast<void*>(obj), ssl_config.get());
-
-  on_http_error(ret, reinterpret_cast<void*>(obj));
+  artik_error ret = http->get_stream_async(url, headers, on_http_data,
+    on_http_error, reinterpret_cast<void*>(obj), ssl_config.get());
 
   args.GetReturnValue().Set(String::NewFromUtf8(isolate, error_msg(ret)));
 }
@@ -550,7 +550,7 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
   }
 
   /* If callback is provided, make the call asynchronous */
-  if (!args[4]->IsFunction()) {
+  if (args[4]->IsFunction()) {
     obj->m_response_put_cb = new v8::Persistent<v8::Function>();
     obj->m_response_put_cb->Reset(isolate, Local<Function>::Cast(args[4]));
 
