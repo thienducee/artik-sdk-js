@@ -109,7 +109,7 @@ testCase('Lwm2m', function() {
 		    lwm2m.client_write_resource(resource_uri, buff_str_serialized);
 		    var reg = lwm2m.client_read_resource(resource_uri);
 		    console.log("response :"+reg)
-		    assert.equal(reg.toString("utf-8", 0, 5), "0=,1=");
+		    assert.equal(reg.toString("utf-8", 0, 7), "0=D,1=D");
 		    done();
 		});
 	});
