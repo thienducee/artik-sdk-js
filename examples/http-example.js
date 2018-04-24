@@ -2,7 +2,6 @@ const artik_http = require("../src/http");
 const fs = require('fs');
 var http = new artik_http();
 
-
 var headers = [
 	"user-agent", "ARTIK browser",
 	"Accept-Language", "en-US,en;q=0.8"
@@ -38,13 +37,7 @@ var ssl_config = {
 var ws = fs.createWriteStream("./image.jpeg");
 
 try {
-
-	var stream = http.get_stream("https://httpbin.org/image/jpeg", headers, ssl_config);
-
-	stream.on('end', function() {
-		console.log("GET STREAM - Stream finished");
-	    ws.close();
-	})
+	var stream = http.get_stream("http://httpbin.org/image/jpeg", headers, null);
 
 	stream.pipe(ws);
 

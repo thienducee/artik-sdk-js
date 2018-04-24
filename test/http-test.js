@@ -9,8 +9,8 @@ var assert     = require('chai').assert;
 var validator  = require('validator');
 var exec       = require('child_process').execSync;
 var artik_http = require("../src/http");
-
-var fs 		   = require('fs');
+var md5        = require('md5');
+var fs         = require('fs');
 
 /* Test Specific Includes */
 var http = new artik_http();
@@ -19,6 +19,8 @@ var headers = [
 	"Accept-Language", "en-US,en;q=0.8"
 ];
 var body = "name=samsung&project=artik";
+
+var IMG_MD5 = "a27095e7727c70909c910cefe16d30de";
 
 var allow_disable_wifi = process.env.ALLOW_DISABLE_WIFI;
 
@@ -57,7 +59,7 @@ testCase('HTTP', function() {
 
 	testCase('#get_stream()', function() {
 
-		assertions('GET STREAM - Should return "end" when the stream is done', function(done) {
+		assertions('GET STREAM - Test download http://httpbin.org/image/jpeg image.jpeg with md5sum', function(done) {
 			this.timeout(10000);
 
 			try {
@@ -65,15 +67,15 @@ testCase('HTTP', function() {
 				var ws = fs.createWriteStream("./image.jpeg");
 				var stream = http.get_stream('http://httpbin.org/image/jpeg', headers, null);
 
-				stream.on('end', function() {
-					console.log("Stream finished");
-				    ws.close();
-				})
-
 				stream.pipe(ws);
 
 				ws.on('close', function() {
 					console.log("Write finished");
+					fs.readFile('image.jpeg', function(err, buf) {
+						console.log("MD5 of downloaded file = " + md5(buf));
+						console.log("MD5 expected = " + IMG_MD5);
+						assert.equal(md5(buf), IMG_MD5,"Image correctly downloaded");
+					});
 					done();
 				});
 
@@ -83,7 +85,7 @@ testCase('HTTP', function() {
 
 		});
 
-		assertions('GET STREAM - Should return an exception when an error occured (e.g bad URL)', function(done) {
+		assertions('GET STREAM - Test download image http://httpbinnull.org/image/jpeg (e.g bad URL)', function(done) {
 			this.timeout(10000);
 
 			try {
@@ -91,20 +93,23 @@ testCase('HTTP', function() {
 				var ws = fs.createWriteStream("./image.jpeg");
 				var stream = http.get_stream('http://httpbinnull.org/image/jpeg', headers, null);
 
-				stream.on('end', function() {
-					console.log("Stream finished");
-				    ws.close();
-				})
-
 				stream.pipe(ws);
 
 				ws.on('close', function() {
 					console.log("Write finished");
+					fs.readFile('image.jpeg', function(err, buf) {
+						console.log("MD5 of downloaded file = " + md5(buf));
+						console.log("MD5 expected = " + IMG_MD5);
+						assert.notEqual(md5(buf), IMG_MD5, "Image no correctly downloaded (e.g bad URL)");
+					});
+				});
+
+				stream.on('error', function() {
+					done();
 				});
 
 			} catch(err) {
 				console.log(err);
-				assert.isNotNull(err);
 				done();
 			}
 
@@ -114,7 +119,7 @@ testCase('HTTP', function() {
 
 	testCase('#get_stream() with SSL verify required', function() {
 
-		assertions('GET STREAM - Should return "end" when the stream is done', function(done) {
+		assertions('GET STREAM - Test download https://httpbin.org/image/jpeg image.jpeg with md5sum', function(done) {
 			this.timeout(10000);
 
 			try {
@@ -122,15 +127,15 @@ testCase('HTTP', function() {
 				var ws = fs.createWriteStream("./image.jpeg");
 				var stream = http.get_stream('https://httpbin.org/image/jpeg', headers, ssl_config);
 
-				stream.on('end', function() {
-					console.log("Stream finished");
-				    ws.close();
-				})
-
 				stream.pipe(ws);
 
 				ws.on('close', function() {
 					console.log("Write finished");
+					fs.readFile('image.jpeg', function(err, buf) {
+						console.log("MD5 of downloaded file = " + md5(buf));
+						console.log("MD5 expected = " + IMG_MD5);
+						assert.equal(md5(buf), IMG_MD5,"Image correctly downloaded");
+					});
 					done();
 				});
 
@@ -140,7 +145,7 @@ testCase('HTTP', function() {
 
 		});
 
-		assertions('GET STREAM - Should return an exception when an error occured (e.g bad URL)', function(done) {
+		assertions('GET STREAM - Test download image https://httpbinnull.org/image/jpeg (e.g bad URL)', function(done) {
 			this.timeout(10000);
 
 			try {
@@ -157,12 +162,19 @@ testCase('HTTP', function() {
 
 				ws.on('close', function() {
 					console.log("Write finished");
+					fs.readFile('image.jpeg', function(err, buf) {
+						console.log("MD5 of downloaded file = " + md5(buf));
+						console.log("MD5 expected = " + IMG_MD5);
+						assert.notEqual(md5(buf), IMG_MD5, "Image no correctly downloaded (e.g bad URL)");
+					});
+				});
+
+				stream.on('error', function() {
+					done();
 				});
 
 			} catch(err) {
 				console.log(err);
-				assert.isNotNull(err);
-				done();
 			}
 
 		});
