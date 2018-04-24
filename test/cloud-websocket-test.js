@@ -43,13 +43,19 @@ testCase('Cloud-Websockets', function() {
 
 		assertions('Return callback event when the websocket is connected', function(done) {
 
-			conn.once('receive', function(message) {
+			function on_received (message) {
 				console.log("received: " + message);
 				assert.isNotNull(message);
-				assert.equal(JSON.parse(message).data.code, "200");
-				assert.equal(JSON.parse(message).data.message, "OK");
-				done();
-			});
+				console.log(JSON.parse(message));
+				if (JSON.parse(message).type != "ping") {
+					assert.equal(JSON.parse(message).data.code, "200");
+					assert.equal(JSON.parse(message).data.message, "OK");
+					conn.removeListener('receive', on_received);
+					done();
+				}
+			}
+
+			conn.on('receive', on_received);
 
 			conn.websocket_open_stream(auth_token, device_id, ssl_config);
 		});
