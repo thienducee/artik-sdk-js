@@ -72,7 +72,7 @@ opt.getopt(function (o, p){
             ssl_config.verify_cert = "required";
             break;
         default:
-            console.log("Usage: node cloud-example.js [-t <access token>] [-d <device id>] [-u <user id>] " + 
+            console.log("Usage: node cloud-example.js [-t <access token>] [-d <device id>] [-u <user id>] " +
                 "[-m <JSON type test message>] [-a <JSON type action>] " +
                 "[-b <data JSON>] [-p enables timestamp] " +
                 "[-s for enabling SDR (Secure Device Registered) test] " +
