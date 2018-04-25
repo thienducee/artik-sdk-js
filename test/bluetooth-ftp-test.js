@@ -13,6 +13,7 @@ const fs 	   = require('fs');
 var remote_addr = process.env.BT_ADDR;
 var remote_file = process.env.BT_REMOTE_FILE;
 var src_file = process.env.BT_SOURCE_FILE;
+var runManualTests = parseInt(process.env.RUN_MANUAL_TESTS);
 
 var is_skipped = !remote_addr || !remote_addr.length;
 
@@ -20,21 +21,23 @@ var ftp = new bluetooth.Ftp();
 
 testCase('Folder and file operations', function(done) {
 	pre(function() {
-		this.timeout(4000);
-		if (!is_skipped)
-			ftp.create_session(remote_addr);
+		this.timeout(10000);
+		if (is_skipped || !runManualTests)
+			this.skip();
+
+		ftp.create_session(remote_addr);
 	});
 
 	assertions('Folder operations', function() {
-		if (is_skipped)
+		if (is_skipped || !runManualTests)
 			this.skip();
 
 		var files = ftp.list_folder();
 
 		for (var i = 0; i < files.length; i++) {
 			assert.isObject(files[i]);
-			assert.isString(files[i].file_type);
-			assert.isString(files[i].file_name);
+			assert.isString(files[i].type);
+			assert.isString(files[i].filename);
 			assert.isString(files[i].modified);
 			assert.isString(files[i].permission);
 			assert.isNumber(files[i].size);
@@ -44,18 +47,18 @@ testCase('Folder and file operations', function(done) {
 		ftp.change_folder("../");
 
 		files = ftp.list_folder();
-		var names = files.map(function(x) { return x.file_name })
+		var names = files.map(function(x) { return x.filename })
 		assert.include(names, "myfolder");
 		ftp.delete_file("myfolder");
 
 		files = ftp.list_folder();
-		var names = files.map(function(x) { return x.file_name })
+		var names = files.map(function(x) { return x.filename })
 		assert.notInclude(names, "myfolder");
 	});
 
 	assertions('Get a file', function(done) {
 		this.timeout(60000);
-		if (is_skipped)
+		if (is_skipped || !runManualTests)
 			this.skip();
 
 		if (!remote_file || !remote_file.length)
@@ -76,7 +79,8 @@ testCase('Folder and file operations', function(done) {
 	});
 
 	assertions('Put a file', function(done) {
-		if (is_skipped)
+		this.timeout(20000);
+		if (is_skipped || !runManualTests)
 			this.skip();
 
 		if (!src_file || !src_file.length)
@@ -88,11 +92,14 @@ testCase('Folder and file operations', function(done) {
 				done();
 			}
 		});
+
 		ftp.put_file(src_file, "artik_test");
 	});
 
 	post(function() {
-		if (!is_skipped)
-			ftp.remove_session();
+		if (is_skipped || !runManualTests)
+			this.skip();
+
+		ftp.remove_session();
 	});
 });
