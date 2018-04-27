@@ -10,7 +10,7 @@ var validator      = require('validator');
 var exec           = require('child_process').execSync;
 var artik          = require('../src');
 
-var runManualTests = process.env.RUN_MANUAL_TESTS;
+var runManualTests = parseInt(process.env.RUN_MANUAL_TESTS);
 
 /* Test Specific Includes */
 var module_sensor = artik.sensor();
@@ -186,7 +186,7 @@ testCase('Sensors', function() {
 
         assertions('#get_presence() - returns presence', function() {
 
-            if (!proximity_sensor)
+            if (!proximity_sensor || !runManualTests)
                 this.skip();
 
             assert.notEqual(proximity_sensor.get_presence(), -1);
@@ -198,7 +198,7 @@ testCase('Sensors', function() {
 
         assertions('#get_signals() - returns signals', function() {
 
-            if (!flame_sensor)
+            if (!flame_sensor || !runManualTests)
                 this.skip();
 
             assert.notEqual(flame_sensor.get_signals(), -1);
@@ -222,7 +222,7 @@ testCase('Sensors', function() {
 
         assertions('#get_detection() - returns 1 if the magnetic field is detected', function() {
 
-            if (!hall_sensor)
+            if (!hall_sensor || !runManualTests)
                 this.skip();
 
             assert.equal(hall_sensor.get_detection(), 1);
