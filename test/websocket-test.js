@@ -17,7 +17,7 @@ var verify		= process.env.WEBSOCKET_VERIFY_CA == 1 ? true : false;
 var uri 		= use_tls ? "wss://echo.websocket.org/" : "ws://echo.websocket.org/";
 var test_message 	= "ping";
 
-var echo_websocket_ca_root = 
+var echo_websocket_ca_root =
     "-----BEGIN CERTIFICATE-----\n" +
     "MIIDxTCCAq2gAwIBAgIBADANBgkqhkiG9w0BAQsFADCBgzELMAkGA1UEBhMCVVMx\r\n" +
     "EDAOBgNVBAgTB0FyaXpvbmExEzARBgNVBAcTClNjb3R0c2RhbGUxGjAYBgNVBAoT\r\n" +
@@ -46,9 +46,7 @@ var ssl_config = {
     ca_cert: Buffer.from(echo_websocket_ca_root), // CA root certificate of echo.websocket.org
     verify_cert: verify ? "required" : "none"
 }
-
-var conn = new artik.websocket(uri, ssl_config);
-
+var conn;
 /* Test Case Module */
 testCase('Websockets', function() {
 
@@ -56,7 +54,7 @@ testCase('Websockets', function() {
 
 	pre(function() {
 
-		conn = new websocket(uri, ssl_config);
+		conn = new artik.websocket(uri, ssl_config);
 
 	});
 
