@@ -13,6 +13,7 @@ var exec       = require('child_process').execSync;
 var bt_started;
 var remote_addr = process.env.BT_ADDR;
 var uuid = process.env.BT_PROFILE_UUID
+var runManualTests = parseInt(process.env.RUN_MANUAL_TESTS);
 
 /* Test Case Module */
 testCase('Bluetooth', function() {
@@ -22,6 +23,9 @@ testCase('Bluetooth', function() {
 
 	testCase('#on(started)', function() {
 		assertions('Return callback event when the bluetooth interface is started', function(done) {
+			if (!runManualTests)
+				this.skip();
+
 			bt = new (require('../src/bluetooth'))();
 			this.timeout(10000);
 			bt.on('started', function() {
@@ -35,11 +39,17 @@ testCase('Bluetooth', function() {
 
 	testCase('#start_scan(), on(scan)', function() {
 		postEach(function() {
+			if (!runManualTests)
+				this.skip();
+
 			bt.stop_scan();
 			bt.removeAllListeners()
 		});
 
 		assertions('Return callback event when the bluetooth scan request is performed', function(done) {
+			if (!runManualTests)
+				this.skip();
+
 			this.timeout(20000);
 
 			if (!remote_addr || !remote_addr.length)
@@ -62,6 +72,9 @@ testCase('Bluetooth', function() {
 		});
 
 		assertions('Apply filter with rssi equal to -70', function(done) {
+			if (!runManualTests)
+				this.skip();
+
 			this.timeout(10000);
 			if (!remote_addr || !remote_addr.length)
 				this.skip();
@@ -84,7 +97,7 @@ testCase('Bluetooth', function() {
 		});
 
 		assertions('Apply filter with nonempty uuids', function(done) {
-			if (!remote_addr || !remote_addr.length)
+			if (!remote_addr || !remote_addr.length || !runManualTests)
 				this.skip();
 
 			if (!uuid || !uuid.length)
@@ -121,7 +134,7 @@ testCase('Bluetooth', function() {
 	testCase('#start_bond(), on(bond)', function() {
 
 		assertions('Return callback event when the bluetooth interface is bonded to remote device', function(done) {
-			if (!remote_addr || !remote_addr.length)
+			if (!remote_addr || !remote_addr.length || !runManualTests)
 				this.skip();
 
 			this.timeout(10000);
@@ -141,7 +154,7 @@ testCase('Bluetooth', function() {
 	testCase('#connect(), on(connect)', function() {
 
 		assertions('Return callback event when the bluetooth interface is connected to remote device', function(done) {
-			if (!remote_addr || !remote_addr.length)
+			if (!remote_addr || !remote_addr.length || !runManualTests)
 				this.skip();
 
 			this.timeout(10000);
@@ -160,6 +173,9 @@ testCase('Bluetooth', function() {
 
 	testCase('#get_adapter_info', function() {
 		assertions('Get information about the bluetooth adapter', function() {
+			if (!runManualTests)
+				this.skip();
+
 			var cmd = "hciconfig | grep Address | awk '{print $3}'";
 			var exec = require('child_process').execSync;
 			var addr = exec(cmd);
@@ -191,6 +207,9 @@ testCase('Bluetooth', function() {
 
 	testCase('#set_alias', function() {
 		assertions('Set the property alias', function(done) {
+			if (!runManualTests)
+				this.skip();
+
 			bt.set_alias("ARTIK-BLUETOOTH-TEST");
 			setTimeout(function() {
 				var adapter = bt.get_adapter_info();
@@ -207,6 +226,9 @@ testCase('Bluetooth', function() {
 
 	testCase('#set_discoverable', function() {
 		assertions('Set the property discoverable', function(done) {
+			if (!runManualTests)
+				this.skip();
+
 			bt.set_discoverable(true);
 			setTimeout(function() {
 				var adapter = bt.get_adapter_info();
@@ -221,6 +243,9 @@ testCase('Bluetooth', function() {
 		});
 
 		assertions('Set the property discoverable to true during 1s', function(done) {
+			if (!runManualTests)
+				this.skip();
+
 			bt.set_discoverableTimeout(1);
 			bt.set_discoverable(true);
 
@@ -240,6 +265,9 @@ testCase('Bluetooth', function() {
 
 	testCase('#set_pairable', function(){
 		assertions('Set the property pairable', function(done) {
+			if (!runManualTests)
+				this.skip();
+
 			bt.set_pairableTimeout(0);
 			bt.set_pairable(true);
 			setTimeout(function() {
@@ -255,6 +283,9 @@ testCase('Bluetooth', function() {
 		});
 
 		assertions('Set the property pairable to true during 1s', function(done) {
+			if (!runManualTests)
+				this.skip();
+
 			bt.set_pairableTimeout(1);
 			bt.set_pairable(true);
 
@@ -274,7 +305,7 @@ testCase('Bluetooth', function() {
 
 	testCase('#connect_profile', function(){
 		assertions('Connect to a specific profile', function(done) {
-			if (!remote_addr || !remote_addr.length)
+			if (!remote_addr || !remote_addr.length || !runManualTests)
 				this.skip();
 
 			if (!uuid || !uuid.length)
@@ -296,7 +327,7 @@ testCase('Bluetooth', function() {
 
 	testCase('#set_trust', function(){
 		assertions('Set the device property trust', function(done) {
-			if (!remote_addr || !remote_addr.length)
+			if (!remote_addr || !remote_addr.length || !runManualTests)
 				this.skip();
 
 			/* This test does not wrok */
@@ -317,7 +348,7 @@ testCase('Bluetooth', function() {
 
 	testCase('#set_block', function(){
 		assertions('Set the device property block', function(done) {
-			if (!remote_addr || !remote_addr.length)
+			if (!remote_addr || !remote_addr || !runManualTests)
 				this.skip();
 
 			bt.set_block(remote_addr);
@@ -333,7 +364,7 @@ testCase('Bluetooth', function() {
 	});
 
 	post(function() {
-		if (remote_addr && remote_addr.length)
+		if (remote_addr && remote_addr.length && runManualTests)
 			bt.remove_device(remote_addr);
 	});
 
