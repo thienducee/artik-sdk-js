@@ -9,6 +9,7 @@ var assert     = require('chai').assert;
 var validator  = require('validator');
 var exec       = require('child_process').execSync;
 var artik      = require('../src');
+var runManualTests = parseInt(process.env.RUN_MANUAL_TESTS);
 
 var os		   = require('os');
 var ifaces 	   = os.networkInterfaces();
@@ -33,12 +34,16 @@ testCase('Network', function() {
 	testCase('#get_network_config()', function() {
 		postEach('Enabling Wifi', function(done){
 			this.timeout(15000);
-			exec("ifconfig wlan0 up; sleep 1; pkill dhclient; sleep 1; dhclient wlan0;sleep 1");
+			if(!runManualTests);
+				this.skip();
+			exec("ifconfig wlan0 up; sleep 1; pkill dhclient; sleep 1; dhclient wlan0; sleep 1");
 			done();
 		});
 
 		assertions('Get Network Config - Should return config not null', function(done) {
-			this.timeout(2000);
+			this.timeout(20000);
+			if(!runManualTests);
+				this.skip();
 			var config = network.get_network_config(process.env.NETWORK_INTERFACE);
 			if (config) {
 				console.log("IP Address: " + config.ip_addr);
@@ -62,6 +67,9 @@ testCase('Network', function() {
 
 	testCase('#get_online_status()', function() {
 		postEach('Enabling Wifi', function(done){
+			if(!runManualTests);
+				this.skip();
+
 			this.timeout(15000);
 			exec("ifconfig wlan0 up; sleep 1; pkill dhclient; sleep 1; dhclient wlan0;sleep 1");
 			done();
@@ -69,6 +77,9 @@ testCase('Network', function() {
 
 
 		assertions('Online Status - Should return true when it is online', function(done) {
+			if(!runManualTests);
+				this.skip();
+
 			this.timeout(2000);
 			var online_status = network.get_online_status("artik.cloud", 500);
 			console.log('Status ' + online_status);
@@ -77,6 +88,9 @@ testCase('Network', function() {
 		});
 
 		assertions('Online Status - Should return false when it is offline', function(done) {
+			if(!runManualTests);
+				this.skip();
+
 			this.timeout(10000);
 			console.log("Disabling WIFI Adapter");
 			exec("ifconfig wlan0 down; sleep 1");
@@ -91,12 +105,18 @@ testCase('Network', function() {
 	testCase('#get_current_public_ip()', function() {
 
 		postEach('Enabling Wifi', function(done) {
+			if(!runManualTests);
+				this.skip();
+
 			this.timeout(15000);
 			exec("ifconfig wlan0 up; sleep 1; pkill dhclient; sleep 1; dhclient wlan0;sleep 1");
 			done();
 		});
 
 		assertions('Get Current Public Ip - Should return a valid IP', function(done) {
+				if(!runManualTests);
+					this.skip();
+
 				this.timeout(2000);
 				var ip = network.get_current_public_ip();
 				console.log("IP Address: " + ip);
@@ -105,6 +125,9 @@ testCase('Network', function() {
 		});
 
 		assertions('Get Current Public Ip - Should return null when there is no connectivity', function(done) {
+				if(!runManualTests);
+					this.skip();
+
 				exec("ifconfig wlan0 down");
 				try {
 					var ip = network.get_current_public_ip();
@@ -120,12 +143,18 @@ testCase('Network', function() {
 
 	testCase("#on connectivity-change", function() {
 		pre(function() {
+			if(!runManualTests);
+				this.skip();
+
 			this.timeout(5000);
 			console.log("Enabling wifi");
 			exec("ifconfig wlan0 up; pkill dhclient; dhclient wlan0");
 		});
 
 		assertions('Event network-status-change - Should raise this event when deconnection occurs', function(done) {
+			if(!runManualTests);
+				this.skip();
+
 			this.timeout(10000);
 			var net_watcher = new artik.network.network_watcher("artik.cloud", 5000, 500);
 			net_watcher.on("connectivity-change", function(status) {
@@ -139,6 +168,9 @@ testCase('Network', function() {
 		});
 
 		assertions('Event network-status-change - Should raise this event when reconnection occurs', function(done) {
+			if(!runManualTests);
+				this.skip();
+
 			this.timeout(20000);
 			var net_watcher = new artik.network.network_watcher("artik.cloud", 5000, 500);
 			net_watcher.on("connectivity-change", function(status){
@@ -146,7 +178,7 @@ testCase('Network', function() {
 					network.remove_watch_online_status(net_watcher);
 					done();
 				}
-			});
+
 			network.add_watch_online_status(net_watcher)
 			exec("ifconfig wlan0 up; pkill dhclient; dhclient wlan0");
 		});
@@ -154,11 +186,16 @@ testCase('Network', function() {
 
 	testCase("#dhcp_client", function(){
 		pre(function() {
+			if(!runManualTests);
+				this.skip();
 			console.log("Setting no ip address");
 			exec("pkill dhclient; ifconfig wlan0 0.0.0.0");
 		});
 
 		assertions("Get IP Address from a DHCP server - Should return an IP address when there is response", function(done) {
+			if(!runManualTests);
+				this.skip();
+
 			var ip;
 			network.dhcp_client_start("wifi");
 
@@ -192,12 +229,18 @@ testCase('Network', function() {
 
 	testCase('#set_network_config()', function() {
 		postEach('Enabling Wifi', function(done){
+			if(!runManualTests);
+				this.skip();
+
 			this.timeout(15000);
 			exec("ifconfig wlan0 up; sleep 1; pkill dhclient; sleep 1;");
 			done();
 		});
 
 		assertions('Set Network Config - Should return expected config', function(done) {
+			if(!runManualTests);
+				this.skip();
+
 			this.timeout(5000);
 
 			if (process.env.NETWORK_DNS_ADDRESS_1)
