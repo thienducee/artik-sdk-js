@@ -10,6 +10,7 @@ var validator  = require('validator');
 var exec       = require('child_process').execSync;
 var bluetooth  = require('../src/bluetooth');
 var network    = require('../src/network');
+var runManualTests = parseInt(process.env.RUN_MANUAL_TESTS);
 
 var remote_addr = process.env.BT_ADDR;
 var panu = process.env.BT_PAN_IS_PANU;
@@ -21,7 +22,7 @@ var bt = new bluetooth();
 testCase('Pan', function() {
 	testCase('#PAN as NAP', function() {
 		assertions('Register and unregister', function() {
-			if (is_panu)
+			if (is_panu || !runManualTests)
 				this.skip();
 
 			pan.register("nap", "artik-bridge");
@@ -31,11 +32,14 @@ testCase('Pan', function() {
 
 	testCase('PAN as PANU', function() {
 		pre(function() {
+			if (!runManualTests)
+				this.skip();
+
 			exec("systemctl stop connman");
 		});
 
 		assertions('Test connectivity', function(done) {
-			if (!is_panu)
+			if (!is_panu || !runManualTests)
 				this.skip();
 
 			this.timeout(100000);
@@ -63,6 +67,9 @@ testCase('Pan', function() {
 		});
 
 		post(function() {
+			if (!runManualTests)
+				this.skip();
+
 			exec("systemctl start connman");
 		});
 	});
