@@ -15,17 +15,20 @@ var avrcp;
 var bt;
 
 var remote_addr = process.env.BT_ADDR;
-var is_browsable = process.env.BT_ARCP_IS_BROWSABLE;
-var has_repeat_mode_support = process.env.BT_AVRCP_HAS_REPEAT_MODE_SUPPORT;
+var is_browsable = process.env.BT_AVRCP_IS_BROWSABLE;
+var has_repeat_mode_support = parseInt(process.env.BT_AVRCP_HAS_REPEAT_MODE_SUPPORT);
 var has_name_support = process.env.BT_AVRCP_HAS_NAME_SUPPORT;
 var has_type_support = process.env.BT_AVRCP_HAS_TYPE_SUPPORT;
 var item_add_to_playing = process.env.BT_AVRCP_ITEM;
+var runManualTests = parseInt(process.env.RUN_MANUAL_TESTS);
 
 var is_skipped = !remote_addr || !remote_addr.length;
 
 testCase('Avrcp', function() {
 	pre(function(done) {
 		this.timeout(10000);
+		if (!runManualTests)
+			this.skip();
 
 		if (is_skipped)
 			done();
@@ -45,7 +48,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_change_folder', function() {
 		assertions('Change folder', function() {
-			if (is_skipped || !is_browsable)
+			if (is_skipped || !is_browsable || !runManualTests)
 				this.skip();
 
 			var items = avrcp.controller_list_item(-1 , -1);
@@ -74,7 +77,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_list_item', function() {
 		assertions('List item of current folder', function() {
-			if (is_skipped || !is_browsable)
+			if (is_skipped || !is_browsable || !runManualTests)
 				this.skip();
 
 			var items = avrcp.controller_list_item(-1, -1);
@@ -126,7 +129,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_get_repeat_mode', function() {
 		assertions('Get repeat mode', function() {
-			if (is_skipped || !has_repeat_mode_support)
+			if (is_skipped || !has_repeat_mode_support || !runManualTests)
 				this.skip();
 
 			var repeat_mode = avrcp.controller_get_repeat_mode();
@@ -135,15 +138,15 @@ testCase('Avrcp', function() {
 		});
 
 		assertions('Set repeat mode', function() {
-			if (is_skipped || !has_repeat_mode_support)
+			if (is_skipped || !has_repeat_mode_support || !runManualTests)
 				this.skip();
 
 			avrcp.controller_set_repeat_mode('alltracks');
 			assert.equal(avrcp.controller_get_repeat_mode(), 'alltracks');
-		})
+		});
 
 		assertions('Set repeat mode to invalid value', function(done) {
-			if (is_skipped || !has_repeat_mode_support)
+			if (is_skipped || !has_repeat_mode_support || !runManualTests)
 				this.skip();
 
 			assert.throws(avrcp.controller_set_repeat_mode('invalid'), 'Repeat');
@@ -152,14 +155,14 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_is_connected', function() {
 		assertions('Controller is connected', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			assert.isOk(avrcp.controller_is_connected());
 		});
 
 		assertions('Controller is not connected', function(done) {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			/* This test is not working well */
@@ -175,7 +178,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_resume_play', function(){
 		assertions('Resume play', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			avrcp.controller_resume_play();
@@ -189,7 +192,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_pause', function(){
 		assertions('Pause', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			this.timeout(2000);
@@ -203,7 +206,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_stop', function(){
 		assertions('Stop', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			this.timeout(2000);
@@ -217,7 +220,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_next', function(){
 		assertions('Next', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			this.timeout(2000);
@@ -231,7 +234,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_previous', function(){
 		assertions('Previous', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			this.timeout(2000);
@@ -245,7 +248,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_fast_forward', function(){
 		assertions('Fast forward', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			this.timeout(2000)
@@ -259,7 +262,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_rewind', function() {
 		assertions('Rewind', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			this.timeout(2000);
@@ -273,7 +276,8 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_get_property', function() {
 		assertions('Get property', function() {
-			if (is_skipped || !is_browsable || !item_add_to_playing || !item_add_to_playing.length)
+			if (is_skipped || !is_browsable || !item_add_to_playing ||
+				!item_add_to_playing.length || !runManualTests)
 				this.skip();
 
 			/* This test is not working well */
@@ -320,7 +324,8 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_add_to_playing', function() {
 		assertions('Add', function() {
-			if (is_skipped || !item_add_to_playing || !item_add_to_playing.length)
+			if (is_skipped || !item_add_to_playing ||
+				!item_add_to_playing.length || !runManualTests)
 				this.skip();
 
 			avrcp.controller_add_to_playing(item_add_to_playing);
@@ -334,7 +339,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_get_name', function() {
 		assertions('Get name', function() {
-			if (is_skipped || !has_name_support)
+			if (is_skipped || !has_name_support || !runManualTests)
 				this.skip();
 
 			assert.isString(avrcp.controller_get_name());
@@ -343,7 +348,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_get_status', function() {
 		assertions('Get current status', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			var status = avrcp.controller_get_status();
@@ -355,7 +360,7 @@ testCase('Avrcp', function() {
 	/* not tested, due to the lack of software with subtype */
 	testCase('#controller_get_subtype', function() {
 		assertions('Get subtype', function(){
-			if (is_skipped || !has_type_support)
+			if (is_skipped || !has_type_support || !runManualTests)
 				this.skip();
 
 			var subtype = avrcp.controller_get_subtype()
@@ -367,7 +372,7 @@ testCase('Avrcp', function() {
 	/* not tested, due to the lack of software with type */
 	testCase('#controller_get_type', function() {
 		assertions('Get type', function() {
-			if (is_skipped || !has_type_support)
+			if (is_skipped || !has_type_support || !runManualTests)
 				this.skip();
 
 			var type = avrcp.controller_get_type();
@@ -378,7 +383,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_is_browsable', function() {
 		assertions('Is browsable', function() {
-			if (is_skipped || !is_browsable)
+			if (is_skipped || !is_browsable || !runManualTests)
 				this.skip();
 
 			assert.isBoolean(avrcp.controller_is_browsable());
@@ -388,7 +393,7 @@ testCase('Avrcp', function() {
 
 	testCase('#controller_get_position', function() {
 		assertions('Get position', function() {
-			if (is_skipped)
+			if (is_skipped || !runManualTests)
 				this.skip();
 
 			assert.isNumber(avrcp.controller_get_position());
