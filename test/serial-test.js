@@ -44,13 +44,8 @@ testCase('Serial', function() {
 			port = ee530.ARTIK_EAGLEYE530_SERIAL.UART.UART4;
 		}
 
-		loopback = new artik.serial(port,
-					    "serial-loopback",
-					    115200,
-					    "none",
-					    8,
-					    1,
-					    "none");
+		loopback = new artik.serial(port, "serial-loopback", 115200, "none", 8,
+					1, "none");
 
 		loopback.request();
 
@@ -91,22 +86,22 @@ testCase('Serial', function() {
 
 	});
 
-        testCase('#get_*(), #set_*()', function() {
-                assertions('Get the value that are passed to the constructor', function(done) {
-                        assert.equal(loopback.get_baudrate(), 115200);
-                        assert.equal(loopback.get_parity(), 'none');
-                        assert.equal(loopback.get_data_bits(), 8);
-                        assert.equal(loopback.get_stop_bits(), 1);
-                        assert.equal(loopback.get_flowctrl(), 'none');
+    testCase('#get_*(), #set_*()', function() {
+        assertions('Get the value that are passed to the constructor', function(done) {
+        	assert.equal(loopback.get_baudrate(), 115200);
+			assert.equal(loopback.get_parity(), 'none');
+			assert.equal(loopback.get_data_bits(), 8);
+			assert.equal(loopback.get_stop_bits(), 1);
+			assert.equal(loopback.get_flowctrl(), 'none');
 			done();
-                });
+		});
 
 		assertions('Set new value and get it', function(done) {
 			loopback.set_baudrate(9600);
-                        assert.equal(loopback.get_baudrate(), 9600);
+			assert.equal(loopback.get_baudrate(), 9600);
 
 			loopback.set_parity('odd');
-                        assert.equal(loopback.get_parity(), 'odd');
+			assert.equal(loopback.get_parity(), 'odd');
 
 			loopback.set_data_bits(7);
 			assert.equal(loopback.get_data_bits(), 7);
@@ -115,7 +110,7 @@ testCase('Serial', function() {
 			assert.equal(loopback.get_stop_bits(), 2);
 
 			loopback.set_flowctrl('soft');
-                        assert.equal(loopback.get_flowctrl(), 'soft');
+      		assert.equal(loopback.get_flowctrl(), 'soft');
 			done();
 		});
 
@@ -126,10 +121,10 @@ testCase('Serial', function() {
 			assert.throws(function() { loopback.set_stop_bits('1bit') }, TypeError, 'nan');
 			assert.throws(function() { loopback.set_flowctrl(1) }, TypeError, 1);
 		});
-        });
+    });
 
 	post(function() {
-		loopback.release();
+		//loopback.release();
 	});
 
 });
