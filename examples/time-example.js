@@ -4,26 +4,63 @@
  *
  *   $ systemctl stop systemd-timesyncd
  */
-var time    = require('../src/time.js');
+
+var opt = require('getopt');
+var time = require('../src/time.js');
 
 var module  = new time();
 var alarm_1 = null;
 var alarm_2 = null;
 var hostname = "fr.pool.ntp.org";
+var ntp_timeout_ms = 3000;
+
+try {
+    opt.setopt("t:h:?::");
+} catch (e) {
+    switch (e.type) {
+        case "unknown":
+            console.log("Unknown option: -%s", e.opt);
+            break;
+        case "required":
+            console.log("Required parameter for option: -%s",  e.opt);
+            break;
+        default:
+            console.dir(e);
+            break;
+    }
+    process.exit(0);
+}
+
+opt.getopt(function (o, p) {
+    switch(o){
+    case 't':
+        ntp_timeout_ms = parseInt(p);
+        break;
+    case 'h':
+        hostname = String(p);
+        break;
+    case '?':
+        printf("Usage: time-test -t <ntp timeout ms> -h <ntp name server>");
+        process.exit(0);
+    default:
+        printf("Usage: time-test -t <ntp timeout ms> -h <ntp name server>");
+        printf("-help: give this help list\n");
+        process.exit(0);
+    }
+});
 
 console.log("Synchronizing with NTP server " + hostname);
-console.log(module.sync_ntp(hostname) == 0 ? "Sync successful": "Sync failed");
+console.log(module.sync_ntp(hostname, ntp_timeout_ms) == 0 ? "Sync successful": "Sync failed");
 
-var date = module.get_time_str('%I:%M:%S-%w-%d/%m/%Y', 2)
+var date = module.get_time_str('%I:%M:%S-%w-%d/%m/%Y', 2);
 var curr_date = module.get_time();
 var alarm1_date = module.get_time();
 var alarm2_date = module.get_time();
 var timestamp = Math.floor(Date.now()/1000); // Get timestamp in seconds
-
 alarm1_date.setUTCSeconds(alarm1_date.getUTCSeconds() + 5);
 alarm2_date.setUTCSeconds(alarm2_date.getUTCSeconds() + 20);
 
-console.log("Date in format: " + date)
+console.log("Date in format: " + date);
 console.log("Current time is " + curr_date.toUTCString());
 console.log("Timestamp of current date is " + module.convert_time_to_timestamp(curr_date) + " s");
 console.log("Current timestamp is " + timestamp + " s");

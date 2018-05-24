@@ -31,8 +31,8 @@ Time.prototype.create_alarm_second = function create_alarm_second(timezone, seco
     return this.time.create_alarm_second(timezone, seconds, func);
 }
 
-Time.prototype.sync_ntp = function sync_ntp(hostname) {
-    return this.time.sync_ntp(hostname);
+Time.prototype.sync_ntp = function sync_ntp(hostname, ntp_timeout_ms) {
+    return this.time.sync_ntp(hostname, ntp_timeout_ms);
 }
 
 Time.prototype.convert_timestamp_to_time = function convert_timestamp_to_time(timestamp) {

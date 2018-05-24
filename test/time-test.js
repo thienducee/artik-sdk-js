@@ -17,15 +17,13 @@ var platform, format_date, time_zone;
 var end      = 1;
 var valtime  = 0;
 var hostname = "0.pool.ntp.org";
+var ntp_timeout_ms = 3000;
 var platform, str;
 
 /* Test Case Module */
 testCase('Time', function() {
-
 	pre(function() {
-
 		exec("systemctl stop systemd-timesyncd.service");
-
 	});
 
 	testCase('#get_time()', function() {
@@ -126,7 +124,7 @@ testCase('Time', function() {
 		assertions('Convert time to timestamp', function(done) {
 			console.log("Date is: " + test_date.toUTCString());
 			var ts = module.convert_time_to_timestamp(test_date);
-			console.log("Timestamp from date is: " + ts + " s");
+			console.log("Timestamp from date is: " + ts + "s");
 			assert.equal(ts, 1500472980);
 			done();
 		});
@@ -135,22 +133,19 @@ testCase('Time', function() {
 
 	testCase('#sync_ntp()', function() {
 
-
-		pre(function() {
-
-		});
-
 		assertions('Syncs time with the NTP server', function() {
 			this.enableTimeouts(false);
 			var new_date  = module.get_time();
 			new_date.setUTCSeconds(new_date.getUTCSeconds()+120);
 			module.set_time(new_date);
-			ret = module.sync_ntp(hostname);
+			var ret = module.sync_ntp(hostname, ntp_timeout_ms);
 			assert.equal((new Date()).toUTCString(), module.get_time().toUTCString());
 		});
 
 	});
 
-
+	post(function() {
+		exec("systemctl start systemd-timesyncd.service");
+	});
 
 });

@@ -301,16 +301,38 @@ void TimeWrapper::get_tick(const FunctionCallbackInfo<Value>& args) {
 
 void TimeWrapper::sync_ntp(const FunctionCallbackInfo<v8::Value>& args) {
     Isolate* isolate = args.GetIsolate();
-    if (args.Length() != 1) {
+    unsigned int ntp_timeout_ms = 0;
+
+    if (args.Length() < 1) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong number of arguments")));
       return;
     }
 
+    if (!args[0]->IsString()) {
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+        isolate, "Invalid argument")));
+      return;
+    }
+
     String::Utf8Value param0(args[0]->ToString());
     char* hostname = *param0;
+
+    if (args.Length() >= 2) {
+      if (!args[1]->IsNumber()) {
+        isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
+          isolate, "Invalid argument")));
+        return;
+      }
+      ntp_timeout_ms = args[1]->NumberValue();
+    } else {
+      ntp_timeout_ms = 0;
+    }
+
+
     Time* obj = ObjectWrap::Unwrap<TimeWrapper>(args.Holder())->getObj();
-    args.GetReturnValue().Set(Number::New(isolate, obj->sync_ntp(hostname)));
+    args.GetReturnValue().Set(Number::New(isolate, obj->sync_ntp(hostname,
+      ntp_timeout_ms)));
 }
 
 void TimeWrapper::convert_timestamp_to_time(
