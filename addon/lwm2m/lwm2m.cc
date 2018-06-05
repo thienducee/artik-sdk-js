@@ -71,6 +71,25 @@ static void on_error(void *data, void *user_data) {
       isolate->GetCurrentContext()->Global(), 1, argv);
 }
 
+static void on_connection(void *data, void *user_data) {
+  artik_error err = (artik_error)(intptr_t)data;
+  Isolate * isolate = Isolate::GetCurrent();
+  v8::HandleScope handleScope(isolate);
+  Lwm2mWrapper* wrap = reinterpret_cast<Lwm2mWrapper*>(user_data);
+
+  log_dbg("");
+
+  if (!wrap->getConnectionCb())
+    return;
+
+  Handle<Value> argv[] = {
+    Handle<Value>(String::NewFromUtf8(isolate, error_msg(err))),
+  };
+
+  Local<Function>::New(isolate, *wrap->getConnectionCb())->Call(
+      isolate->GetCurrentContext()->Global(), 1, argv);
+}
+
 static void on_execute_resource(void *data, void *user_data) {
   Isolate * isolate = Isolate::GetCurrent();
   v8::HandleScope handleScope(isolate);
@@ -437,6 +456,14 @@ void Lwm2mWrapper::client_request(
     obj->set_callback(ARTIK_LWM2M_EVENT_RESOURCE_CHANGED, on_changed_resource,
         reinterpret_cast<void*>(wrap));
   }
+  if (args.Length() > 12) {
+    wrap->m_connection_cb = new v8::Persistent<v8::Function>();
+    wrap->m_connection_cb->Reset(isolate, Local<Function>::Cast(args[12]));
+    obj->set_callback(ARTIK_LWM2M_EVENT_CONNECT, on_connection,
+        reinterpret_cast<void*>(wrap));
+    obj->set_callback(ARTIK_LWM2M_EVENT_DISCONNECT, on_connection,
+        reinterpret_cast<void*>(wrap));
+  }
 }
 
 void Lwm2mWrapper::client_connect(
@@ -483,6 +510,11 @@ void Lwm2mWrapper::client_release(
   if (wrap->m_changed_cb) {
     obj->unset_callback(ARTIK_LWM2M_EVENT_RESOURCE_CHANGED);
     wrap->m_changed_cb = NULL;
+  }
+  if (wrap->m_connection_cb) {
+    obj->unset_callback(ARTIK_LWM2M_EVENT_CONNECT);
+    obj->unset_callback(ARTIK_LWM2M_EVENT_DISCONNECT);
+    wrap->m_connection_cb = NULL;
   }
 
   ret = obj->client_release();

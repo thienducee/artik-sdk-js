@@ -38,6 +38,7 @@ class Lwm2mWrapper : public node::ObjectWrap {
 
   Lwm2m* getObj() { return m_lwm2m; }
   v8::Persistent<v8::Function>* getErrorCb() { return m_error_cb; }
+  v8::Persistent<v8::Function>* getConnectionCb() { return m_connection_cb; }
   v8::Persistent<v8::Function>* getExecuteCb() { return m_execute_cb; }
   v8::Persistent<v8::Function>* getChangedCb() { return m_changed_cb; }
 
@@ -65,6 +66,7 @@ class Lwm2mWrapper : public node::ObjectWrap {
   Lwm2m *m_lwm2m;
   artik_lwm2m_config m_config;
   v8::Persistent<v8::Function>* m_error_cb;
+  v8::Persistent<v8::Function>* m_connection_cb;
   v8::Persistent<v8::Function>* m_execute_cb;
   v8::Persistent<v8::Function>* m_changed_cb;
   GlibLoop* m_loop;

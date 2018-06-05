@@ -104,6 +104,14 @@ lwm2m.on('error', function(err) {
     rl.prompt();
 });
 
+lwm2m.on('connected', function(status) {
+    console.log('\r\nStatus connection: ' + status);
+});
+
+lwm2m.on('disconnected', function(status) {
+    console.log('\r\nStatus connection: ' + status);
+});
+
 lwm2m.on('execute', function(uri) {
     var exe_uri = uri;
 

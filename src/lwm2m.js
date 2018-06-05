@@ -77,7 +77,7 @@ Lwm2m.prototype.LWM2M_FIRMWARE_UPD_RES_PKG_ERR = "6";
 Lwm2m.prototype.LWM2M_FIRMWARE_UPD_RES_URI_ERR = "7";
 
 Lwm2m.prototype.client_request = function(id, uri, name, lifetime,
-        connect_timeout, objects, psk_id, psk_key, certificate_mode_config) {
+    connect_timeout, objects, psk_id, psk_key, certificate_mode_config) {
     var _ = this;
     return this.lwm2m.client_request(id, uri, name, lifetime, connect_timeout,
             objects, psk_id, psk_key, certificate_mode_config,
@@ -89,6 +89,14 @@ Lwm2m.prototype.client_request = function(id, uri, name, lifetime,
             },
             function(uri, buffer) {
                 _.emit('changed', uri, buffer);
+            },
+            function(status) {
+                if (status == "OK") {
+                    _.emit('connected', status);
+                }
+                else if (status == "LWM2M disconnection") {
+                    _.emit('disconnected', status);
+                }
             });
 }
 
