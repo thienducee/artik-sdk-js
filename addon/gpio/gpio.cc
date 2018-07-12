@@ -101,10 +101,10 @@ void GpioWrapper::New(const FunctionCallbackInfo<Value>& args) {
   log_dbg("");
 
   if (args.IsConstructCall()) {
-    if (!args[0]->IsNumber() &&
-        !args[1]->IsString() &&
-        !args[2]->IsString() &&
-        !args[3]->IsString() &&
+    if (!args[0]->IsNumber() ||
+        !args[1]->IsString() ||
+        !args[2]->IsString() ||
+        !args[3]->IsString() ||
         !args[4]->IsNumber()) {
       isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Wrong arguments")));
