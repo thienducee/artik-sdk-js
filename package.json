@@ -194,9 +194,11 @@
   "dependencies": {
     "colors": "^1.1.2",
     "getopt": "^0.1.0",
-    "os": "^0.1.1",
+    "md5": "^2.2.1",
     "nan": "^2.6.2",
-    "prebuild-install": "^2.3.0"
+    "os": "^0.1.1",
+    "prebuild-install": "^2.3.0",
+    "yesno": "0.0.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",
