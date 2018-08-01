@@ -401,7 +401,7 @@ testCase('Cloud', function() {
 				this.skip();
 
 			var response = cloud2.get_device_properties(device_id, timestamp, ssl_config);
-			assert.notInclude(response, "error");
+			assert.isObject(JSON.parse(response).data.systemProperties);
 			done();
 		});
 
