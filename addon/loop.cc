@@ -36,7 +36,7 @@ static void prepare_cb(uv_prepare_t *handle) {
 }
 
 static void _idle_cb(uv_idle_t *handle) {
-  usleep(1);
+  usleep(1000);
 }
 
 GlibLoop::GlibLoop() {
