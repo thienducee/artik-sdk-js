@@ -56,6 +56,7 @@ var date = module.get_time_str('%I:%M:%S-%w-%d/%m/%Y', 2);
 var curr_date = module.get_time();
 var alarm1_date = module.get_time();
 var alarm2_date = module.get_time();
+var time_zone = module.ARTIK_TIME_GMT1;
 var timestamp = Math.floor(Date.now()/1000); // Get timestamp in seconds
 alarm1_date.setUTCSeconds(alarm1_date.getUTCSeconds() + 5);
 alarm2_date.setUTCSeconds(alarm2_date.getUTCSeconds() + 20);
@@ -69,16 +70,17 @@ console.log("Set alarm 1 to trigger at " + alarm1_date.toUTCString());
 console.log("Set alarm 2 to trigger at " + alarm2_date.toUTCString());
 
 try {
-    alarm_1 = module.create_alarm_date(alarm1_date.getTimezoneOffset() / 60, alarm1_date, function() {
+    alarm_1 = module.create_alarm_date(time_zone, alarm1_date, function() {
         console.log("Alarm 1 triggered, it is " + module.get_time().toUTCString());
     });
+
 } catch (err) {
     console.log("[ERROR] create_alarm : " + err);
     process.exit(-1);
 }
 
 try {
-    alarm_2 = module.create_alarm_second(alarm2_date.getTimezoneOffset() / 60, 20, function() {
+    alarm_2 = module.create_alarm_second(time_zone, 20, function() {
         console.log("Alarm 2 triggered, it is " + module.get_time().toUTCString());
         process.exit(0);
     });
@@ -89,6 +91,9 @@ try {
 
 var delay = alarm_1.get_delay();
 console.log("The delay for alarm 1 is " + delay + " s.");
+
+delay = alarm_2.get_delay();
+console.log("The delay for alarm 2 is " + delay + " s.");
 
 process.on('SIGINT', () => {
     process.exit(-1);

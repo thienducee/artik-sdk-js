@@ -318,7 +318,7 @@ void TimeWrapper::sync_ntp(const FunctionCallbackInfo<v8::Value>& args) {
     String::Utf8Value param0(args[0]->ToString());
     char* hostname = *param0;
 
-    if (args.Length() >= 2) {
+    if (args.Length() > 2) {
       if (!args[1]->IsNumber()) {
         isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
           isolate, "Invalid argument")));

@@ -13,7 +13,8 @@ var artik      = require('../src');
 var module     = new artik.time();
 
 /* Test Specific Includes */
-var platform, format_date, time_zone;
+var platform, format_date;
+var time_zone = module.ARTIK_TIME_GMT1;
 var end      = 1;
 var valtime  = 0;
 var hostname = "0.pool.ntp.org";
