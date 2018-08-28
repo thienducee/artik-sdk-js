@@ -247,7 +247,7 @@ void CloudWrapper::send_message(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -300,7 +300,7 @@ void CloudWrapper::send_action(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -353,7 +353,7 @@ void CloudWrapper::get_current_user_profile(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -395,7 +395,7 @@ void CloudWrapper::get_user_devices(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -450,7 +450,7 @@ void CloudWrapper::get_user_device_types(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -505,7 +505,7 @@ void CloudWrapper::get_user_application_properties(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -558,7 +558,7 @@ void CloudWrapper::get_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
   bool properties = false;
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -612,7 +612,7 @@ void CloudWrapper::get_device_token(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -662,7 +662,7 @@ void CloudWrapper::add_device(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -717,7 +717,7 @@ void CloudWrapper::update_device_token(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -768,7 +768,7 @@ void CloudWrapper::delete_device_token(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -819,7 +819,7 @@ void CloudWrapper::delete_device(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -870,7 +870,7 @@ void CloudWrapper::get_device_properties(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud *cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -928,7 +928,7 @@ void CloudWrapper::set_device_server_properties(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud *cloud = obj->getObj();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -982,41 +982,41 @@ void CloudWrapper::sdr_start_registration(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
+  std::unique_ptr<artik_secure_element_config> se_config;
 
   log_dbg("");
 
-  if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()) {
+  if (!args[0]->IsObject() || !args[1]->IsString() || !args[2]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
   }
 
-  v8::String::Utf8Value param0(args[0]->ToString());
+  /* SE Configuration */
+  if (args[0]->IsObject()) {
+    se_config = SSLConfigConverter::convert_se_config(isolate, args[0]);
+    if (!se_config) {
+      return;
+    }
+  }
+
   v8::String::Utf8Value param1(args[1]->ToString());
   v8::String::Utf8Value param2(args[2]->ToString());
 
-  auto cert_id =
-    to_artik_parameter<artik_security_certificate_id>(
-      SSLConfigConverter::security_certificate_ids, *param0);
-  if (!cert_id) {
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-      "Wrong value of cert_id. ")));
-    return;
-  }
   const char *dt_id = *param1;
   const char *vendor_id = *param2;
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
     auto sdr_start_registration_cb = [&](CloudWork *work) {
-      return cloud->sdr_start_registration_async(cert_id.value(),
+      return cloud->sdr_start_registration_async(se_config.get(),
                             dt_id, vendor_id,  cloud_callback, work);
     };
 
     async_call(sdr_start_registration_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
-    artik_error ret = cloud->sdr_start_registration(cert_id.value(),
+    artik_error ret = cloud->sdr_start_registration(se_config.get(),
         dt_id, vendor_id, &response);
 
     if (ret != S_OK && !response) {
@@ -1036,39 +1036,40 @@ void CloudWrapper::sdr_registration_status(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
+  std::unique_ptr<artik_secure_element_config> se_config;
+
 
   log_dbg("");
 
-  if (!args[0]->IsString() || !args[1]->IsString()) {
+  if (!args[0]->IsObject() || !args[1]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
   }
 
-  v8::String::Utf8Value param0(args[0]->ToString());
+    /* SE Configuration */
+  if (args[0]->IsObject()) {
+    se_config = SSLConfigConverter::convert_se_config(isolate, args[0]);
+    if (!se_config) {
+      return;
+    }
+  }
+
   v8::String::Utf8Value param1(args[1]->ToString());
 
   const char *reg_id = *param1;
-  auto cert_id =
-    to_artik_parameter<artik_security_certificate_id>(
-      SSLConfigConverter::security_certificate_ids, *param0);
-  if (!cert_id) {
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-      "Wrong value of cert_id. ")));
-    return;
-  }
 
   /* If callback is provided, make the call asynchronous */
   if (args[2]->IsFunction()) {
     auto sdr_registration_status_cb = [&](CloudWork *work) {
-      return cloud->sdr_registration_status_async(cert_id.value(), reg_id,
+      return cloud->sdr_registration_status_async(se_config.get(), reg_id,
                                 cloud_callback, work);
     };
 
     async_call(sdr_registration_status_cb, args[2].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
-    artik_error ret = cloud->sdr_registration_status(cert_id.value(), reg_id,
+    artik_error ret = cloud->sdr_registration_status(se_config.get(), reg_id,
         &response);
 
     if (ret != S_OK && !response) {
@@ -1088,41 +1089,41 @@ void CloudWrapper::sdr_complete_registration(
   Isolate* isolate = args.GetIsolate();
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
+  std::unique_ptr<artik_secure_element_config> se_config;
 
   log_dbg("");
 
-  if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()) {
+  if (!args[0]->IsObject() || !args[1]->IsString() || !args[2]->IsString()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
   }
 
-  v8::String::Utf8Value param0(args[0]->ToString());
+  /* SE Configuration */
+  if (args[0]->IsObject()) {
+    se_config = SSLConfigConverter::convert_se_config(isolate, args[0]);
+    if (!se_config) {
+      return;
+    }
+  }
+
   v8::String::Utf8Value param1(args[1]->ToString());
   v8::String::Utf8Value param2(args[2]->ToString());
 
-    const char *reg_id = *param1;
-    const char *nonce = *param2;
-  auto cert_id =
-    to_artik_parameter<artik_security_certificate_id>(
-      SSLConfigConverter::security_certificate_ids, *param0);
-  if (!cert_id) {
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
-      "Wrong value of cert_id. ")));
-    return;
-  }
+  const char *reg_id = *param1;
+  const char *nonce = *param2;
 
   /* If callback is provided, make the call asynchronous */
   if (args[3]->IsFunction()) {
     auto sdr_complete_registration_cb = [&](CloudWork *work) {
-      return cloud->sdr_complete_registration_async(cert_id.value(), reg_id,
+      return cloud->sdr_complete_registration_async(se_config.get(), reg_id,
                                                 nonce, cloud_callback, work);
     };
 
     async_call(sdr_complete_registration_cb, args[3].As<Function>());
   } else { /* Otherwise make the call directly */
     char *response = NULL;
-    artik_error ret = cloud->sdr_complete_registration(cert_id.value(), reg_id,
+    artik_error ret = cloud->sdr_complete_registration(se_config.get(), reg_id,
         nonce, &response);
 
     if (ret != S_OK && !response) {
@@ -1143,7 +1144,7 @@ void CloudWrapper::websocket_open_stream(
   CloudWrapper* obj = ObjectWrap::Unwrap<CloudWrapper>(args.Holder());
   Cloud* cloud = obj->getObj();
   artik_error ret = S_OK;
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 

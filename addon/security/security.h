@@ -25,6 +25,9 @@
 
 #include <artik_security.hh>
 
+#include <unordered_map>
+#include <string>
+
 namespace artik {
 
 class SecurityWrapper : public node::ObjectWrap {
@@ -41,12 +44,40 @@ class SecurityWrapper : public node::ObjectWrap {
   static v8::Persistent<v8::Function> constructor;
 
   static void get_certificate(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void get_ca_chain(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void get_key_from_cert(
+  static void get_certificate_sn(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_certificate_pem_chain(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void set_certificate(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void remove_certificate(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_hash(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void generate_key(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_hmac(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void remove_key(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_rsa_signature(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void verify_rsa_signature(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_ecdsa_signature(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void verify_ecdsa_signature(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void set_key(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_publickey(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void write_secure_storage(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void read_secure_storage(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void remove_secure_storage(
+    const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void aes_encryption(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void aes_decryption(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void rsa_encryption(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void rsa_decryption(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void get_ec_pubkey_from_cert(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void get_random_bytes(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void get_certificate_sn(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void verify_signature_init(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -54,7 +85,22 @@ class SecurityWrapper : public node::ObjectWrap {
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void verify_signature_final(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void convert_pem_to_der(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void generate_dhm_params(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void set_dhm_params(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void compute_dhm_params(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void generate_ecdh_params(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void compute_ecdh_params(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  static const std::unordered_map<std::string, see_hash_mode> hash_mode;
+  static const std::unordered_map<std::string, see_aes_mode> aes_mode;
+  static const std::unordered_map<std::string, see_rsa_mode> rsa_mode;
   Security * m_security;
 };
 

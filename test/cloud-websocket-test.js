@@ -27,7 +27,10 @@ if (process.env.CLOUD_CA_ROOT_FILE != "")
 var ssl_config = {
 	ca_cert: Buffer.from(data),
 	verify_cert: process.env.CLOUD_VERIFY_CERT == 1 ? "required" : "none",
-	se_config:  (process.env.WEBSOCKET_ENABLE_SDR == 1 ? { certificate_identifier: 'artik' }: undefined )
+	se_config : {
+		key_id: "ARTIK/0",
+		key_algo: "ecc_sec_p256r1"
+	}
 }
 
 var ping_period = 10000;

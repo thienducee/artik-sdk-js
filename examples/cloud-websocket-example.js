@@ -1,11 +1,12 @@
 var cloud = require('../src/cloud');
+var artik = require('../src/');
 var opt = require('getopt');
 var fs = require('fs');
 
 var access_token = "";
 var device_id = "";
 var test_message = '';
-
+var security = new artik.security.Security();
 var conn = new cloud();
 
 try{
@@ -29,8 +30,14 @@ try{
 var ssl_config = {
     ca_cert: Buffer.from(""),
     verify_cert: "none",
-    se_config: undefined
+    se_config : {
+        key_id: "ARTIK/0",
+        key_algo: "ecc_sec_p256r1"
+    }
 }
+
+ssl_config.client_cert = security.get_certificate('ARTIK/0', 'ARTIK_SECURITY_CERT_TYPE_PEM');
+ssl_config.client_key = security.get_publickey("ecc_sec_p256r1", 'ARTIK/0');
 
 var ping_period = 20000;
 var pong_timeout = 5000;
@@ -51,9 +58,8 @@ opt.getopt(function (o, p){
             ssl_config.ca_cert = Buffer.from(data);
             break;
         case 's':
-            ssl_config.se_config = {
-                certificate_identifier: 'artik'
-            }
+        /*    ssl_config.se_config.key_id = fs.readFileSync(String(p));
+            ssl_config.se_config.key_algo = fs.readFileSync(String(p));*/
             break;
         case 'v':
             ssl_config.verify_cert = "required";

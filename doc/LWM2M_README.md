@@ -53,7 +53,13 @@ This object is structured as the following:
 	 * When this field is undefined the *client_cert* and *client_private_key* must be filled.
 	 * Must be 'artik' or 'manufacturer'
 	 */
-	'se_cert_id': String,
+	se_config : {
+		/* Key identifier used by the SE */
+		key_id: String,
+
+		/* Type of Key used by the SE */ 
+		key_algo: String
+	}
 
 	/*
 	 * The client certificate use for DTLS/TLS connection.

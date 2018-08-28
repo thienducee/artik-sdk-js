@@ -1,18 +1,20 @@
 var readline = require('readline');
 var lwm2m = new(require('../src/lwm2m.js'))();
+var artik = require('../src');
 var fs = require('fs');
+var security = new artik.security.Security();
 
 var server_id = 123;
 var server_uri = 'coaps+tcp://coaps-api.artik.cloud:5689';
 var lifetime = 30;
 var connect_timeout = 1000;
-var dtls_psk_id = '< DM enabled ARTIK Cloud Device ID >';
-var dtls_psk_key = '< DM enabled ARTIK Cloud Device Token >';
-
+var dtls_psk_id = '11531fffb0fa49a0b24be13f460278ff';
+var dtls_psk_key = '88bb82a2aed3421ca45dbd4fde37f262';
+/*
 var certificate_mode_config = { // Certificate mode: no client certificate, no verify
     'verify_cert': 'none'
 };
-
+*/
 /*
 var certificate_mode_config = null; // Certificate mode: disable
 
@@ -21,18 +23,24 @@ var certificate_mode_config = { // Certificate mode: external client certificate
     'client_private_key': fs.readFileSync('path private key.pem'),
     'server_or_root_cert': fs.readFileSync('path server cert.cert')
 };
-
-var certificate_mode_config = { // Certificate mode: client certificate stored in the SE
-    'se_cert_id': 'artik',
-    'server_or_root_cert': fs.readFileSync('path server cert.cert')
-};
 */
+var certificate_mode_config = { // Certificate mode: client certificate stored in the SE
+    se_config : {
+        key_id: "ARTIK/0",
+        key_algo: "ecc_sec_p256r1"
+    },
+    'server_or_root_cert': null,
+    'verify_cert' : 'none',
+};
+
+certificate_mode_config.client_cert = security.get_certificate('ARTIK/0', 'ARTIK_SECURITY_CERT_TYPE_PEM');
+certificate_mode_config.client_private_key = security.get_publickey("ecc_sec_p256r1", 'ARTIK/0');
 
 var objects = {
     device: {
         manufacturer: 'Samsung',
         model: 'ARTIK',
-        serial: '1234567890',
+        serial: '09877666666',
         fwVersion: '1.0',
         hwVersion: '1.0',
         swVersion: '1.0',

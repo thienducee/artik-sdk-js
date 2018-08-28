@@ -23,15 +23,13 @@ var ssl_config = {
 	optional
 	Secure Element Configuration
 	*/
-	se_config: {
-		/*
-		mandatory
-		The selected certificate for SSL handshake
-		Must be 'artik' or 'manufacturer'
-		*/
-		certificate_identifier: String
-	},
+	se_config : {
+		/* Key identifier used by the SE */
+		key_id: String,
 
+		/* Type of Key used by the SE */ 
+		key_algo: String
+	}
 
 	/*
 	optional but could be required for verification

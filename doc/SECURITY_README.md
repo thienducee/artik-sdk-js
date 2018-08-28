@@ -3,7 +3,7 @@
 ## get_certificate
 
 ```javascript
-String get_certificate(String cert_id)
+String get_certificate(String cert_name, String cert_type)
 ```
 
 **Description**
@@ -12,7 +12,10 @@ Return the certificate stored in the Secure Element in PEM format
 
 **Parameters**
 
-*String*: Certificate identifier. Must be **artik** or **manufacturer**
+*String*: Certificate indentifier. Must be **ARTIK/0**
+
+*String*: Certificate type of output. Must be **ARTIK_SECURITY_CERT_TYPE_PEM** or
+ **ARTIK_SECURITY_CERT_TYPE_DER**
 
 **Return value**
 
@@ -21,13 +24,13 @@ Return the certificate stored in the Secure Element in PEM format
 **Example**
 
 ```javascript
-console.log(get_certificate('artik'))
+console.log(get_certificate('ARTIK/O', 'ARTIK_SECURITY_CERT_TYPE_PEM'))
 ```
 
 ## get_ca_chain
 
 ```javascript
-String get_ca_chain(String cert_id)
+String get_certificate_pem_chain(String cert_name)
 ```
 
 **Description**
@@ -38,7 +41,7 @@ certificate stored in the SE.
 
 **Parameters**
 
-*String*: Certificate identifier. Must be **artik** or **manufacturer**
+*String*: Certificate identifier. Must be **ARTIK/0**
 
 **Return value**
 
@@ -47,39 +50,38 @@ certificate stored in the SE.
 **Example**
 
 ```javascript
-console.log(get_ca_chain('artik'))
+console.log(get_certficate_pem_chain('ARTIK/O'))
 ```
 
-## get_key_from_cert
+## get_ec_publickey_from_cert
 
 ```javascript
-String get_key_from_cert(String certificate)
+String get_ec_publickey_from_cert(String certificate)
 ```
 
 **Description**
 
-Return the private key matching the certificate passed
-as a parameter. The return string is in PEM format.
+Get EC public key from the certificate passed as parameter.
 
 **Parameters**
 
-*String*: PEM certificate from which to extract the private key.
+*String*: String containing the certificate to retrieve the EC public key.
 
 **Return value**
 
-*String*: PEM private key or error information
+*String*: PEM private key or error information.
 
 **Example**
 
 ```javascript
-var cert = get_certificate('artik')
+var cert = get_certificate('ARTIK/O')
 console.log(get_key_from_cert(cert))
 ```
 
 ## get_certificate_sn
 
 ```javascript
-Buffer get_certificate_sn(String cert_id)
+Buffer get_certificate_sn(String cert_name)
 ```
 
 **Description**
@@ -89,7 +91,7 @@ stored in the Secure Element. It is returned as a buffer of bytes.
 
 **Parameters**
 
-*String*: Certificate identifier. Must be **artik** or **manufacturer**
+*String*: Certificate identifier. Must be **ARTIK/O**
 
 **Return value**
 
@@ -98,7 +100,7 @@ stored in the Secure Element. It is returned as a buffer of bytes.
 **Example**
 
 ```javascript
-console.log(get_certificate_sn('artik'))
+console.log(get_certificate_sn('ARTIK/O'))
 ```
 
 ## get_random_bytes
@@ -249,3 +251,492 @@ None.
 
 * See [pkcs7-sig-verify.js](/examples/pkcs7-sig-verify.js)
 
+## set_certificate
+
+```javascript
+set_certificate(String cert_name, String sample_cert)
+```
+
+**Description**
+
+Set the certificate in secure element.
+
+**Parameters**
+
+ - *String*: Certificate identifier.
+ - *String*: Sample Certificate.
+
+**Return value**
+
+*String*: Success or error information.
+
+## remove_certificate
+
+```javascript
+remove_certificate(String cert_name)
+```
+
+**Description**
+
+Remove a certificate in secure element.
+
+**Parameters**
+
+ - *String*: Certificate identifier.
+
+**Return value**
+
+*String*: Success or error information.
+
+## get_hash
+
+```javascript
+get_hash(Number see_hash_mode, Buffer sample_key)
+```
+
+**Description**
+
+Get the hash of the input message.
+
+**Parameters**
+
+ - *Number*: Hash algorithm.
+ - *Buffer*: Input data.
+
+**Return value**
+
+*Buffer*: Return the hash of the input message or error information.
+
+## generate_key
+
+```javascript
+generate_key(Number key_algorithm, String const_key_name)
+```
+
+**Description**
+
+Generate a key
+
+**Parameters**
+
+ - *Number*: Key algorithm.
+ - *String*: Key path and identity.
+
+**Return value**
+
+*String*: Return success or error information.
+
+## get_hmac
+
+```javascript
+get_hmac(Number see_hash_mode, String hmac_key_name, Buffer sample_key)
+```
+
+**Description**
+
+Get HMAC from input data.
+
+**Parameters**
+
+ - *Number*: Hash algorithm.
+ - *String*: HMAC key to use.
+ - *Buffer*: Input data.
+
+**Return value**
+
+*Buffer*: Return the hmac of the input message or error information.
+
+## remove_key
+
+```javascript
+remove_key(Number key_algorithm, String const_key_name)
+```
+
+**Description**
+
+Remove a key
+
+**Parameters**
+
+ - *Number*: Key algorithm.
+ - *String*: Key path and identity.
+
+**Return value**
+
+*String*: Return success or error information.
+
+## get_rsa_signature
+
+```javascript
+get_rsa_signature(Number see_rsa_mode, String rsa_key_name, Buffer hash)
+```
+
+**Description**
+
+Get rsa signature for input data.
+
+**Parameters**
+
+ - *Number*: RSA algorithm. This should be in @ref see_rsa_mode define form.
+ - *String*: Key_name : RSA key to use.
+ - *Buffer*: Hash value. User should calculate hash value from a message.
+ get_hash() might be used for it.
+
+**Return value**
+
+*Buffer*: Return the rsa signature or error information.
+
+## verify_rsa_signature
+
+```javascript
+verify_rsa_signature(Number see_rsa_mode, String rsa_key_name, Buffer hash, Buffer rsa_sig)
+```
+
+**Description**
+
+Verify rsa signature for input hash
+
+**Parameters**
+
+ - *Number*: RSA algorithm. This should be in @ref see_rsa_mode define form.
+ - *String*: Key_name : RSA key to use.
+ - *Buffer*: Hash value. User should calculate hash value from a message.
+ get_hash() might be used for it.
+ - *Buffer*: signature value.
+
+**Return value**
+
+*String*: Return success or error information.
+
+## get_ecdsa_signature
+
+```javascript
+get_ecdsa_signature(Number see_algorithm, String ecc_key_name, Buffer hash)
+```
+
+**Description**
+
+Get ecdsa signature for input data.
+
+**Parameters**
+
+ - *Number*: ECDSA algorithm.
+ - *String*: ECC key to use.
+ - *Buffer*: Hash value. User should calculate hash value from a message.
+ get_hash() might be used for it.
+
+**Return value**
+
+*Buffer*: Return the ecdsa signature or error information.
+
+## verify_ecdsa_signature
+
+```javascript
+verify_ecdsa_signature(Number see_algorithm, String ecc_key_name, Buffer hash, Buffer ecdsa_sig)
+```
+
+**Description**
+
+Verify ecdsa signature for input hash
+
+**Parameters**
+
+ - *Number*: ECDSA algorithm.
+ - *String*: ECC key to use.
+ - *Buffer*: Hash value. User should calculate hash value from a message.
+ get_hash() might be used for it.
+ - *Buffer*: signature value.
+
+**Return value**
+
+*String*: Return success or error information.
+
+## set_key
+
+```javascript
+set_key(Number see_algorithm, String sample_key_name, Buffer sample_key)
+```
+
+**Description**
+
+Set a key.
+
+**Parameters**
+
+ - *Number*: Key algorithm.
+ - *String*: Key path and identity.
+ - *Buffer*: Key form is in DER.
+
+**Return value**
+
+*String*: Return success or error information.
+
+## get_publickey
+
+```javascript
+get_publickey(Number see_algorithm, String sample_key_name)
+```
+
+**Description**
+
+Get public key from an asymmetric key.
+
+**Parameters**
+
+ - *Number*: Key algorithm.
+ - *String*: Key path and identity.
+ - *Buffer*: Key form is in DER.
+
+**Return value**
+
+*Buffer*: Public key value. This is double pointer and will be allocated in this
+function with proper size. This pointer must be freed by caller.
+
+## write_secure_storage
+
+```javascript
+write_secure_storage(String name_storage, Number offset_storage, Buffer data_write_storage)
+```
+
+**Description**
+
+Write a small data into secure storage.
+
+**Parameters**
+
+ - *String*: Data name in secure storage.
+ - *Number*: Data offset.
+ - *Buffer*: Allocated memory of the data.
+
+**Return value**
+
+*String*: Return success or error information.
+
+## read_secure_storage
+
+```javascript
+read_secure_storage(String name_storage, Number offset_storage, Number data_read_size)
+```
+
+**Description**
+
+Read a data from secure storage.
+
+**Parameters**
+
+ - *String*: Data name in secure storage.
+ - *Number*: Data offset.
+ - *Buffer*: The size of the read data.
+
+**Return value**
+
+*Buffer*: Return the read data or error information.
+
+## remove_secure_storage
+
+```javascript
+remove_secure_storage(String name_storage)
+```
+
+**Description**
+
+Remove a data from secure storage.
+
+**Parameters**
+
+ - *String*: Data name in secure storage.
+
+**Return value**
+
+*String*: Return success or error information.
+
+## aes_encryption
+
+```javascript
+aes_encryption(Number see_aes_mode, String aes_key_name, Buffer iv, Buffer sample_key)
+```
+
+**Description**
+
+Encrypt a input message using AES.
+
+**Parameters**
+
+ - *Number*: AES algorithm.
+ - *String*: AES key path and identity.
+ - *Buffer*: Initial vector value.
+ - *Buffer*: Input message to be encrypted.
+
+**Return value**
+
+*Buffer*: Encrypted result value or error information.
+
+## aes_decryption
+
+```javascript
+aes_decryption(Number see_aes_mode, String aes_key_name, Buffer iv, Buffer aes_enc_data)
+```
+
+**Description**
+
+Encrypt a input message using AES.
+
+**Parameters**
+
+ - *Number*: AES algorithm.
+ - *String*: AES key path and identity.
+ - *Buffer*: Initial vector value.
+ - *Buffer*: Input message to be decrypted.
+
+**Return value**
+
+*Buffer*: Decrypted result value or error information.
+
+## rsa_encryption
+
+```javascript
+rsa_encryption(Number see_rsa_mode, String rsa_key_name, Buffer sample_key)
+```
+
+**Description**
+
+Encrypt a input message using RSAES.
+
+**Parameters**
+
+ - *Number*: RSAES mode.
+ - *String*: RSA key path and name.
+ - *Buffer*: Input message to be encrypted.
+
+**Return value**
+
+*Buffer*: Encrypted result value or error information.
+
+
+## rsa_decryption
+
+```javascript
+rsa_decryption(Number see_rsa_mode, String rsa_key_name, Buffer rsa_enc_data)
+```
+
+**Description**
+
+Decrypt a input message using RSAES.
+
+**Parameters**
+
+ - *Number*: RSAES mode.
+ - *String*: RSA key path and name.
+ - *Buffer*:  Input message to be decrypted.
+
+**Return value**
+
+*Buffer*: Decrypted result value or error information.
+
+## Convert_pem_to_der
+
+```javascript
+Convert_pem_to_der(String pem_data)
+```
+
+**Description**
+
+Convert a certificate or a key from PEM format to DER format
+
+**Parameters**
+
+ - *String*: pem_data Data in PEM format.
+
+**Return value**
+
+*Buffer*: DER Data from the conversion into DER format or error information.
+
+## generate_dhm_params
+
+```javascript
+generate_dhm_params(Number see_algorithm, String const_key_name)
+```
+
+**Description**
+
+Generate DH key pair and get public key.
+
+**Parameters**
+ - *Number*: Key algorithm.
+ - *String*: Key path and identity.
+
+**Return value**
+
+*Buffer*: Public key value in DER form or error information.
+
+## set_dhm_params
+
+```javascript
+set_dhm_params(String const_key_name, Buffer dh_params)
+```
+
+**Description**
+
+Generate DH key pair and get public key using user's dh parameter.
+
+**Parameters**
+ - *String*: Key path and identity.
+ - *Buffer*: DH parameter p and q in DER form.
+
+**Return value**
+
+*Buffer*: Public key value in DER form or error information.
+
+## compute_dhm_params
+
+```javascript
+compute_dhm_params(String const_key_name, Buffer publickey)
+```
+
+**Description**
+
+Compute secret key from DH key and public key.
+
+**Parameters**
+ - *String*: Key path and identity.
+ - *Buffer*: Public key value.
+
+**Return value**
+
+*Buffer*: Secret key value or error information.
+
+## generate_ecdh_params
+
+```javascript
+generate_ecdh_params(Number see_algorithm, String const_key_name)
+```
+
+**Description**
+
+Generate ECDH key.
+
+**Parameters**
+ - *Number*: ECDH algorithm.
+ - *String*: Key path and identity.
+
+**Return value**
+
+*Buffer*: Public key value in DER form or error information.
+
+## compute_ecdh_params
+
+```javascript
+generate_ecdh_params(Number see_algorithm, String const_key_name)
+```
+
+**Description**
+
+Compute secret key from ECDH key and public key.
+
+**Parameters**
+ - *String*: Key path and identity.
+ - *Buffer*: Public key value.
+
+**Return value**
+
+*Buffer*: Secret key value or error information.

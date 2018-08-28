@@ -220,7 +220,7 @@ void MqttWrapper::Init(Local<Object> exports) {
 
 void MqttWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate *isolate = args.GetIsolate();
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
   MqttWrapper* obj = NULL;
 
   log_dbg("");

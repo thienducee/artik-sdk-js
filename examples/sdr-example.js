@@ -40,6 +40,11 @@ opt.getopt(function (o, p){
 var regId = '';
 var regNonce = '';
 
+var se_config = {
+        key_id: "ARTIK/0",
+        key_algo: "ecc_sec_p256r1"
+    }
+
 function getRegistrationStatus(err, response) {
     if (err) {
         console.log("Error: " + err);
@@ -49,10 +54,10 @@ function getRegistrationStatus(err, response) {
     var regStatus = response.data.status;
     if (regStatus == "PENDING_USER_CONFIRMATION") {
         setTimeout(function () {
-            artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
+            artik_cloud.sdr_registration_status(se_config, regId, getRegistrationStatus);
         }, 1000);
     } else if (regStatus == "PENDING_DEVICE_COMPLETION") {
-        artik_cloud.sdr_complete_registration('artik', regId, regNonce, function(err, response) {
+        artik_cloud.sdr_complete_registration(se_config, regId, regNonce, function(err, response) {
             if (err) {
                 console.log("Error: " + err);
                 process.exit(-1);
@@ -64,7 +69,7 @@ function getRegistrationStatus(err, response) {
     }
 }
 
-artik_cloud.sdr_start_registration('artik', dtid, vid, function(err, response) {
+artik_cloud.sdr_start_registration(se_config, dtid, vid, function(err, response) {
     if (err) {
         console.log("Error: " + err);
         process.exit(-1);
@@ -75,5 +80,5 @@ artik_cloud.sdr_start_registration('artik', dtid, vid, function(err, response) {
 
     console.log('Enter pin ' + response.data.pin + ' in the ARTIK Cloud portal');
 
-    artik_cloud.sdr_registration_status('artik', regId, getRegistrationStatus);
+    artik_cloud.sdr_registration_status(se_config, regId, getRegistrationStatus);
 });

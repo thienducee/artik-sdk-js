@@ -171,13 +171,15 @@
   "dependencies": {
     "colors": "^1.1.2",
     "getopt": "^0.1.0",
-    "os": "^0.1.1",
+    "mocha-steps": "^1.1.0",
     "nan": "^2.6.2",
+    "os": "^0.1.1",
     "prebuild-install": "^2.3.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
+    "mocha-steps": "^1.1.0",
     "validator": "^6.2.1",
     "yesno": "^0.0.1"
   }

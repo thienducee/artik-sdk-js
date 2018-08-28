@@ -26,6 +26,8 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <utility>
 
 #include "json.hpp"
 
@@ -202,6 +204,7 @@ void Lwm2mWrapper::client_request(
   Lwm2mWrapper* wrap = ObjectWrap::Unwrap<Lwm2mWrapper>(args.Holder());
   Lwm2m* obj = wrap->getObj();
   artik_error ret = S_OK;
+  std::unique_ptr<artik_secure_element_config> se_config(nullptr);
 
   log_dbg("");
 
@@ -336,29 +339,22 @@ void Lwm2mWrapper::client_request(
       }
       memset(wrap->m_config.ssl_config, 0, sizeof(artik_ssl_config));
 
-      auto se_cert_id_str =
-        js_object_attribute_to_cpp<std::string>(args[8], "se_cert_id");
+      auto se_config_js =
+        js_object_attribute_to_cpp<Local<Value>>(args[8], "se_config");
       auto client_cert =
         js_object_attribute_to_cpp<std::string>(args[8], "client_cert");
       auto client_private_key =
         js_object_attribute_to_cpp<std::string>(args[8],
                                                 "client_private_key");
 
-      if (se_cert_id_str) {
-        auto cert_id =
-          to_artik_parameter<artik_security_certificate_id>(
-            SSLConfigConverter::security_certificate_ids,
-            se_cert_id_str.value().c_str());
-        if (!cert_id) {
-          isolate->ThrowException(
-                Exception::TypeError(String::NewFromUtf8(isolate,
-                    "Wrong value of cert_id. ")));
-          return;
-        }
-        wrap->m_config.ssl_config->se_config.use_se = true;
-        wrap->m_config.ssl_config->se_config.certificate_id = cert_id.value();
-      } else if (client_cert && client_private_key) {
-        wrap->m_config.ssl_config->se_config.use_se = false;
+      if (se_config_js) {
+        se_config = SSLConfigConverter::convert_se_config(isolate,
+          se_config_js.value());
+        wrap->m_config.ssl_config->se_config = se_config.get();
+        wrap->m_se_config = std::move(se_config);
+      }
+
+      if (client_cert && client_private_key) {
         wrap->m_config.ssl_config->client_cert.data =
           strdup(client_cert.value().c_str());
         wrap->m_config.ssl_config->client_cert.len =

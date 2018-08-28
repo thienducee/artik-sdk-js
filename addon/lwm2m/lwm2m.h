@@ -21,11 +21,12 @@
 
 #include <node.h>
 #include <node_object_wrap.h>
-
 #include <uv.h>
 #include <artik_lwm2m.hh>
 
 #include <loop.h>
+
+#include <memory>
 
 using v8::Function;
 using v8::Local;
@@ -65,6 +66,7 @@ class Lwm2mWrapper : public node::ObjectWrap {
 
   Lwm2m *m_lwm2m;
   artik_lwm2m_config m_config;
+  std::unique_ptr<artik_secure_element_config> m_se_config;
   v8::Persistent<v8::Function>* m_error_cb;
   v8::Persistent<v8::Function>* m_connection_cb;
   v8::Persistent<v8::Function>* m_execute_cb;

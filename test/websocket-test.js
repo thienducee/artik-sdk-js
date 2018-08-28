@@ -46,7 +46,11 @@ var echo_websocket_ca_root =
 
 var ssl_config = {
     ca_cert: Buffer.from(echo_websocket_ca_root), // CA root certificate of echo.websocket.org
-    verify_cert: verify ? "required" : "none"
+    verify_cert: verify ? "required" : "none",
+    se_config : {
+        key_id: "ARTIK/0",
+        key_algo: "ecc_sec_p256r1"
+    }
 }
 
 var conn;

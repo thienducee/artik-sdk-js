@@ -223,7 +223,7 @@ void HttpWrapper::get_stream(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -302,7 +302,7 @@ void HttpWrapper::get(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -390,7 +390,7 @@ void HttpWrapper::post(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -495,7 +495,7 @@ void HttpWrapper::put(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 
@@ -600,7 +600,7 @@ void HttpWrapper::del(const FunctionCallbackInfo<Value>& args) {
   HttpWrapper* obj = ObjectWrap::Unwrap<HttpWrapper>(args.Holder());
   Http* http = obj->getObj();
   artik_http_headers* headers = NULL;
-  std::unique_ptr<artik_ssl_config> ssl_config(nullptr);
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   log_dbg("");
 

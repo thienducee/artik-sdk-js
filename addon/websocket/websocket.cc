@@ -150,7 +150,7 @@ void WebsocketWrapper::Init(Local<Object> exports) {
 void WebsocketWrapper::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   int lenArg = 4;
-  std::unique_ptr<artik_ssl_config> ssl_config;
+  ArtikSslConfigProxy ssl_config(nullptr);
 
   if (args.Length() != lenArg) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(

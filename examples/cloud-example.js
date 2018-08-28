@@ -33,7 +33,10 @@ try{
 var ssl_config = {
     ca_cert: Buffer.from(""),
     verify_cert: "none",
-    se_config: undefined
+    se_config : {
+        key_id: "ARTIK/0",
+        key_algo: "ecc_sec_p256r1"
+    }
 }
 
 opt.getopt(function (o, p){
@@ -64,9 +67,8 @@ opt.getopt(function (o, p){
             ssl_config.ca_cert = Buffer.from(data);
             break;
         case 's':
-            ssl_config.se_config = {
-                certificate_identifier: 'artik'
-            }
+            ssl_config.se_config.key_id = fs.readFileSync(String(p));
+            ssl_config.se_config.key_algo = fs.readFileSync(String(p));
             break;
         case 'v':
             ssl_config.verify_cert = "required";
