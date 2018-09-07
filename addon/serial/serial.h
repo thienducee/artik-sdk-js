@@ -71,7 +71,7 @@ class SerialWrapper : public node::ObjectWrap {
 
   static const std::array<int, 7> s_baudrates;
   static const std::array<const char *, 3> s_parities;
-  static const std::array<int, 2> s_data_bits;
+  static const std::array<int, 4> s_data_bits;
   static const std::array<int, 2> s_stop_bits;
   static const std::array<const char*, 3> s_flowcontrols;
 

@@ -51,8 +51,8 @@ const std::array<const char *, 3> SerialWrapper::s_parities = {
   "none", "odd", "even"
 };
 
-const std::array<int, 2> SerialWrapper::s_data_bits = {
-  7, 8
+const std::array<int, 4> SerialWrapper::s_data_bits = {
+  5, 6, 7, 8
 };
 
 const std::array<int, 2> SerialWrapper::s_stop_bits = {
