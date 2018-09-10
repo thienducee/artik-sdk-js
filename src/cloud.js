@@ -151,9 +151,9 @@ Cloud.prototype.set_device_server_properties = function set_device_server_proper
     return this.cloud.set_device_server_properties(device_id, data, ssl_config, response_cb);
 }
 
-Cloud.prototype.websocket_open_stream = function websocket_open_stream(access_token, device_id, ssl_config) {
+Cloud.prototype.websocket_open_stream = function websocket_open_stream(access_token, device_id, ping_period, pong_timeout, ssl_config) {
     var _ = this;
-    return this.cloud.websocket_open_stream(access_token, device_id, ssl_config,
+    return this.cloud.websocket_open_stream(access_token, device_id, ping_period, pong_timeout, ssl_config,
             function(message) {
                 _.emit('receive', message);
             },

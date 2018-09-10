@@ -1147,8 +1147,8 @@ void CloudWrapper::websocket_open_stream(
 
   log_dbg("");
 
-  if (!args[0]->IsString() || !args[1]->IsString() || args[2]->IsNumber() ||
-    args[3]->IsNumber()) {
+  if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsNumber() ||
+    !args[3]->IsNumber()) {
     isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(
       isolate, "Wrong arguments")));
     return;
