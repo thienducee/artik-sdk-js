@@ -125,13 +125,16 @@ ArtikSslConfigProxy SSLConfigConverter::convert(
 
   auto se_config_js = js_object_attribute_to_cpp<Local<Value>>(val,
     "se_config");
+
   if (se_config_js) {
     log_dbg("Parse artik secure element config");
     se_config  = convert_se_config(isolate, se_config_js.value());
-    ssl_config->se_config = se_config.get();
-  } else {
-    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
+    if (!se_config) {
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,
         "Wrong definition of se_config_js")));
+      return ArtikSslConfigProxy(nullptr);
+    }
+    ssl_config->se_config = se_config.get();
   }
 
   auto ca_cert = js_object_attribute_to_cpp<Local<Value>>(val, "ca_cert");
