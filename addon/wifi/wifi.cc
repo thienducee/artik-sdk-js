@@ -438,7 +438,7 @@ void WifiWrapper::get_info(const FunctionCallbackInfo<v8::Value>& args) {
     if (asprintf(&json_res, result,
             (info.connected) ? "true" : "false",
             (info.error != S_OK) ? "true" : "false",
-            (info.connected && strlen(wifi_ap.name) > 0) ? wifi_ap.name:"null",
+            (info.connected && strlen(wifi_ap.name) > 0) ? "DUC COP":"null",
             (info.connected && strlen(wifi_ap.bssid) > 0)? wifi_ap.bssid:"null",
             (info.connected) ? wifi_ap.frequency : 0,
             (info.connected) ? wifi_ap.signal_level : 0,
